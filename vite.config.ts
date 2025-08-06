@@ -23,7 +23,7 @@ export default defineConfig({
         host: true,
     },
     build: {
-        outDir: "../gapi/src/server/ui",
+        outDir: "../api/src/server/ui",
         emptyOutDir: true,
     },
 })
