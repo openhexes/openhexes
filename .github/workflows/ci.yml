@@ -1,0 +1,24 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    ci:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 1
+
+            - name: Build devcontainer image and run tests
+              uses: devcontainers/ci@v0.3.1900000417
+              with:
+                  imageName: ghcr.io/${{ github.repository }}/devcontainer:ci
+                  cacheFrom: ghcr.io/${{ github.repository }}/devcontainer:ci
+                  push: always
+                  runCmd: pnpm run ci
