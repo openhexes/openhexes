@@ -15,8 +15,13 @@ jobs:
               with:
                   fetch-depth: 1
 
+            - name: Log in to registry
+              run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
             - name: Build devcontainer image and run tests
               uses: devcontainers/ci@v0.3.1900000417
               with:
+                  imageName: ghcr.io/${{ github.repository_owner }}/devcontainer:latest
+                  cacheFrom: ghcr.io/${{ github.repository_owner }}/devcontainer:latest
                   push: never
                   runCmd: pnpm run ci
