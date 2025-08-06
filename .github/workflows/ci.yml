@@ -21,7 +21,7 @@ jobs:
             - name: Build devcontainer image and run tests
               uses: devcontainers/ci@v0.3.1900000417
               with:
-                  imageName: ghcr.io/${{ github.repository_owner }}/devcontainer:latest
-                  cacheFrom: ghcr.io/${{ github.repository_owner }}/devcontainer:latest
+                  imageName: ghcr.io/${{ github.repository_owner }}/devcontainer
+                  cacheFrom: ghcr.io/${{ github.repository_owner }}/devcontainer
                   push: never
                   runCmd: pnpm run ci
