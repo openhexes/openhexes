@@ -34,6 +34,10 @@ type Postgres struct {
 func (cfg *Config) setUpPostgres(ctx context.Context) error {
 	var err error
 
+	if cfg.Test.ID != "" {
+		cfg.Postgres.Database = cfg.Test.ID
+	}
+
 	cfg.Postgres.ServicePool, err = cfg.initPostgresPool(ctx, true)
 	if err != nil {
 		return fmt.Errorf("initializing service database pool: %w", err)

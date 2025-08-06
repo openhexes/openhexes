@@ -1,5 +1,5 @@
 package config
 
 type Test struct {
-	ID string
+	ID string `env:"ID"`
 }

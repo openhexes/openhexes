@@ -35,13 +35,13 @@ export default defineConfig({
             },
         },
         {
-            name: "gapi",
+            name: "api",
             command: "go run .",
-            cwd: "./gapi",
+            cwd: "./api",
             reuseExistingServer: false,
             url: "http://localhost:9090/ping",
             env: {
-                MODE: "testing",
+                TEST__ID: "playwright",
                 SERVER__ADDRESS: "localhost:9090",
                 SERVER__ALLOWED_ORIGINS: "http://localhost:5174",
                 LOGGING__LEVEL: "1",
