@@ -1,0 +1,17 @@
+version: v2
+managed:
+    enabled: true
+    override:
+        - file_option: go_package_prefix
+          value: github.com/openhexes/proto
+plugins:
+    - remote: buf.build/protocolbuffers/go
+      out: proto/go
+      opt: paths=source_relative
+    - remote: buf.build/connectrpc/go
+      out: proto/go
+      opt: paths=source_relative
+    - remote: buf.build/bufbuild/es
+      out: proto/ts
+inputs:
+    - directory: proto

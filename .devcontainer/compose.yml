@@ -1,0 +1,40 @@
+services:
+    app:
+        hostname: dc
+        network_mode: host
+        build:
+            context: .
+            dockerfile: devcontainer.Dockerfile
+        command: sleep infinity
+        env_file:
+            - .env
+        volumes:
+            - ..:/workspace:cached
+            - .zshrc:/root/.zshrc:cached
+            - ~/.config:/root/.config:cached
+            - go-cache:/root/.cache/go-build:cached
+        depends_on:
+            postgres:
+                condition: service_healthy
+    postgres:
+        network_mode: host
+        image: postgres:17
+        restart: unless-stopped
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+            start_period: 20s
+            interval: 30s
+            retries: 5
+            timeout: 5s
+        environment:
+            POSTGRES_PASSWORD: ${POSTGRES__PASSWORD}
+            POSTGRES_USER: ${POSTGRES__USER}
+            POSTGRES_DB: ${POSTGRES__DB}
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+        env_file:
+            - .env
+
+volumes:
+    postgres-data:
+    go-cache:

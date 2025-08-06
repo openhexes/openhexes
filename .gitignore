@@ -1,0 +1,13 @@
+.pnpm-store
+node_modules
+dist
+.DS_Store
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# UI distribution
+api/src/server/ui
