@@ -23,5 +23,5 @@ jobs:
               with:
                   imageName: ghcr.io/${{ github.repository_owner }}/devcontainer
                   cacheFrom: ghcr.io/${{ github.repository_owner }}/devcontainer
-                  push: never
+                  push: always
                   runCmd: pnpm run ci
