@@ -10,8 +10,8 @@ const NotFound = React.lazy(() => import("@/components/utils/not-found"))
 const Map = React.lazy(() => import("@/components/map/map"))
 
 const tiles: TileProps[] = []
-for (let row = 0; row < 31; row++) {
-    for (let column = 0; column < 35; column++) {
+for (let row = 0; row < 11; row++) {
+    for (let column = 0; column < 15; column++) {
         tiles.push({ row, column, visible: false })
     }
 }
