@@ -24,7 +24,7 @@ const (
 type Tile struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Coordinate    *Tile_Coordinate       `protobuf:"bytes,1,opt,name=coordinate,proto3" json:"coordinate,omitempty"`
-	Terrain       *Terrain               `protobuf:"bytes,2,opt,name=terrain,proto3" json:"terrain,omitempty"`
+	TerrainId     string                 `protobuf:"bytes,2,opt,name=terrain_id,json=terrainId,proto3" json:"terrain_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -66,11 +66,11 @@ func (x *Tile) GetCoordinate() *Tile_Coordinate {
 	return nil
 }
 
-func (x *Tile) GetTerrain() *Terrain {
+func (x *Tile) GetTerrainId() string {
 	if x != nil {
-		return x.Terrain
+		return x.TerrainId
 	}
-	return nil
+	return ""
 }
 
 type Tile_Coordinate struct {
@@ -137,12 +137,13 @@ var File_map_v1_tile_proto protoreflect.FileDescriptor
 
 const file_map_v1_tile_proto_rawDesc = "" +
 	"\n" +
-	"\x11map/v1/tile.proto\x12\x06map.v1\x1a\x14map/v1/terrain.proto\"\xb8\x01\n" +
+	"\x11map/v1/tile.proto\x12\x06map.v1\"\xac\x01\n" +
 	"\x04Tile\x127\n" +
 	"\n" +
 	"coordinate\x18\x01 \x01(\v2\x17.map.v1.Tile.CoordinateR\n" +
-	"coordinate\x12)\n" +
-	"\aterrain\x18\x02 \x01(\v2\x0f.map.v1.TerrainR\aterrain\x1aL\n" +
+	"coordinate\x12\x1d\n" +
+	"\n" +
+	"terrain_id\x18\x02 \x01(\tR\tterrainId\x1aL\n" +
 	"\n" +
 	"Coordinate\x12\x10\n" +
 	"\x03row\x18\x01 \x01(\rR\x03row\x12\x16\n" +
@@ -167,16 +168,14 @@ var file_map_v1_tile_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_map_v1_tile_proto_goTypes = []any{
 	(*Tile)(nil),            // 0: map.v1.Tile
 	(*Tile_Coordinate)(nil), // 1: map.v1.Tile.Coordinate
-	(*Terrain)(nil),         // 2: map.v1.Terrain
 }
 var file_map_v1_tile_proto_depIdxs = []int32{
 	1, // 0: map.v1.Tile.coordinate:type_name -> map.v1.Tile.Coordinate
-	2, // 1: map.v1.Tile.terrain:type_name -> map.v1.Terrain
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_map_v1_tile_proto_init() }
@@ -184,7 +183,6 @@ func file_map_v1_tile_proto_init() {
 	if File_map_v1_tile_proto != nil {
 		return
 	}
-	file_map_v1_terrain_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

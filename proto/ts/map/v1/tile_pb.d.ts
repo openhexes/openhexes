@@ -4,7 +4,6 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import type { Message } from "@bufbuild/protobuf";
-import type { Terrain } from "./terrain_pb";
 
 /**
  * Describes the file map/v1/tile.proto.
@@ -21,9 +20,9 @@ export declare type Tile = Message<"map.v1.Tile"> & {
   coordinate?: Tile_Coordinate;
 
   /**
-   * @generated from field: map.v1.Terrain terrain = 2;
+   * @generated from field: string terrain_id = 2;
    */
-  terrain?: Terrain;
+  terrainId: string;
 };
 
 /**

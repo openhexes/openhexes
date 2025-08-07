@@ -3,13 +3,12 @@
 /* eslint-disable */
 
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import { file_map_v1_terrain } from "./terrain_pb";
 
 /**
  * Describes the file map/v1/tile.proto.
  */
 export const file_map_v1_tile = /*@__PURE__*/
-  fileDesc("ChFtYXAvdjEvdGlsZS5wcm90bxIGbWFwLnYxIo8BCgRUaWxlEisKCmNvb3JkaW5hdGUYASABKAsyFy5tYXAudjEuVGlsZS5Db29yZGluYXRlEiAKB3RlcnJhaW4YAiABKAsyDy5tYXAudjEuVGVycmFpbho4CgpDb29yZGluYXRlEgsKA3JvdxgBIAEoDRIOCgZjb2x1bW4YAiABKA0SDQoFZGVwdGgYAyABKA1CeQoKY29tLm1hcC52MUIJVGlsZVByb3RvUAFaJ2dpdGh1Yi5jb20vb3BlbmhleGVzL3Byb3RvL21hcC92MTttYXB2MaICA01YWKoCBk1hcC5WMcoCBk1hcFxWMeICEk1hcFxWMVxHUEJNZXRhZGF0YeoCB01hcDo6VjFiBnByb3RvMw", [file_map_v1_terrain]);
+  fileDesc("ChFtYXAvdjEvdGlsZS5wcm90bxIGbWFwLnYxIoEBCgRUaWxlEisKCmNvb3JkaW5hdGUYASABKAsyFy5tYXAudjEuVGlsZS5Db29yZGluYXRlEhIKCnRlcnJhaW5faWQYAiABKAkaOAoKQ29vcmRpbmF0ZRILCgNyb3cYASABKA0SDgoGY29sdW1uGAIgASgNEg0KBWRlcHRoGAMgASgNQnkKCmNvbS5tYXAudjFCCVRpbGVQcm90b1ABWidnaXRodWIuY29tL29wZW5oZXhlcy9wcm90by9tYXAvdjE7bWFwdjGiAgNNWFiqAgZNYXAuVjHKAgZNYXBcVjHiAhJNYXBcVjFcR1BCTWV0YWRhdGHqAgdNYXA6OlYxYgZwcm90bzM");
 
 /**
  * Describes the message map.v1.Tile.

@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package map.v1;
 
-import "map/v1/terrain.proto";
-
 option go_package = "github.com/openhexes/proto;mapv1";
 
 message Tile {
@@ -14,5 +12,5 @@ message Tile {
   }
 
   map.v1.Tile.Coordinate coordinate = 1;
-  map.v1.Terrain terrain = 2;
+  string terrain_id = 2;
 }

@@ -1,12 +1,11 @@
-import { useTiles } from "@/hooks/use-tiles"
+import { useTileDimensions as getTileDimensions } from "@/hooks/use-tiles"
+import * as tileUtil from "@/lib/tiles"
 import React from "react"
 
-import { Tile, type TileProps } from "./tile"
+import { Tile } from "./tile"
 
 interface MapProps {
-    tiles: TileProps[]
-    maxRow: number
-    maxColumn: number
+    grid: tileUtil.Grid
 }
 
 interface Position {
@@ -14,19 +13,9 @@ interface Position {
     y: number
 }
 
-interface VisibilityState {
-    minRow: number
-    maxRow: number
-    minColumn: number
-    maxColumn: number
-}
+const { tileHeight, tileWidth, rowHeight, triangleHeight } = getTileDimensions()
 
-const overshot = {
-    x: 0,
-    y: 3,
-}
-
-export const Map: React.FC<MapProps> = ({ tiles, maxRow, maxColumn }) => {
+export const Map: React.FC<MapProps> = ({ grid }) => {
     React.useEffect(() => {
         // prevent "go back/forward" on overscroll
         const prev = document.body.style.overscrollBehaviorX
@@ -34,65 +23,94 @@ export const Map: React.FC<MapProps> = ({ tiles, maxRow, maxColumn }) => {
         return () => {
             document.body.style.overscrollBehaviorX = prev
         }
-    })
-
-    const { height, width, margin } = useTiles()
+    }, [])
 
     const containerRef = React.useRef<HTMLDivElement>(null)
     const [lastPosition, setLastPosition] = React.useState<Position | null>(null)
     const [offset, setOffset] = React.useState<Position>({ x: 0, y: 0 })
-    const [visibility, setVisibility] = React.useState<VisibilityState>({
-        minRow: 0,
-        maxRow: 0,
-        minColumn: 0,
-        maxColumn: 0,
-    })
 
-    React.useEffect(() => {
-        const container = containerRef.current
-        if (!container) return
+    const [visibleTiles, setVisibleTiles] = React.useState<tileUtil.AnnotatedTile[]>([])
 
-        const containerRect = container.getBoundingClientRect()
+    const mapHeight = Math.ceil((((grid.totalRows + 0.4) * tileHeight) / 2) * 1.5)
+    const mapWidth = (grid.totalColumns + 1) * tileWidth
 
-        const maxVisibleRows = Math.ceil((containerRect.height + 2 * margin.x) / height)
-        const maxVisibleColumns = Math.ceil((containerRect.width + 2 * margin.y) / width)
-        const skippedColumnCount = Math.ceil(-(offset.x + margin.x) / width)
-        const skippedRowCount = Math.ceil(-(offset.y + margin.y) / height)
-        setVisibility({
-            minRow: skippedRowCount - overshot.y,
-            maxRow: skippedRowCount + maxVisibleRows + overshot.y,
-            minColumn: skippedColumnCount - overshot.x,
-            maxColumn: skippedColumnCount + maxVisibleColumns + overshot.x,
-        })
-    }, [offset.x, offset.y, height, width, margin.x, margin.y])
-
-    const mapHeight = Math.ceil(maxRow / 2) * height + (Math.floor(maxRow / 2) * height) / 2
-    const mapWidth = (maxColumn + 0.5) * width
+    React.useEffect(() => handlePan(0, 0), [])
 
     const handlePan = (dx: number, dy: number) => {
+        const rect = containerRef.current?.getBoundingClientRect() ?? {
+            height: window.innerHeight,
+            width: window.innerWidth,
+        }
+
         setOffset((prev) => {
-            const container = containerRef.current
-            if (!container) return prev
-
-            const containerRect = container.getBoundingClientRect()
-
             const next = { x: prev.x, y: prev.y }
-            if (containerRect.width < mapWidth + 2 * margin.x) {
-                const maxX = mapWidth - containerRect.width + 2.5 * margin.x
-                next.x = Math.max(-maxX, Math.min(0, prev.x + dx))
+            if (rect.width < mapWidth) {
+                const maxX = mapWidth - rect.width
+                next.x = Math.floor(Math.max(-maxX, Math.min(0, prev.x + dx)))
             } else {
                 next.x = 0
             }
 
-            if (containerRect.height < mapHeight + 2 * margin.y) {
-                const maxY = mapHeight - containerRect.height + 2.75 * margin.y
-                next.y = Math.max(-maxY, Math.min(0, prev.y + dy))
+            if (rect.height < mapHeight) {
+                const maxY = mapHeight - rect.height
+                next.y = Math.floor(Math.max(-maxY, Math.min(0, prev.y + dy)))
             } else {
                 next.y = 0
             }
 
             return next
         })
+
+        const maxVisibleRows = Math.ceil((rect.height - 2 * triangleHeight) / rowHeight)
+        const maxVisibleColumns = Math.ceil(rect.width / tileWidth)
+        const skippedColumnCount = Math.ceil(-offset.x / tileWidth)
+        const skippedRowCount = Math.ceil(-offset.y / rowHeight)
+        const visibleBounds = {
+            minRow: skippedRowCount,
+            maxRow: skippedRowCount + maxVisibleRows,
+            minColumn: skippedColumnCount,
+            maxColumn: skippedColumnCount + maxVisibleColumns,
+        }
+
+        const rowStartingIndex =
+            Math.floor((skippedRowCount / grid.totalRows) * grid.segmentRows.length) - 1
+
+        const visibleTiles: tileUtil.AnnotatedTile[] = []
+        for (let i = rowStartingIndex; i < grid.segmentRows.length; i++) {
+            const row = grid.segmentRows[i]
+            if (row === undefined) {
+                continue
+            }
+
+            let segmentsFound = false
+            const columnStartingIndex =
+                Math.floor((skippedColumnCount / grid.totalColumns) * row.length) - 1
+
+            for (let j = columnStartingIndex; j < row.length; j++) {
+                const segment = row[j]
+                if (segment === undefined) {
+                    continue
+                }
+
+                if (tileUtil.boundsIntersect(segment.bounds, visibleBounds)) {
+                    visibleTiles.push(
+                        ...segment.tiles.filter((tile) =>
+                            tileUtil.boundsInclude(tile.proto, visibleBounds, 2),
+                        ),
+                    )
+                    segmentsFound = true
+                } else {
+                    if (segmentsFound) {
+                        break
+                    }
+                }
+            }
+
+            if (!segmentsFound && visibleTiles.length > 0) {
+                break
+            }
+        }
+        setVisibleTiles(visibleTiles)
     }
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -114,6 +132,7 @@ export const Map: React.FC<MapProps> = ({ tiles, maxRow, maxColumn }) => {
         setLastPosition({ x, y })
     }
 
+    // todo: throttle this!
     const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
         e.stopPropagation()
         handlePan(-e.deltaX, -e.deltaY)
@@ -151,19 +170,10 @@ export const Map: React.FC<MapProps> = ({ tiles, maxRow, maxColumn }) => {
                 className="select-none cursor-pointer"
                 style={{
                     transform: `translate(${offset.x}px, ${offset.y}px)`,
-                    margin: `${margin.y}px ${margin.x}px`,
                 }}
             >
-                {tiles.map((tile: TileProps) => (
-                    <Tile
-                        key={`(${tile.row},${tile.column})`}
-                        {...tile}
-                        visible={
-                            (tile.row >= visibility.minRow && tile.row <= visibility.maxRow) ||
-                            (tile.column >= visibility.minColumn &&
-                                tile.column <= visibility.minColumn)
-                        }
-                    />
+                {visibleTiles.map((tile) => (
+                    <Tile tile={tile} key={tileUtil.getKey(tile.proto)} />
                 ))}
             </div>
         </div>
