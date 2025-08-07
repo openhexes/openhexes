@@ -17,7 +17,7 @@ test("has title", async ({ page }) => {
         console.log(msg.text())
     })
 
-    await page.goto("/")
+    await page.goto("/nope")
     await page.getByText("Requested page doesn't exist:").isVisible()
     await expect(page).toHaveTitle(/Hexes \| Page not found/)
 })
