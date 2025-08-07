@@ -1,1 +1,1 @@
-export const cookieName = 'hexes.auth.cookie'
+export const cookieName = "hexes.auth.google"

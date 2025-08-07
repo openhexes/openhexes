@@ -24,7 +24,9 @@
             ]
         }
     },
-    "containerEnv": {},
+    "containerEnv": {
+        "VITE_GOOGLE_CLIENT_ID": "${localEnv:HEXES_GOOGLE_CLIENT_ID}"
+    },
     "features": {
         "ghcr.io/devcontainers/features/docker-in-docker": {
             "version": "latest",

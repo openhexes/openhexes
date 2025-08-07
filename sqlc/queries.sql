@@ -7,6 +7,29 @@ order by id;
 select * from accounts where email = @email;
 
 -- name: CreateAccount :one
-insert into accounts (created_at, email, display_name, picture)
-values (now(), @email, @display_name, @picture)
+insert into accounts (active, created_at, email, display_name, picture)
+values (@active, now(), @email, @display_name, @picture)
 returning *;
+
+-- name: CreateRole :exec
+insert into roles (id)
+values (@id)
+on conflict do nothing;
+
+-- name: ListRoles :many
+select * from roles order by id;
+
+-- name: GrantRole :exec
+insert into role_bindings (role_id, account_id)
+values (@role_id, @account_id)
+on conflict do nothing;
+
+-- name: RevokeRole :exec
+delete from role_bindings
+where role_id = @role_id and account_id = @account_id;
+
+-- name: ListAccountRoles :many
+select role_id from role_bindings where account_id = @id;
+
+-- name: UpdateAccountActivation :exec
+update accounts set active = @active where id = any(@ids::uuid[]);

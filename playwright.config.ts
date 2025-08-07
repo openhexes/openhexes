@@ -7,7 +7,7 @@ export default defineConfig({
     retries: process.env.CI ? 2 : 0,
     workers: process.env.CI ? 1 : undefined,
     use: {
-        baseURL: "http://localhost:5174",
+        baseURL: "http://localhost:9090",
         trace: "on-first-retry",
     },
     projects: [
@@ -25,26 +25,26 @@ export default defineConfig({
         },
     ],
     webServer: [
-        {
-            name: "vite",
-            command: "pnpm run dev --port 5174",
-            url: "http://localhost:5174",
-            reuseExistingServer: false,
-            env: {
-                VITE_API_ADDRESS: "http://localhost:9090",
-            },
-        },
+        // {
+        //     name: "ui",
+        //     command: "pnpm run dev",
+        //     reuseExistingServer: false,
+        //     url: "http://localhost:5173",
+        //     env: {
+        //         VITE_API_ADDRESS: "http://localhost:9090",
+        //     },
+        // },
         {
             name: "api",
-            command: "go run .",
-            cwd: "./api",
+            command: "pnpm launch",
             reuseExistingServer: false,
             url: "http://localhost:9090/ping",
             env: {
-                TEST__ID: "playwright",
+                TEST__ENABLED: "true",
                 SERVER__ADDRESS: "localhost:9090",
-                SERVER__ALLOWED_ORIGINS: "http://localhost:5174",
-                LOGGING__LEVEL: "1",
+                SERVER__ALLOWED_ORIGINS: "http://localhost:9090",
+                LOGGING__LEVEL: "0",
+                VITE_API_ADDRESS: "http://localhost:9090",
             },
             gracefulShutdown: {
                 signal: "SIGINT",

@@ -8,7 +8,7 @@ type S = {
 }
 
 export const ThemeProviderContext = createContext<S>({
-    theme: "system",
+    theme: "dark",
     setTheme: () => null,
 })
 

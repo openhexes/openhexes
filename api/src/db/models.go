@@ -17,3 +17,12 @@ type Account struct {
 	DisplayName string
 	Picture     string
 }
+
+type Role struct {
+	ID string
+}
+
+type RoleBinding struct {
+	AccountID uuid.UUID
+	RoleID    string
+}

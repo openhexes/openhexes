@@ -8,23 +8,30 @@ package db
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createAccount = `-- name: CreateAccount :one
-insert into accounts (created_at, email, display_name, picture)
-values (now(), $1, $2, $3)
+insert into accounts (active, created_at, email, display_name, picture)
+values ($1, now(), $2, $3, $4)
 returning id, active, created_at, email, display_name, picture
 `
 
 type CreateAccountParams struct {
+	Active      bool
 	Email       string
 	DisplayName string
 	Picture     string
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
-	row := q.db.QueryRow(ctx, createAccount, arg.Email, arg.DisplayName, arg.Picture)
+	row := q.db.QueryRow(ctx, createAccount,
+		arg.Active,
+		arg.Email,
+		arg.DisplayName,
+		arg.Picture,
+	)
 	var i Account
 	err := row.Scan(
 		&i.ID,
@@ -35,6 +42,17 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 		&i.Picture,
 	)
 	return i, err
+}
+
+const createRole = `-- name: CreateRole :exec
+insert into roles (id)
+values ($1)
+on conflict do nothing
+`
+
+func (q *Queries) CreateRole(ctx context.Context, id string) error {
+	_, err := q.db.Exec(ctx, createRole, id)
+	return err
 }
 
 const getAccount = `-- name: GetAccount :one
@@ -53,6 +71,46 @@ func (q *Queries) GetAccount(ctx context.Context, email string) (Account, error)
 		&i.Picture,
 	)
 	return i, err
+}
+
+const grantRole = `-- name: GrantRole :exec
+insert into role_bindings (role_id, account_id)
+values ($1, $2)
+on conflict do nothing
+`
+
+type GrantRoleParams struct {
+	RoleID    string
+	AccountID uuid.UUID
+}
+
+func (q *Queries) GrantRole(ctx context.Context, arg GrantRoleParams) error {
+	_, err := q.db.Exec(ctx, grantRole, arg.RoleID, arg.AccountID)
+	return err
+}
+
+const listAccountRoles = `-- name: ListAccountRoles :many
+select role_id from role_bindings where account_id = $1
+`
+
+func (q *Queries) ListAccountRoles(ctx context.Context, id uuid.UUID) ([]string, error) {
+	rows, err := q.db.Query(ctx, listAccountRoles, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var role_id string
+		if err := rows.Scan(&role_id); err != nil {
+			return nil, err
+		}
+		items = append(items, role_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listAccounts = `-- name: ListAccounts :many
@@ -86,4 +144,57 @@ func (q *Queries) ListAccounts(ctx context.Context, active pgtype.Bool) ([]Accou
 		return nil, err
 	}
 	return items, nil
+}
+
+const listRoles = `-- name: ListRoles :many
+select id from roles order by id
+`
+
+func (q *Queries) ListRoles(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, listRoles)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const revokeRole = `-- name: RevokeRole :exec
+delete from role_bindings
+where role_id = $1 and account_id = $2
+`
+
+type RevokeRoleParams struct {
+	RoleID    string
+	AccountID uuid.UUID
+}
+
+func (q *Queries) RevokeRole(ctx context.Context, arg RevokeRoleParams) error {
+	_, err := q.db.Exec(ctx, revokeRole, arg.RoleID, arg.AccountID)
+	return err
+}
+
+const updateAccountActivation = `-- name: UpdateAccountActivation :exec
+update accounts set active = $1 where id = any($2::uuid[])
+`
+
+type UpdateAccountActivationParams struct {
+	Active bool
+	Ids    []uuid.UUID
+}
+
+func (q *Queries) UpdateAccountActivation(ctx context.Context, arg UpdateAccountActivationParams) error {
+	_, err := q.db.Exec(ctx, updateAccountActivation, arg.Active, arg.Ids)
+	return err
 }

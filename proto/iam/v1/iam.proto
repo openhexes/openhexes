@@ -31,7 +31,14 @@ message ListAccountsResponse {
     repeated Account accounts = 1;
 }
 
+message UpdateAccountActivationRequest {
+    map<string, bool> id_to_activation = 1;
+}
+
+message UpdateAccountActivationResponse {}
+
 service IAMService {
     rpc ResolveAccount(ResolveAccountRequest) returns (ResolveAccountResponse);
     rpc ListAccounts(ListAccountsRequest) returns (stream ListAccountsResponse);
+    rpc UpdateAccountActivation(UpdateAccountActivationRequest) returns (UpdateAccountActivationResponse);
 }

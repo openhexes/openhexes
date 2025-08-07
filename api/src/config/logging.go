@@ -23,12 +23,12 @@ type Logging struct {
 
 func (cfg *Config) setUpLogging(_ context.Context) error {
 	var err error
-	if cfg.Test.ID == "" {
-		cfg.Logging.logger, err = zap.NewProduction()
-	} else {
+	if cfg.Test.Enabled {
 		lcfg := zap.NewDevelopmentConfig()
 		lcfg.Level = zap.NewAtomicLevelAt(zapcore.Level(cfg.Logging.Level))
 		cfg.Logging.logger, err = lcfg.Build()
+	} else {
+		cfg.Logging.logger, err = zap.NewProduction()
 	}
 	if err != nil {
 		return fmt.Errorf("initializing logger: %w", err)

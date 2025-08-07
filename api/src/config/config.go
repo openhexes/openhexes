@@ -23,11 +23,7 @@ type Option func(*Config)
 
 func WithTestMode() Option {
 	return func(cfg *Config) {
-		cfg.Test.ID = fmt.Sprintf(
-			"%s-%s",
-			strings.ReplaceAll(time.Now().Format(time.TimeOnly), ":", "-"),
-			uuid.NewString()[24:],
-		)
+		cfg.Test.Enabled = true
 	}
 }
 
@@ -46,12 +42,19 @@ func New(ctx context.Context, opts ...Option) (*Config, error) {
 		opt(&cfg)
 	}
 
+	if cfg.Test.Enabled {
+		cfg.Test.ID = fmt.Sprintf(
+			"%s-%s",
+			strings.ReplaceAll(time.Now().Format(time.TimeOnly), ":", "-"),
+			uuid.NewString()[24:],
+		)
+		cfg.Auth.Owners.Emails = []string{"owner@test.com"}
+	}
+
 	if err := cfg.setUpLogging(ctx); err != nil {
 		return nil, fmt.Errorf("setting up logging: %w", err)
 	}
-	if err := cfg.setUpPostgres(ctx); err != nil {
-		return nil, fmt.Errorf("setting up postgres: %w", err)
-	}
+
 	return &cfg, nil
 }
 
@@ -59,13 +62,21 @@ func (cfg *Config) SetUp(ctx context.Context) error {
 	log := GetLogger(ctx)
 	log.Info("setting up", zap.String("test.id", cfg.Test.ID))
 
-	if cfg.Test.ID != "" {
+	if err := cfg.setUpPostgres(ctx); err != nil {
+		return fmt.Errorf("setting up postgres: %w", err)
+	}
+
+	if cfg.Test.Enabled {
 		if err := cfg.Postgres.CreateTemporaryDatabase(ctx); err != nil {
 			return fmt.Errorf("creating temporary database: %w", err)
 		}
 		if err := cfg.Postgres.ApplyDatabaseMigrations(ctx); err != nil {
 			return fmt.Errorf("applying database migrations: %w", err)
 		}
+	}
+
+	if err := cfg.Postgres.SetUpEssentialData(ctx); err != nil {
+		return fmt.Errorf("setting up essentials: %w", err)
 	}
 
 	log.Info("set up successfully")
@@ -78,7 +89,7 @@ func (cfg *Config) TearDown(ctx context.Context) error {
 
 	cfg.Postgres.Pool.Close()
 
-	if cfg.Test.ID != "" {
+	if cfg.Test.Enabled {
 		if err := cfg.Postgres.DropTemporaryDatabase(ctx); err != nil {
 			return fmt.Errorf("dropping temporary database: %w", err)
 		}

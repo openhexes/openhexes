@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 
 	"cloud.google.com/go/auth/credentials/idtoken"
 	"connectrpc.com/connect"
@@ -24,22 +25,18 @@ const (
 )
 
 type Controller struct {
-	cfg   *config.Config
-	cache *expirable.LRU[string, *db.Account]
-}
-
-type GoogleClaims struct {
-	Email         string `json:"email"`
-	EmailVerified bool   `json:"email_verified"`
-	Name          string `json:"name"`
-	Picture       string `json:"picture"`
+	cfg       *config.Config
+	cache     *expirable.LRU[string, *db.Account]
+	testUsers map[string]*GoogleClaims // credential -> email
 }
 
 func NewController(cfg *config.Config) *Controller {
-	return &Controller{
-		cfg:   cfg,
-		cache: expirable.NewLRU[string, *db.Account](cfg.Auth.Storage.MaxSize, nil, cfg.Auth.Storage.TTL),
+	c := &Controller{
+		cfg:       cfg,
+		cache:     expirable.NewLRU[string, *db.Account](cfg.Auth.Storage.MaxSize, nil, cfg.Auth.Storage.TTL),
+		testUsers: make(map[string]*GoogleClaims, 0),
 	}
+	return c.setUpTestUsers()
 }
 
 func AccountFromContext(ctx context.Context) *db.Account {
@@ -48,9 +45,8 @@ func AccountFromContext(ctx context.Context) *db.Account {
 
 func (c *Controller) AccountFromRequestHeader(ctx context.Context, header http.Header) (*db.Account, error) {
 	log := config.GetLogger(ctx)
-	log.Info("request:header", zap.String("header", fmt.Sprintf("%s", header)))
 
-	cookie, err := (&http.Request{Header: header}).Cookie("hexes.auth.cookie")
+	cookie, err := (&http.Request{Header: header}).Cookie("hexes.auth.google")
 	if err != nil {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
@@ -66,21 +62,28 @@ func (c *Controller) AccountFromRequestHeader(ctx context.Context, header http.H
 		log.Debug("resolving new credentials", zap.String("credentials.hash", sh))
 		account, err = c.authenticate(ctx, cookie.Value)
 		if err != nil {
-			return nil, connect.NewError(
-				connect.CodeUnauthenticated,
-				fmt.Errorf("authenticating by token: %w", err),
-			)
+			return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authenticating: %w", err))
 		}
-		log.Debug("user authenticated", zap.String("account.id", account.ID.String()))
+		log.Info("user authenticated", zap.String("account.id", account.ID.String()))
 		c.cache.Add(sh, account)
 	}
 	return account, nil
 }
 
-func (c *Controller) authenticate(ctx context.Context, credential string) (*db.Account, error) {
+func (c *Controller) resolveCredential(ctx context.Context, credential string) (*GoogleClaims, error) {
+	log := config.GetLogger(ctx)
+
+	if c.cfg.Test.Enabled {
+		if claims, ok := c.testUsers[credential]; ok {
+			log.Info("resolved test user", zap.String("email", claims.Email))
+			return claims, nil
+		}
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid test user credentials"))
+	}
+
 	info, err := idtoken.Validate(ctx, credential, c.cfg.Auth.Google.ClientID)
 	if err != nil {
-		return nil, fmt.Errorf("validating google credentials: %w", err)
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("validating google credentials: %w", err))
 	}
 
 	claims := &GoogleClaims{}
@@ -104,18 +107,44 @@ func (c *Controller) authenticate(ctx context.Context, credential string) (*db.A
 	if !claims.EmailVerified {
 		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("email is not verified: %q", claims.Email))
 	}
+	return claims, nil
+}
+
+func (c *Controller) authenticate(ctx context.Context, credential string) (*db.Account, error) {
+	claims, err := c.resolveCredential(ctx, credential)
+	if err != nil {
+		return nil, err
+	}
 
 	var account db.Account
 	err = c.cfg.Postgres.Tx(ctx, func(tx pgx.Tx, q *db.Queries) error {
 		account, err = q.GetAccount(ctx, claims.Email)
 		if errors.Is(err, pgx.ErrNoRows) {
+			var isOwner bool
+			if slices.Contains(c.cfg.Auth.Owners.Emails, claims.Email) {
+				isOwner = true
+			}
+
 			account, err = q.CreateAccount(ctx, db.CreateAccountParams{
+				Active:      isOwner,
 				Email:       claims.Email,
-				DisplayName: claims.Email,
+				DisplayName: claims.Name,
 				Picture:     claims.Picture,
 			})
 			if err != nil {
 				return fmt.Errorf("creating account: %w", err)
+			}
+
+			if isOwner {
+				for _, role := range c.cfg.Auth.Owners.Roles {
+					err = q.GrantRole(ctx, db.GrantRoleParams{
+						AccountID: account.ID,
+						RoleID:    role,
+					})
+					if err != nil {
+						return fmt.Errorf("granting role: %q -> %q: %w", role, claims.Email, err)
+					}
+				}
 			}
 		}
 		return err

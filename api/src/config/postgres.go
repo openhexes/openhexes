@@ -34,7 +34,7 @@ type Postgres struct {
 func (cfg *Config) setUpPostgres(ctx context.Context) error {
 	var err error
 
-	if cfg.Test.ID != "" {
+	if cfg.Test.Enabled {
 		cfg.Postgres.Database = cfg.Test.ID
 	}
 
@@ -145,13 +145,24 @@ func (cfg *Postgres) ApplyDatabaseMigrations(ctx context.Context) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	log.Info("applying migrations from %q", zap.String("path", root))
+	log.Info("applying migrations", zap.String("path", root))
 	start := time.Now()
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("running atlas: %w", err)
 	}
 	log.Info("migrations applied", zap.Duration("duration", time.Since(start)))
 	return nil
+}
+
+func (cfg *Postgres) SetUpEssentialData(ctx context.Context) error {
+	return cfg.Tx(ctx, func(tx pgx.Tx, q *db.Queries) error {
+		for _, role := range []string{"owner"} {
+			if err := q.CreateRole(ctx, role); err != nil {
+				return fmt.Errorf("creating role: %q: %w", role, err)
+			}
+		}
+		return nil
+	})
 }
 
 type TxOption func(*pgx.TxOptions)

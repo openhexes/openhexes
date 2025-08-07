@@ -5,7 +5,8 @@
     "type": "module",
     "scripts": {
         "api": "cd /workspace/api && go run .",
-        "build:api": "cd /workspace/api && GOFLAGS=-buildvcs=false go build -o /workspace/api/api . && upx /workspace/api/api",
+        "build:api": "cd /workspace/api && GOFLAGS=-buildvcs=false go build -o /workspace/api/api . && pnpm upx",
+        "upx": "if ! upx -t /workspace/api/api 2>/dev/null; then upx --lzma -9 /workspace/api/api; fi",
         "build:ui": "pnpm install && tsc -b && vite build",
         "ci": "pnpm build:ui && pnpm lint && pnpm test",
         "codegen:migrations": "cd /workspace && atlas migrate diff --dir \"file://sqlc/migrations\" --to \"file://sqlc/schema.sql\" --dev-url \"postgres://$POSTGRES__USER:$POSTGRES__PASSWORD@$POSTGRES__HOSTNAME:$POSTGRES__PORT/tmp?sslmode=disable\"",
@@ -15,6 +16,7 @@
         "curl": "buf curl --schema /workspace/proto --protocol grpc --http2-prior-knowledge",
         "db:migrate": "cd /workspace && atlas migrate apply -u \"postgresql://$POSTGRES__USER:$POSTGRES__PASSWORD@$POSTGRES__HOSTNAME:$POSTGRES__PORT/$POSTGRES__DB?sslmode=disable\" --dir \"file://sqlc/migrations/\"",
         "dev": "vite",
+        "launch": "pnpm build:ui && pnpm build:api && /workspace/api/api",
         "format": "prettier --write /workspace",
         "lint:api": "cd /workspace/api && go get && GOFLAGS=-buildvcs=false golangci-lint run --config /workspace/api/.golangci.yml .",
         "lint:ui": "eslint /workspace",

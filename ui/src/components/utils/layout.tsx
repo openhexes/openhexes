@@ -10,7 +10,13 @@ import { BrowserRouter, Routes } from "react-router"
 import { AuthWall } from "./auth-wall"
 
 export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
-    const googleClientID = useEnv("GOOGLE_CLIENT_ID")
+    const googleClientID = useEnv("VITE_GOOGLE_CLIENT_ID")
+
+    React.useEffect(() => {
+        const root = window.document.documentElement
+        root.classList.remove("light", "dark")
+        root.classList.add("dark")
+    }, [])
 
     return (
         <GoogleOAuthProvider clientId={googleClientID}>
