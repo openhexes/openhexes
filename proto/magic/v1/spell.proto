@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package magic.v1;
+
+option go_package = "github.com/openhexes/proto;magicv1";
+
+message Spell {
+  message Filter {
+    bool all = 1;
+    repeated string include_ids = 2;
+    repeated string exclude_ids = 3;
+    repeated string include_tags = 4;
+    repeated string exclude_tags = 5;
+  }
+
+  string id = 1;
+  repeated string tags = 2;
+}

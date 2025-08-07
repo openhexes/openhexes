@@ -242,6 +242,86 @@ func (x *ListAccountsResponse) GetAccounts() []*Account {
 	return nil
 }
 
+type UpdateAccountActivationRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	IdToActivation map[string]bool        `protobuf:"bytes,1,rep,name=id_to_activation,json=idToActivation,proto3" json:"id_to_activation,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *UpdateAccountActivationRequest) Reset() {
+	*x = UpdateAccountActivationRequest{}
+	mi := &file_iam_v1_iam_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateAccountActivationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateAccountActivationRequest) ProtoMessage() {}
+
+func (x *UpdateAccountActivationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_iam_v1_iam_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateAccountActivationRequest.ProtoReflect.Descriptor instead.
+func (*UpdateAccountActivationRequest) Descriptor() ([]byte, []int) {
+	return file_iam_v1_iam_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *UpdateAccountActivationRequest) GetIdToActivation() map[string]bool {
+	if x != nil {
+		return x.IdToActivation
+	}
+	return nil
+}
+
+type UpdateAccountActivationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateAccountActivationResponse) Reset() {
+	*x = UpdateAccountActivationResponse{}
+	mi := &file_iam_v1_iam_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateAccountActivationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateAccountActivationResponse) ProtoMessage() {}
+
+func (x *UpdateAccountActivationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_iam_v1_iam_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateAccountActivationResponse.ProtoReflect.Descriptor instead.
+func (*UpdateAccountActivationResponse) Descriptor() ([]byte, []int) {
+	return file_iam_v1_iam_proto_rawDescGZIP(), []int{6}
+}
+
 type Account_Meta struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Active        bool                   `protobuf:"varint,1,opt,name=active,proto3" json:"active,omitempty"`
@@ -254,7 +334,7 @@ type Account_Meta struct {
 
 func (x *Account_Meta) Reset() {
 	*x = Account_Meta{}
-	mi := &file_iam_v1_iam_proto_msgTypes[5]
+	mi := &file_iam_v1_iam_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -266,7 +346,7 @@ func (x *Account_Meta) String() string {
 func (*Account_Meta) ProtoMessage() {}
 
 func (x *Account_Meta) ProtoReflect() protoreflect.Message {
-	mi := &file_iam_v1_iam_proto_msgTypes[5]
+	mi := &file_iam_v1_iam_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -330,11 +410,18 @@ const file_iam_v1_iam_proto_rawDesc = "" +
 	"\aaccount\x18\x01 \x01(\v2\x0f.iam.v1.AccountR\aaccount\"\x15\n" +
 	"\x13ListAccountsRequest\"C\n" +
 	"\x14ListAccountsResponse\x12+\n" +
-	"\baccounts\x18\x01 \x03(\v2\x0f.iam.v1.AccountR\baccounts2\xaa\x01\n" +
+	"\baccounts\x18\x01 \x03(\v2\x0f.iam.v1.AccountR\baccounts\"\xc9\x01\n" +
+	"\x1eUpdateAccountActivationRequest\x12d\n" +
+	"\x10id_to_activation\x18\x01 \x03(\v2:.iam.v1.UpdateAccountActivationRequest.IdToActivationEntryR\x0eidToActivation\x1aA\n" +
+	"\x13IdToActivationEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"!\n" +
+	"\x1fUpdateAccountActivationResponse2\x96\x02\n" +
 	"\n" +
 	"IAMService\x12O\n" +
 	"\x0eResolveAccount\x12\x1d.iam.v1.ResolveAccountRequest\x1a\x1e.iam.v1.ResolveAccountResponse\x12K\n" +
-	"\fListAccounts\x12\x1b.iam.v1.ListAccountsRequest\x1a\x1c.iam.v1.ListAccountsResponse0\x01Bx\n" +
+	"\fListAccounts\x12\x1b.iam.v1.ListAccountsRequest\x1a\x1c.iam.v1.ListAccountsResponse0\x01\x12j\n" +
+	"\x17UpdateAccountActivation\x12&.iam.v1.UpdateAccountActivationRequest\x1a'.iam.v1.UpdateAccountActivationResponseBx\n" +
 	"\n" +
 	"com.iam.v1B\bIamProtoP\x01Z'github.com/openhexes/proto/iam/v1;iamv1\xa2\x02\x03IXX\xaa\x02\x06Iam.V1\xca\x02\x06Iam\\V1\xe2\x02\x12Iam\\V1\\GPBMetadata\xea\x02\aIam::V1b\x06proto3"
 
@@ -350,30 +437,36 @@ func file_iam_v1_iam_proto_rawDescGZIP() []byte {
 	return file_iam_v1_iam_proto_rawDescData
 }
 
-var file_iam_v1_iam_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_iam_v1_iam_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_iam_v1_iam_proto_goTypes = []any{
-	(*Account)(nil),                // 0: iam.v1.Account
-	(*ResolveAccountRequest)(nil),  // 1: iam.v1.ResolveAccountRequest
-	(*ResolveAccountResponse)(nil), // 2: iam.v1.ResolveAccountResponse
-	(*ListAccountsRequest)(nil),    // 3: iam.v1.ListAccountsRequest
-	(*ListAccountsResponse)(nil),   // 4: iam.v1.ListAccountsResponse
-	(*Account_Meta)(nil),           // 5: iam.v1.Account.Meta
-	(*timestamppb.Timestamp)(nil),  // 6: google.protobuf.Timestamp
+	(*Account)(nil),                         // 0: iam.v1.Account
+	(*ResolveAccountRequest)(nil),           // 1: iam.v1.ResolveAccountRequest
+	(*ResolveAccountResponse)(nil),          // 2: iam.v1.ResolveAccountResponse
+	(*ListAccountsRequest)(nil),             // 3: iam.v1.ListAccountsRequest
+	(*ListAccountsResponse)(nil),            // 4: iam.v1.ListAccountsResponse
+	(*UpdateAccountActivationRequest)(nil),  // 5: iam.v1.UpdateAccountActivationRequest
+	(*UpdateAccountActivationResponse)(nil), // 6: iam.v1.UpdateAccountActivationResponse
+	(*Account_Meta)(nil),                    // 7: iam.v1.Account.Meta
+	nil,                                     // 8: iam.v1.UpdateAccountActivationRequest.IdToActivationEntry
+	(*timestamppb.Timestamp)(nil),           // 9: google.protobuf.Timestamp
 }
 var file_iam_v1_iam_proto_depIdxs = []int32{
-	5, // 0: iam.v1.Account.meta:type_name -> iam.v1.Account.Meta
+	7, // 0: iam.v1.Account.meta:type_name -> iam.v1.Account.Meta
 	0, // 1: iam.v1.ResolveAccountResponse.account:type_name -> iam.v1.Account
 	0, // 2: iam.v1.ListAccountsResponse.accounts:type_name -> iam.v1.Account
-	6, // 3: iam.v1.Account.Meta.created_at:type_name -> google.protobuf.Timestamp
-	1, // 4: iam.v1.IAMService.ResolveAccount:input_type -> iam.v1.ResolveAccountRequest
-	3, // 5: iam.v1.IAMService.ListAccounts:input_type -> iam.v1.ListAccountsRequest
-	2, // 6: iam.v1.IAMService.ResolveAccount:output_type -> iam.v1.ResolveAccountResponse
-	4, // 7: iam.v1.IAMService.ListAccounts:output_type -> iam.v1.ListAccountsResponse
-	6, // [6:8] is the sub-list for method output_type
-	4, // [4:6] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	8, // 3: iam.v1.UpdateAccountActivationRequest.id_to_activation:type_name -> iam.v1.UpdateAccountActivationRequest.IdToActivationEntry
+	9, // 4: iam.v1.Account.Meta.created_at:type_name -> google.protobuf.Timestamp
+	1, // 5: iam.v1.IAMService.ResolveAccount:input_type -> iam.v1.ResolveAccountRequest
+	3, // 6: iam.v1.IAMService.ListAccounts:input_type -> iam.v1.ListAccountsRequest
+	5, // 7: iam.v1.IAMService.UpdateAccountActivation:input_type -> iam.v1.UpdateAccountActivationRequest
+	2, // 8: iam.v1.IAMService.ResolveAccount:output_type -> iam.v1.ResolveAccountResponse
+	4, // 9: iam.v1.IAMService.ListAccounts:output_type -> iam.v1.ListAccountsResponse
+	6, // 10: iam.v1.IAMService.UpdateAccountActivation:output_type -> iam.v1.UpdateAccountActivationResponse
+	8, // [8:11] is the sub-list for method output_type
+	5, // [5:8] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_iam_v1_iam_proto_init() }
@@ -387,7 +480,7 @@ func file_iam_v1_iam_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_iam_v1_iam_proto_rawDesc), len(file_iam_v1_iam_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package map.v1;
+
+import "creatures/v1/creature.proto";
+import "magic/v1/spell.proto";
+
+option go_package = "github.com/openhexes/proto;mapv1";
+
+message Terrain {
+  enum MovementType {
+    MOVEMENT_TYPE_UNSPECIFIED = 0;
+    MOVEMENT_TYPE_WALKING = 1;
+    MOVEMENT_TYPE_SWIMMING = 2;
+    MOVEMENT_TYPE_FLYING = 3;
+    MOVEMENT_TYPE_PORTALING = 4;
+  }
+
+  message Effect {
+    message ModifySpellLevel {
+      magic.v1.Spell.Filter filter = 1;
+      int32 delta = 2;
+    }
+
+    message PreventSpellCasting {
+      magic.v1.Spell.Filter filter = 1;
+      optional int32 level_gte = 2;
+      optional int32 level_lte = 3;
+    }
+
+    message DisableNativeTerrainBonuses {}
+
+    message ModifyCreatureMovementType {
+      creatures.v1.Creature.Kind.Filter filter = 1;
+      repeated creatures.v1.Creature.MovementType remove = 2;
+      repeated creatures.v1.Creature.MovementType add = 3;
+    }
+
+    message ModifyCreatureMorale {
+      creatures.v1.Creature.Kind.Filter filter = 1;
+      creatures.v1.Creature.AttributeModification modification = 2;
+    }
+
+    message ModifyCreatureLuck {
+      creatures.v1.Creature.Kind.Filter filter = 1;
+      creatures.v1.Creature.AttributeModification modification = 2;
+    }
+
+    message ModifyCreatureAttack {
+      creatures.v1.Creature.Kind.Filter filter = 1;
+      creatures.v1.Creature.AttributeModification modification = 2;
+    }
+
+    message ModifyCreatureDefence {
+      creatures.v1.Creature.Kind.Filter filter = 1;
+      creatures.v1.Creature.AttributeModification modification = 2;
+    }
+
+    message ModifyCreatureSpeed {
+      creatures.v1.Creature.Kind.Filter filter = 1;
+      creatures.v1.Creature.AttributeModification modification = 2;
+    }
+
+    oneof kind {
+      map.v1.Terrain.Effect.ModifySpellLevel modify_spell_level = 1;
+      map.v1.Terrain.Effect.PreventSpellCasting prevent_spell_casting = 2;
+      map.v1.Terrain.Effect.DisableNativeTerrainBonuses disable_native_terrain_bonuses = 3;
+      map.v1.Terrain.Effect.ModifyCreatureMovementType modify_creature_movement_type = 4;
+      map.v1.Terrain.Effect.ModifyCreatureMorale modify_creature_morale = 5;
+      map.v1.Terrain.Effect.ModifyCreatureLuck modify_creature_luck = 6;
+      map.v1.Terrain.Effect.ModifyCreatureAttack modify_creature_attack = 7;
+      map.v1.Terrain.Effect.ModifyCreatureDefence modify_creature_defence = 8;
+      map.v1.Terrain.Effect.ModifyCreatureSpeed modify_creature_speed = 9;
+    }
+  }
+
+  message RenderingSpec {
+    string color = 1;
+    string texture = 2;
+  }
+
+  string id = 1;
+  repeated string tags = 2;
+
+  uint32 movement_penalty = 3;
+  repeated map.v1.Terrain.MovementType passable_with = 4;
+  repeated map.v1.Terrain.Effect effects = 5;
+  map.v1.Terrain.RenderingSpec rendering_spec = 6;
+}

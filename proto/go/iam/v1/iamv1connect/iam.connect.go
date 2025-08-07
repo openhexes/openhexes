@@ -38,12 +38,16 @@ const (
 	IAMServiceResolveAccountProcedure = "/iam.v1.IAMService/ResolveAccount"
 	// IAMServiceListAccountsProcedure is the fully-qualified name of the IAMService's ListAccounts RPC.
 	IAMServiceListAccountsProcedure = "/iam.v1.IAMService/ListAccounts"
+	// IAMServiceUpdateAccountActivationProcedure is the fully-qualified name of the IAMService's
+	// UpdateAccountActivation RPC.
+	IAMServiceUpdateAccountActivationProcedure = "/iam.v1.IAMService/UpdateAccountActivation"
 )
 
 // IAMServiceClient is a client for the iam.v1.IAMService service.
 type IAMServiceClient interface {
 	ResolveAccount(context.Context, *connect.Request[v1.ResolveAccountRequest]) (*connect.Response[v1.ResolveAccountResponse], error)
 	ListAccounts(context.Context, *connect.Request[v1.ListAccountsRequest]) (*connect.ServerStreamForClient[v1.ListAccountsResponse], error)
+	UpdateAccountActivation(context.Context, *connect.Request[v1.UpdateAccountActivationRequest]) (*connect.Response[v1.UpdateAccountActivationResponse], error)
 }
 
 // NewIAMServiceClient constructs a client for the iam.v1.IAMService service. By default, it uses
@@ -69,13 +73,20 @@ func NewIAMServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 			connect.WithSchema(iAMServiceMethods.ByName("ListAccounts")),
 			connect.WithClientOptions(opts...),
 		),
+		updateAccountActivation: connect.NewClient[v1.UpdateAccountActivationRequest, v1.UpdateAccountActivationResponse](
+			httpClient,
+			baseURL+IAMServiceUpdateAccountActivationProcedure,
+			connect.WithSchema(iAMServiceMethods.ByName("UpdateAccountActivation")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // iAMServiceClient implements IAMServiceClient.
 type iAMServiceClient struct {
-	resolveAccount *connect.Client[v1.ResolveAccountRequest, v1.ResolveAccountResponse]
-	listAccounts   *connect.Client[v1.ListAccountsRequest, v1.ListAccountsResponse]
+	resolveAccount          *connect.Client[v1.ResolveAccountRequest, v1.ResolveAccountResponse]
+	listAccounts            *connect.Client[v1.ListAccountsRequest, v1.ListAccountsResponse]
+	updateAccountActivation *connect.Client[v1.UpdateAccountActivationRequest, v1.UpdateAccountActivationResponse]
 }
 
 // ResolveAccount calls iam.v1.IAMService.ResolveAccount.
@@ -88,10 +99,16 @@ func (c *iAMServiceClient) ListAccounts(ctx context.Context, req *connect.Reques
 	return c.listAccounts.CallServerStream(ctx, req)
 }
 
+// UpdateAccountActivation calls iam.v1.IAMService.UpdateAccountActivation.
+func (c *iAMServiceClient) UpdateAccountActivation(ctx context.Context, req *connect.Request[v1.UpdateAccountActivationRequest]) (*connect.Response[v1.UpdateAccountActivationResponse], error) {
+	return c.updateAccountActivation.CallUnary(ctx, req)
+}
+
 // IAMServiceHandler is an implementation of the iam.v1.IAMService service.
 type IAMServiceHandler interface {
 	ResolveAccount(context.Context, *connect.Request[v1.ResolveAccountRequest]) (*connect.Response[v1.ResolveAccountResponse], error)
 	ListAccounts(context.Context, *connect.Request[v1.ListAccountsRequest], *connect.ServerStream[v1.ListAccountsResponse]) error
+	UpdateAccountActivation(context.Context, *connect.Request[v1.UpdateAccountActivationRequest]) (*connect.Response[v1.UpdateAccountActivationResponse], error)
 }
 
 // NewIAMServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -113,12 +130,20 @@ func NewIAMServiceHandler(svc IAMServiceHandler, opts ...connect.HandlerOption) 
 		connect.WithSchema(iAMServiceMethods.ByName("ListAccounts")),
 		connect.WithHandlerOptions(opts...),
 	)
+	iAMServiceUpdateAccountActivationHandler := connect.NewUnaryHandler(
+		IAMServiceUpdateAccountActivationProcedure,
+		svc.UpdateAccountActivation,
+		connect.WithSchema(iAMServiceMethods.ByName("UpdateAccountActivation")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/iam.v1.IAMService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case IAMServiceResolveAccountProcedure:
 			iAMServiceResolveAccountHandler.ServeHTTP(w, r)
 		case IAMServiceListAccountsProcedure:
 			iAMServiceListAccountsHandler.ServeHTTP(w, r)
+		case IAMServiceUpdateAccountActivationProcedure:
+			iAMServiceUpdateAccountActivationHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -134,4 +159,8 @@ func (UnimplementedIAMServiceHandler) ResolveAccount(context.Context, *connect.R
 
 func (UnimplementedIAMServiceHandler) ListAccounts(context.Context, *connect.Request[v1.ListAccountsRequest], *connect.ServerStream[v1.ListAccountsResponse]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("iam.v1.IAMService.ListAccounts is not implemented"))
+}
+
+func (UnimplementedIAMServiceHandler) UpdateAccountActivation(context.Context, *connect.Request[v1.UpdateAccountActivationRequest]) (*connect.Response[v1.UpdateAccountActivationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("iam.v1.IAMService.UpdateAccountActivation is not implemented"))
 }

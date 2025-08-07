@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package map.v1;
+
+import "map/v1/terrain.proto";
+
+option go_package = "github.com/openhexes/proto;mapv1";
+
+message Tile {
+  message Coordinate {
+    uint32 row = 1;
+    uint32 column = 2;
+    uint32 depth = 3;
+  }
+
+  map.v1.Tile.Coordinate coordinate = 1;
+  map.v1.Terrain terrain = 2;
+}

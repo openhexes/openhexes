@@ -1,0 +1,12 @@
+{
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "prettier.requireConfig": true,
+    "go.testTimeout": "300s",
+    "[go]": {
+        "editor.defaultFormatter": "golang.go"
+    },
+    "[proto3]": {
+        "editor.defaultFormatter": "bufbuild.vscode-buf"
+    }
+}

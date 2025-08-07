@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package creatures.v1;
+
+option go_package = "github.com/openhexes/proto;creaturesv1";
+
+message Creature {
+  enum MovementType {
+    MOVEMENT_TYPE_UNSPECIFIED = 0;
+    MOVEMENT_TYPE_WALKING = 1;
+    MOVEMENT_TYPE_SWIMMING = 2;
+    MOVEMENT_TYPE_FLYING = 3;
+    MOVEMENT_TYPE_PORTALING = 4;
+  }
+
+  message AttributeModification {
+    int32 delta = 1;
+    bool negate_positive_effects = 2;
+    bool negate_negative_effects = 3;
+  }
+
+  message Kind {
+    message Filter {
+      bool all = 1;
+      repeated string include_ids = 2;
+      repeated string exclude_ids = 3;
+      repeated string include_tags = 4;
+      repeated string exclude_tags = 5;
+    }
+
+    string id = 1;
+    repeated string tags = 2;
+
+    repeated Creature.MovementType movement_types = 3;
+    repeated string native_terrains = 4;
+  }
+}

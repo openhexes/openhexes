@@ -125,6 +125,34 @@ export declare type ListAccountsResponse = Message<"iam.v1.ListAccountsResponse"
 export declare const ListAccountsResponseSchema: GenMessage<ListAccountsResponse>;
 
 /**
+ * @generated from message iam.v1.UpdateAccountActivationRequest
+ */
+export declare type UpdateAccountActivationRequest = Message<"iam.v1.UpdateAccountActivationRequest"> & {
+  /**
+   * @generated from field: map<string, bool> id_to_activation = 1;
+   */
+  idToActivation: { [key: string]: boolean };
+};
+
+/**
+ * Describes the message iam.v1.UpdateAccountActivationRequest.
+ * Use `create(UpdateAccountActivationRequestSchema)` to create a new message.
+ */
+export declare const UpdateAccountActivationRequestSchema: GenMessage<UpdateAccountActivationRequest>;
+
+/**
+ * @generated from message iam.v1.UpdateAccountActivationResponse
+ */
+export declare type UpdateAccountActivationResponse = Message<"iam.v1.UpdateAccountActivationResponse"> & {
+};
+
+/**
+ * Describes the message iam.v1.UpdateAccountActivationResponse.
+ * Use `create(UpdateAccountActivationResponseSchema)` to create a new message.
+ */
+export declare const UpdateAccountActivationResponseSchema: GenMessage<UpdateAccountActivationResponse>;
+
+/**
  * @generated from service iam.v1.IAMService
  */
 export declare const IAMService: GenService<{
@@ -143,6 +171,14 @@ export declare const IAMService: GenService<{
     methodKind: "server_streaming";
     input: typeof ListAccountsRequestSchema;
     output: typeof ListAccountsResponseSchema;
+  },
+  /**
+   * @generated from rpc iam.v1.IAMService.UpdateAccountActivation
+   */
+  updateAccountActivation: {
+    methodKind: "unary";
+    input: typeof UpdateAccountActivationRequestSchema;
+    output: typeof UpdateAccountActivationResponseSchema;
   },
 }>;
 
