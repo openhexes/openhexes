@@ -34,7 +34,7 @@ export const Map: React.FC<MapProps> = ({ grid }) => {
     const mapHeight = Math.ceil((((grid.totalRows + 0.4) * tileHeight) / 2) * 1.5)
     const mapWidth = (grid.totalColumns + 1) * tileWidth
 
-    React.useEffect(() => handlePan(0, 0), [])
+    React.useEffect(() => handlePan(0, 0), []) // todo
 
     const handlePan = (dx: number, dy: number) => {
         const rect = containerRef.current?.getBoundingClientRect() ?? {
