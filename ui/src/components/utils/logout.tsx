@@ -15,6 +15,10 @@ const logOut = (reload = true) => {
 }
 
 export const LogOutButton: React.FC = () => {
+    if (Cookies.get(cookieName) === undefined) {
+        return null
+    }
+
     return (
         <Button variant="outline" onClick={() => logOut()}>
             <LogOut />
