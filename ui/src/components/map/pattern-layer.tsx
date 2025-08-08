@@ -5,30 +5,32 @@ import React from "react"
 type Props = {
     id: string // e.g., "water"
     tiles: PTile[] // pass visible tiles
-    filter: (t: PTile) => boolean
     tileWidth: number
     tileHeight: number
     mapWidth: number
     mapHeight: number
     // pattern tile size in px (controls hatch/dot spacing)
-    cell?: number
+    cellH?: number
+    cellW?: number
     // pattern SVG content (tiny string)
     svgTile: string
     opacity?: number
+    backgroundColor?: string
 }
 
 /** Pure SVG pattern layer that moves with the map (no CSS writes on pan). */
 export const PatternLayer: React.FC<Props> = ({
     id,
     tiles,
-    filter,
     tileWidth,
     tileHeight,
     mapWidth,
     mapHeight,
-    cell = 16,
+    cellH = 16,
+    cellW = 16,
     svgTile,
     opacity = 1,
+    backgroundColor = "var(--color-black)",
 }) => {
     const patternId = `pat-${id}`
     const maskId = `mask-${id}`
@@ -48,15 +50,8 @@ export const PatternLayer: React.FC<Props> = ({
         >
             <defs>
                 {/* Tiled pattern in world/user space, using a tiny inline SVG tile */}
-                <pattern id={patternId} width={cell} height={cell} patternUnits="userSpaceOnUse">
-                    <image
-                        href={`data:image/svg+xml;utf8,${encodeURIComponent(svgTile)}`}
-                        width={cell}
-                        height={cell}
-                        x="0"
-                        y="0"
-                        preserveAspectRatio="none"
-                    />
+                <pattern id={patternId} width={cellW} height={cellH} patternUnits="userSpaceOnUse">
+                    <g dangerouslySetInnerHTML={{ __html: svgTile }} />
                 </pattern>
 
                 {/* Union-of-tiles mask */}
@@ -64,7 +59,7 @@ export const PatternLayer: React.FC<Props> = ({
                     {/* Black clears; white shows */}
                     <rect x={-1e6} y={-1e6} width={2e6} height={2e6} fill="black" />
                     <g fill="white">
-                        {tiles.filter(filter).map((t) => {
+                        {tiles.map((t) => {
                             const d = hexPathD(t, tileWidth, tileHeight)
                             const { row, column, depth } = getCoordinates(t)
                             return <path key={`${id}:${row},${column},${depth}`} d={d} />
@@ -72,6 +67,15 @@ export const PatternLayer: React.FC<Props> = ({
                     </g>
                 </mask>
             </defs>
+
+            <rect
+                x="0"
+                y="0"
+                width={mapWidth}
+                height={mapHeight}
+                fill={`var(${backgroundColor})`}
+                mask={`url(#${maskId})`}
+            />
 
             {/* Full-map rect that gets patterned + masked */}
             <rect

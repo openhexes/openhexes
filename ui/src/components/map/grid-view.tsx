@@ -5,7 +5,7 @@ import { useWindowSize } from "@uidotdev/usehooks"
 import { type Grid, type Tile as PTile, Segment_BoundsSchema } from "proto/ts/map/v1/tile_pb"
 import React from "react"
 
-import { PatternLayer } from "./pattern-layer"
+import { LeavesPattern, MountainsPattern, PlusPattern, WavesPattern } from "./patterns"
 import { TileView } from "./tile-view"
 
 interface MapProps {
@@ -16,14 +16,6 @@ interface Position {
     x: number
     y: number
 }
-
-const HATCH_SVG = `<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12'>
-  <g transform='rotate(45 6 6)'><rect x='-6' y='5' width='24' height='2' fill='#27c46b'/></g></svg>`
-
-const WATER_SVG = `
-<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>
-  <path d='M0 5 Q4 1 8 5 T16 5 M0 13 Q4 9 8 13 T16 13' fill='none' stroke='#57c0ff' stroke-width='1'/>
-</svg>`
 
 export const GridView: React.FC<MapProps> = ({ grid }) => {
     const windowSize = useWindowSize()
@@ -46,6 +38,7 @@ export const GridView: React.FC<MapProps> = ({ grid }) => {
     const [offset, setOffset] = React.useState<Position>({ x: 0, y: 0 })
 
     const [visibleTiles, setVisibleTiles] = React.useState<PTile[]>([])
+    const [terrainIndex, setTerrainIndex] = React.useState<Record<string, PTile[]>>({})
 
     const mapHeight = Math.ceil((((grid.totalRows + 0.4) * tileHeight) / 2) * 1.5)
     const mapWidth = (grid.totalColumns + 1) * tileWidth
@@ -145,6 +138,16 @@ export const GridView: React.FC<MapProps> = ({ grid }) => {
             }
         }
         setVisibleTiles(visibleTiles)
+
+        const tm: Record<string, PTile[]> = {}
+        for (const t of visibleTiles) {
+            if (tm[t.terrainId] === undefined) {
+                tm[t.terrainId] = [t]
+            } else {
+                tm[t.terrainId].push(t)
+            }
+        }
+        setTerrainIndex(tm)
     }
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -205,37 +208,42 @@ export const GridView: React.FC<MapProps> = ({ grid }) => {
                     transform: `translate(${offset.x}px, ${offset.y}px)`,
                 }}
             >
-                <PatternLayer
-                    id="water"
-                    tiles={visibleTiles}
-                    filter={(t) => t.terrainId === "core/terrain/water"}
-                    tileWidth={tileWidth}
-                    tileHeight={tileHeight}
-                    mapWidth={mapWidth}
-                    mapHeight={mapHeight}
-                    cell={24}
-                    svgTile={WATER_SVG}
-                    opacity={0.35}
-                />
-                <PatternLayer
-                    id="forest"
-                    tiles={visibleTiles}
-                    filter={(t) =>
-                        t.terrainId === "core/terrain/forest" ||
-                        t.terrainId === "core/terrain/grass"
-                    }
-                    tileWidth={tileWidth}
-                    tileHeight={tileHeight}
-                    mapWidth={mapWidth}
-                    mapHeight={mapHeight}
-                    cell={32}
-                    svgTile={HATCH_SVG}
-                    opacity={0.4}
-                />
+                <div className="absolute inset-0 z-0 pointer-events-none">
+                    <WavesPattern
+                        tiles={terrainIndex["core/terrain/water"] ?? []}
+                        tileWidth={tileWidth}
+                        tileHeight={tileHeight}
+                        mapWidth={mapWidth}
+                        mapHeight={mapHeight}
+                    />
+                    <LeavesPattern
+                        tiles={terrainIndex["core/terrain/forest"] ?? []}
+                        tileWidth={tileWidth}
+                        tileHeight={tileHeight}
+                        mapWidth={mapWidth}
+                        mapHeight={mapHeight}
+                    />
+                    <MountainsPattern
+                        tiles={terrainIndex["core/terrain/mountains"] ?? []}
+                        tileWidth={tileWidth}
+                        tileHeight={tileHeight}
+                        mapWidth={mapWidth}
+                        mapHeight={mapHeight}
+                    />
+                    <PlusPattern
+                        tiles={terrainIndex[""] ?? []}
+                        tileWidth={tileWidth}
+                        tileHeight={tileHeight}
+                        mapWidth={mapWidth}
+                        mapHeight={mapHeight}
+                    />
+                </div>
 
-                {visibleTiles.map((tile) => (
-                    <TileView tile={tile} key={tileUtil.getKey(tile)} />
-                ))}
+                <div className="absolute inset-0 z-10">
+                    {visibleTiles.map((tile) => (
+                        <TileView tile={tile} key={tileUtil.getKey(tile)} />
+                    ))}
+                </div>
             </div>
         </div>
     )

@@ -10,6 +10,7 @@ import (
 	"github.com/openhexes/openhexes/api/src/auth"
 	"github.com/openhexes/openhexes/api/src/config"
 	"github.com/openhexes/openhexes/api/src/server/progress"
+	"github.com/openhexes/openhexes/api/src/tiles"
 	gamev1 "github.com/openhexes/proto/game/v1"
 	"github.com/openhexes/proto/game/v1/gamev1connect"
 	mapv1 "github.com/openhexes/proto/map/v1"
@@ -126,6 +127,34 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 	totalTiles := request.Msg.TotalRows * request.Msg.TotalColumns
 	var processedTileCount int
 
+	islandCenters := []*mapv1.Tile_Coordinate{
+		{
+			Row:    0,
+			Column: 0,
+		},
+		{
+			Row:    8,
+			Column: 8,
+		},
+		{
+			Row:    12,
+			Column: 12,
+		},
+	}
+
+	islandSet := make(map[string]bool)
+	for _, center := range islandCenters {
+
+		islandSet[tiles.CoordinateToString(center)] = true
+		for c := range tiles.GetNeighbours(center) {
+			islandSet[tiles.CoordinateToString(c)] = true
+
+			for cc := range tiles.GetNeighbours(c) {
+				islandSet[tiles.CoordinateToString(cc)] = true
+			}
+		}
+	}
+
 	for row := range request.Msg.TotalRows {
 		segRowIdx := row / request.Msg.MaxRowsPerSegment
 		segRow := segmentRows[segRowIdx]
@@ -141,10 +170,11 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 				},
 			}
 
-			if row >= 17 && row < 21 && column >= 12 && column < 24 {
+			cs := tiles.CoordinateToString(tile.Coordinate)
+			if islandSet[cs] {
+				tile.TerrainId = "core/terrain/mountains"
+			} else {
 				tile.TerrainId = "core/terrain/water"
-			} else if row >= 24 && row < 30 && column >= 26 && column < 29 {
-				tile.TerrainId = "core/terrain/forest"
 			}
 
 			segment.Tiles = append(segment.Tiles, tile)
