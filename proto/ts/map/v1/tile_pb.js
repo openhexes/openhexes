@@ -8,7 +8,7 @@ import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
  * Describes the file map/v1/tile.proto.
  */
 export const file_map_v1_tile = /*@__PURE__*/
-  fileDesc("ChFtYXAvdjEvdGlsZS5wcm90bxIGbWFwLnYxIoEBCgRUaWxlEisKCmNvb3JkaW5hdGUYASABKAsyFy5tYXAudjEuVGlsZS5Db29yZGluYXRlEhIKCnRlcnJhaW5faWQYAiABKAkaOAoKQ29vcmRpbmF0ZRILCgNyb3cYASABKA0SDgoGY29sdW1uGAIgASgNEg0KBWRlcHRoGAMgASgNQnkKCmNvbS5tYXAudjFCCVRpbGVQcm90b1ABWidnaXRodWIuY29tL29wZW5oZXhlcy9wcm90by9tYXAvdjE7bWFwdjGiAgNNWFiqAgZNYXAuVjHKAgZNYXBcVjHiAhJNYXBcVjFcR1BCTWV0YWRhdGHqAgdNYXA6OlYxYgZwcm90bzM");
+  fileDesc("ChFtYXAvdjEvdGlsZS5wcm90bxIGbWFwLnYxIooCCgRUaWxlEisKCmNvb3JkaW5hdGUYASABKAsyFy5tYXAudjEuVGlsZS5Db29yZGluYXRlEhIKCnRlcnJhaW5faWQYAiABKAkSMgoOcmVuZGVyaW5nX3NwZWMYAyABKAsyGi5tYXAudjEuVGlsZS5SZW5kZXJpbmdTcGVjGjgKCkNvb3JkaW5hdGUSCwoDcm93GAEgASgNEg4KBmNvbHVtbhgCIAEoDRINCgVkZXB0aBgDIAEoDRpTCg1SZW5kZXJpbmdTcGVjEgsKA3RvcBgBIAEoDRIMCgRsZWZ0GAIgASgNEhIKCmNsYXNzX25hbWUYAyABKAkSEwoLZmVhdHVyZV9pZHMYBCADKAkizAEKB1NlZ21lbnQSJgoGYm91bmRzGAEgASgLMhYubWFwLnYxLlNlZ21lbnQuQm91bmRzEhsKBXRpbGVzGAIgAygLMgwubWFwLnYxLlRpbGUaUgoGQm91bmRzEg8KB21pbl9yb3cYASABKAUSDwoHbWF4X3JvdxgCIAEoBRISCgptaW5fY29sdW1uGAMgASgFEhIKCm1heF9jb2x1bW4YBCABKAUaKAoDUm93EiEKCHNlZ21lbnRzGAEgAygLMg8ubWFwLnYxLlNlZ21lbnQiXAoER3JpZBIpCgxzZWdtZW50X3Jvd3MYASADKAsyEy5tYXAudjEuU2VnbWVudC5Sb3cSEgoKdG90YWxfcm93cxgCIAEoDRIVCg10b3RhbF9jb2x1bW5zGAMgASgNQnkKCmNvbS5tYXAudjFCCVRpbGVQcm90b1ABWidnaXRodWIuY29tL29wZW5oZXhlcy9wcm90by9tYXAvdjE7bWFwdjGiAgNNWFiqAgZNYXAuVjHKAgZNYXBcVjHiAhJNYXBcVjFcR1BCTWV0YWRhdGHqAgdNYXA6OlYxYgZwcm90bzM");
 
 /**
  * Describes the message map.v1.Tile.
@@ -23,4 +23,39 @@ export const TileSchema = /*@__PURE__*/
  */
 export const Tile_CoordinateSchema = /*@__PURE__*/
   messageDesc(file_map_v1_tile, 0, 0);
+
+/**
+ * Describes the message map.v1.Tile.RenderingSpec.
+ * Use `create(Tile_RenderingSpecSchema)` to create a new message.
+ */
+export const Tile_RenderingSpecSchema = /*@__PURE__*/
+  messageDesc(file_map_v1_tile, 0, 1);
+
+/**
+ * Describes the message map.v1.Segment.
+ * Use `create(SegmentSchema)` to create a new message.
+ */
+export const SegmentSchema = /*@__PURE__*/
+  messageDesc(file_map_v1_tile, 1);
+
+/**
+ * Describes the message map.v1.Segment.Bounds.
+ * Use `create(Segment_BoundsSchema)` to create a new message.
+ */
+export const Segment_BoundsSchema = /*@__PURE__*/
+  messageDesc(file_map_v1_tile, 1, 0);
+
+/**
+ * Describes the message map.v1.Segment.Row.
+ * Use `create(Segment_RowSchema)` to create a new message.
+ */
+export const Segment_RowSchema = /*@__PURE__*/
+  messageDesc(file_map_v1_tile, 1, 1);
+
+/**
+ * Describes the message map.v1.Grid.
+ * Use `create(GridSchema)` to create a new message.
+ */
+export const GridSchema = /*@__PURE__*/
+  messageDesc(file_map_v1_tile, 2);
 

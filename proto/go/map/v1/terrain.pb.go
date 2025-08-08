@@ -358,7 +358,7 @@ func (*Terrain_Effect_ModifyCreatureSpeed_) isTerrain_Effect_Kind() {}
 
 type Terrain_RenderingSpec struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Color         string                 `protobuf:"bytes,1,opt,name=color,proto3" json:"color,omitempty"`
+	ClassName     string                 `protobuf:"bytes,1,opt,name=class_name,json=className,proto3" json:"class_name,omitempty"`
 	Texture       string                 `protobuf:"bytes,2,opt,name=texture,proto3" json:"texture,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -394,9 +394,9 @@ func (*Terrain_RenderingSpec) Descriptor() ([]byte, []int) {
 	return file_map_v1_terrain_proto_rawDescGZIP(), []int{0, 1}
 }
 
-func (x *Terrain_RenderingSpec) GetColor() string {
+func (x *Terrain_RenderingSpec) GetClassName() string {
 	if x != nil {
-		return x.Color
+		return x.ClassName
 	}
 	return ""
 }
@@ -880,7 +880,7 @@ var File_map_v1_terrain_proto protoreflect.FileDescriptor
 
 const file_map_v1_terrain_proto_rawDesc = "" +
 	"\n" +
-	"\x14map/v1/terrain.proto\x12\x06map.v1\x1a\x1bcreatures/v1/creature.proto\x1a\x14magic/v1/spell.proto\"\xd7\x15\n" +
+	"\x14map/v1/terrain.proto\x12\x06map.v1\x1a\x1bcreatures/v1/creature.proto\x1a\x14magic/v1/spell.proto\"\xe0\x15\n" +
 	"\aTerrain\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04tags\x18\x02 \x03(\tR\x04tags\x12)\n" +
@@ -929,9 +929,10 @@ const file_map_v1_terrain_proto_rawDesc = "" +
 	"\x13ModifyCreatureSpeed\x12:\n" +
 	"\x06filter\x18\x01 \x01(\v2\".creatures.v1.Creature.Kind.FilterR\x06filter\x12P\n" +
 	"\fmodification\x18\x02 \x01(\v2,.creatures.v1.Creature.AttributeModificationR\fmodificationB\x06\n" +
-	"\x04kind\x1a?\n" +
-	"\rRenderingSpec\x12\x14\n" +
-	"\x05color\x18\x01 \x01(\tR\x05color\x12\x18\n" +
+	"\x04kind\x1aH\n" +
+	"\rRenderingSpec\x12\x1d\n" +
+	"\n" +
+	"class_name\x18\x01 \x01(\tR\tclassName\x12\x18\n" +
 	"\atexture\x18\x02 \x01(\tR\atexture\"\x9b\x01\n" +
 	"\fMovementType\x12\x1d\n" +
 	"\x19MOVEMENT_TYPE_UNSPECIFIED\x10\x00\x12\x19\n" +

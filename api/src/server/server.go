@@ -13,7 +13,9 @@ import (
 	"connectrpc.com/otelconnect"
 	"github.com/openhexes/openhexes/api/src/auth"
 	"github.com/openhexes/openhexes/api/src/config"
+	"github.com/openhexes/openhexes/api/src/services/game"
 	"github.com/openhexes/openhexes/api/src/services/iam"
+	"github.com/openhexes/proto/game/v1/gamev1connect"
 	"github.com/openhexes/proto/iam/v1/iamv1connect"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.uber.org/zap"
@@ -43,6 +45,9 @@ func New(cfg *config.Config, auth *auth.Controller) (*Server, error) {
 	)
 
 	path, handler := iamv1connect.NewIAMServiceHandler(iam.New(cfg, auth), interceptors)
+	mux.Handle(path, handler)
+
+	path, handler = gamev1connect.NewGameServiceHandler(game.New(cfg, auth), interceptors)
 	mux.Handle(path, handler)
 
 	mux.Handle("/ping", &Ponger{})

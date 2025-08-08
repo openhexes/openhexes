@@ -11,6 +11,36 @@ message Tile {
     uint32 depth = 3;
   }
 
+  message RenderingSpec {
+    uint32 top = 1;
+    uint32 left = 2;
+    string class_name = 3;
+    repeated string feature_ids = 4; // landscape features, e.g. trees, rocks, etc.
+  }
+
   map.v1.Tile.Coordinate coordinate = 1;
   string terrain_id = 2;
+  map.v1.Tile.RenderingSpec rendering_spec = 3;
+}
+
+message Segment {
+  message Bounds {
+    int32 min_row = 1;
+    int32 max_row = 2;
+    int32 min_column = 3;
+    int32 max_column = 4;
+  }
+
+  message Row {
+    repeated map.v1.Segment segments = 1;
+  }
+
+  map.v1.Segment.Bounds bounds = 1;
+  repeated map.v1.Tile tiles = 2;
+}
+
+message Grid {
+  repeated map.v1.Segment.Row segment_rows = 1;
+  uint32 total_rows = 2;
+  uint32 total_columns = 3;
 }

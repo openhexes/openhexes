@@ -1,11 +1,17 @@
+import { cookieName } from "@/lib/const"
 import { create, toJson } from "@bufbuild/protobuf"
 import { createClient } from "@connectrpc/connect"
 import { createGrpcWebTransport } from "@connectrpc/connect-web"
 import { useQuery } from "@tanstack/react-query"
-import { IAMService, ListAccountsRequestSchema, type Account, type ListAccountsRequest } from "proto/ts/iam/v1/iam_pb"
-import { toast } from "sonner"
 import Cookies from "js-cookie"
-import { cookieName } from "@/lib/const"
+import { GameService } from "proto/ts/game/v1/game_pb"
+import {
+    type Account,
+    IAMService,
+    type ListAccountsRequest,
+    ListAccountsRequestSchema,
+} from "proto/ts/iam/v1/iam_pb"
+import { toast } from "sonner"
 
 const noCookieErrorMessage = "auth cookie not set"
 const invalidArgumentMessage = "[invalid_argument]"
@@ -18,6 +24,7 @@ const transport = createGrpcWebTransport({
 })
 
 export const IAMClient = createClient(IAMService, transport)
+export const GameClient = createClient(GameService, transport)
 
 const handleError =
     (op: string, maxAttempts = 3) =>

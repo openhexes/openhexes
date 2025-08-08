@@ -318,9 +318,9 @@ export declare const Terrain_Effect_ModifyCreatureSpeedSchema: GenMessage<Terrai
  */
 export declare type Terrain_RenderingSpec = Message<"map.v1.Terrain.RenderingSpec"> & {
   /**
-   * @generated from field: string color = 1;
+   * @generated from field: string class_name = 1;
    */
-  color: string;
+  className: string;
 
   /**
    * @generated from field: string texture = 2;

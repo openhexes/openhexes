@@ -13,7 +13,7 @@
         "codegen:proto": "cd /workspace && buf lint && buf generate",
         "codegen:sql": "cd /workspace && pnpm sqlc vet && pnpm sqlc generate",
         "codegen": "pnpm codegen:sql && pnpm codegen:proto",
-        "curl": "buf curl --schema /workspace/proto --protocol grpc --http2-prior-knowledge",
+        "curl": "buf curl --schema /workspace/proto --protocol grpc --http2-prior-knowledge -H \"cookie: hexes.auth.google=${GOOGLE_COOKIE}\"",
         "db:migrate": "cd /workspace && atlas migrate apply -u \"postgresql://$POSTGRES__USER:$POSTGRES__PASSWORD@$POSTGRES__HOSTNAME:$POSTGRES__PORT/$POSTGRES__DB?sslmode=disable\" --dir \"file://sqlc/migrations/\"",
         "dev": "vite",
         "launch": "pnpm build:ui && pnpm build:api && /workspace/api/api",

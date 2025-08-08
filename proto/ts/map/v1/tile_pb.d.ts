@@ -23,6 +23,11 @@ export declare type Tile = Message<"map.v1.Tile"> & {
    * @generated from field: string terrain_id = 2;
    */
   terrainId: string;
+
+  /**
+   * @generated from field: map.v1.Tile.RenderingSpec rendering_spec = 3;
+   */
+  renderingSpec?: Tile_RenderingSpec;
 };
 
 /**
@@ -56,4 +61,131 @@ export declare type Tile_Coordinate = Message<"map.v1.Tile.Coordinate"> & {
  * Use `create(Tile_CoordinateSchema)` to create a new message.
  */
 export declare const Tile_CoordinateSchema: GenMessage<Tile_Coordinate>;
+
+/**
+ * @generated from message map.v1.Tile.RenderingSpec
+ */
+export declare type Tile_RenderingSpec = Message<"map.v1.Tile.RenderingSpec"> & {
+  /**
+   * @generated from field: uint32 top = 1;
+   */
+  top: number;
+
+  /**
+   * @generated from field: uint32 left = 2;
+   */
+  left: number;
+
+  /**
+   * @generated from field: string class_name = 3;
+   */
+  className: string;
+
+  /**
+   * landscape features, e.g. trees, rocks, etc.
+   *
+   * @generated from field: repeated string feature_ids = 4;
+   */
+  featureIds: string[];
+};
+
+/**
+ * Describes the message map.v1.Tile.RenderingSpec.
+ * Use `create(Tile_RenderingSpecSchema)` to create a new message.
+ */
+export declare const Tile_RenderingSpecSchema: GenMessage<Tile_RenderingSpec>;
+
+/**
+ * @generated from message map.v1.Segment
+ */
+export declare type Segment = Message<"map.v1.Segment"> & {
+  /**
+   * @generated from field: map.v1.Segment.Bounds bounds = 1;
+   */
+  bounds?: Segment_Bounds;
+
+  /**
+   * @generated from field: repeated map.v1.Tile tiles = 2;
+   */
+  tiles: Tile[];
+};
+
+/**
+ * Describes the message map.v1.Segment.
+ * Use `create(SegmentSchema)` to create a new message.
+ */
+export declare const SegmentSchema: GenMessage<Segment>;
+
+/**
+ * @generated from message map.v1.Segment.Bounds
+ */
+export declare type Segment_Bounds = Message<"map.v1.Segment.Bounds"> & {
+  /**
+   * @generated from field: int32 min_row = 1;
+   */
+  minRow: number;
+
+  /**
+   * @generated from field: int32 max_row = 2;
+   */
+  maxRow: number;
+
+  /**
+   * @generated from field: int32 min_column = 3;
+   */
+  minColumn: number;
+
+  /**
+   * @generated from field: int32 max_column = 4;
+   */
+  maxColumn: number;
+};
+
+/**
+ * Describes the message map.v1.Segment.Bounds.
+ * Use `create(Segment_BoundsSchema)` to create a new message.
+ */
+export declare const Segment_BoundsSchema: GenMessage<Segment_Bounds>;
+
+/**
+ * @generated from message map.v1.Segment.Row
+ */
+export declare type Segment_Row = Message<"map.v1.Segment.Row"> & {
+  /**
+   * @generated from field: repeated map.v1.Segment segments = 1;
+   */
+  segments: Segment[];
+};
+
+/**
+ * Describes the message map.v1.Segment.Row.
+ * Use `create(Segment_RowSchema)` to create a new message.
+ */
+export declare const Segment_RowSchema: GenMessage<Segment_Row>;
+
+/**
+ * @generated from message map.v1.Grid
+ */
+export declare type Grid = Message<"map.v1.Grid"> & {
+  /**
+   * @generated from field: repeated map.v1.Segment.Row segment_rows = 1;
+   */
+  segmentRows: Segment_Row[];
+
+  /**
+   * @generated from field: uint32 total_rows = 2;
+   */
+  totalRows: number;
+
+  /**
+   * @generated from field: uint32 total_columns = 3;
+   */
+  totalColumns: number;
+};
+
+/**
+ * Describes the message map.v1.Grid.
+ * Use `create(GridSchema)` to create a new message.
+ */
+export declare const GridSchema: GenMessage<Grid>;
 

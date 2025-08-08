@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package progress.v1;
+
+import "google/protobuf/duration.proto";
+
+option go_package = "github.com/openhexes/proto;progressv1";
+
+message Stage {
+  enum State {
+    STATE_UNSPECIFIED = 0;
+    STATE_WAITING = 1;
+    STATE_RUNNING = 2;
+    STATE_DONE = 3;
+  }
+
+  string title = 1;
+  string subtitle = 2;
+  progress.v1.Stage.State state = 3;
+  google.protobuf.Duration duration = 4;
+}
+
+message Progress {
+  double percentage = 1;
+  repeated progress.v1.Stage stages = 2;
+}

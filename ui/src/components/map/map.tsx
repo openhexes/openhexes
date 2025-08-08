@@ -1,11 +1,13 @@
 import { useTileDimensions as getTileDimensions } from "@/hooks/use-tiles"
 import * as tileUtil from "@/lib/tiles"
+import { create } from "@bufbuild/protobuf"
+import { type Grid, type Tile as PTile, Segment_BoundsSchema } from "proto/ts/map/v1/tile_pb"
 import React from "react"
 
-import { Tile } from "./tile"
+import { TileView } from "./tile"
 
 interface MapProps {
-    grid: tileUtil.Grid
+    grid: Grid
 }
 
 interface Position {
@@ -29,7 +31,7 @@ export const Map: React.FC<MapProps> = ({ grid }) => {
     const [lastPosition, setLastPosition] = React.useState<Position | null>(null)
     const [offset, setOffset] = React.useState<Position>({ x: 0, y: 0 })
 
-    const [visibleTiles, setVisibleTiles] = React.useState<tileUtil.AnnotatedTile[]>([])
+    const [visibleTiles, setVisibleTiles] = React.useState<PTile[]>([])
 
     const mapHeight = Math.ceil((((grid.totalRows + 0.4) * tileHeight) / 2) * 1.5)
     const mapWidth = (grid.totalColumns + 1) * tileWidth
@@ -65,17 +67,17 @@ export const Map: React.FC<MapProps> = ({ grid }) => {
         const maxVisibleColumns = Math.ceil(rect.width / tileWidth)
         const skippedColumnCount = Math.ceil(-offset.x / tileWidth)
         const skippedRowCount = Math.ceil(-offset.y / rowHeight)
-        const visibleBounds = {
+        const visibleBounds = create(Segment_BoundsSchema, {
             minRow: skippedRowCount,
             maxRow: skippedRowCount + maxVisibleRows,
             minColumn: skippedColumnCount,
             maxColumn: skippedColumnCount + maxVisibleColumns,
-        }
+        })
 
         const rowStartingIndex =
             Math.floor((skippedRowCount / grid.totalRows) * grid.segmentRows.length) - 1
 
-        const visibleTiles: tileUtil.AnnotatedTile[] = []
+        const visibleTiles: PTile[] = []
         for (let i = rowStartingIndex; i < grid.segmentRows.length; i++) {
             const row = grid.segmentRows[i]
             if (row === undefined) {
@@ -84,10 +86,10 @@ export const Map: React.FC<MapProps> = ({ grid }) => {
 
             let segmentsFound = false
             const columnStartingIndex =
-                Math.floor((skippedColumnCount / grid.totalColumns) * row.length) - 1
+                Math.floor((skippedColumnCount / grid.totalColumns) * row.segments.length) - 1
 
-            for (let j = columnStartingIndex; j < row.length; j++) {
-                const segment = row[j]
+            for (let j = columnStartingIndex; j < row.segments.length; j++) {
+                const segment = row.segments[j]
                 if (segment === undefined) {
                     continue
                 }
@@ -95,7 +97,7 @@ export const Map: React.FC<MapProps> = ({ grid }) => {
                 if (tileUtil.boundsIntersect(segment.bounds, visibleBounds)) {
                     visibleTiles.push(
                         ...segment.tiles.filter((tile) =>
-                            tileUtil.boundsInclude(tile.proto, visibleBounds, 2),
+                            tileUtil.boundsInclude(tile, visibleBounds, 2),
                         ),
                     )
                     segmentsFound = true
@@ -173,7 +175,7 @@ export const Map: React.FC<MapProps> = ({ grid }) => {
                 }}
             >
                 {visibleTiles.map((tile) => (
-                    <Tile tile={tile} key={tileUtil.getKey(tile.proto)} />
+                    <TileView tile={tile} key={tileUtil.getKey(tile)} />
                 ))}
             </div>
         </div>

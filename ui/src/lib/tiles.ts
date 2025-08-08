@@ -1,21 +1,20 @@
 import { create } from "@bufbuild/protobuf"
 import { type Terrain_RenderingSpec, Terrain_RenderingSpecSchema } from "proto/ts/map/v1/terrain_pb"
-import type { Tile } from "proto/ts/map/v1/tile_pb"
+import {
+    type Segment_Bounds,
+    Segment_BoundsSchema,
+    type Tile,
+    Tile_RenderingSpecSchema,
+} from "proto/ts/map/v1/tile_pb"
 
 import { cn } from "./utils"
 
-export interface Bounds {
-    minRow: number
-    maxRow: number
-    minColumn: number
-    maxColumn: number
-}
+const emptyBounds = create(Segment_BoundsSchema)
 
-export const getBoundsKey = (b: Bounds): string => {
-    return `ROW[${b.minRow},${b.maxRow}) COL[${b.minColumn},${b.maxColumn})`
-}
-
-export const boundsIntersect = (a: Bounds, b: Bounds): boolean => {
+export const boundsIntersect = (
+    a: Segment_Bounds = emptyBounds,
+    b: Segment_Bounds = emptyBounds,
+): boolean => {
     if (a.maxRow < b.minRow || a.minRow > b.maxRow) {
         return false
     }
@@ -25,54 +24,28 @@ export const boundsIntersect = (a: Bounds, b: Bounds): boolean => {
     return true
 }
 
-export interface AnnotatedTile {
-    proto: Tile
-    height: number
-    top: number
-    left: number
-    className: string
-}
-
-export interface Segment {
-    tiles: AnnotatedTile[]
-    bounds: Bounds
-}
-
-export interface Grid {
-    segmentRows: Segment[][]
-    totalRows: number
-    totalColumns: number
-}
-
-export const annotate = (proto: Tile, tileHeight: number, tileWidth: number): AnnotatedTile => {
+export const annotate = (proto: Tile, tileHeight: number, tileWidth: number) => {
     const { row, column } = getCoordinates(proto)
     const even = row % 2 === 0
     const top = row * tileHeight * 0.75
     const left = column * tileWidth + (even ? 0 : tileWidth / 2)
 
-    const spec = getRenderingSpec(proto)
+    const terrain = getTerrainRenderingSpec(proto)
 
     const className = cn(
         "tile",
         "select-none flex items-center justify-center absolute",
         "text-xs",
-        spec.color,
+        terrain.className,
     )
 
-    return {
-        proto,
-        height: tileHeight,
-        top,
-        left,
-        className,
+    if (proto.renderingSpec === undefined) {
+        proto.renderingSpec = create(Tile_RenderingSpecSchema)
     }
-}
 
-export const emptyBounds: Bounds = {
-    minRow: 0,
-    maxRow: 0,
-    minColumn: 0,
-    maxColumn: 0,
+    proto.renderingSpec.top = top
+    proto.renderingSpec.left = left
+    proto.renderingSpec.className = className
 }
 
 export const getCoordinates = (p: Tile) => {
@@ -89,7 +62,7 @@ export const getKey = (p: Tile) => {
 
 export const boundsInclude = (
     tile: Tile,
-    policy: Bounds = emptyBounds,
+    policy: Segment_Bounds = emptyBounds,
     extendBoundsBy = 0,
 ): boolean => {
     const { row, column } = getCoordinates(tile)
@@ -103,13 +76,13 @@ export const boundsInclude = (
 }
 
 const ash: Terrain_RenderingSpec = create(Terrain_RenderingSpecSchema, {
-    color: "bg-gray-800 hover:bg-gray-900",
+    className: "bg-gray-800 hover:bg-gray-900",
 })
 const grass: Terrain_RenderingSpec = create(Terrain_RenderingSpecSchema, {
-    color: "bg-green-800 hover:bg-green-900",
+    className: "bg-green-800 hover:bg-green-900",
 })
 
-export const getRenderingSpec = (tile: Tile): Terrain_RenderingSpec => {
+export const getTerrainRenderingSpec = (tile: Tile): Terrain_RenderingSpec => {
     switch (tile.terrainId) {
         case "core/terrain/grass":
             return grass
