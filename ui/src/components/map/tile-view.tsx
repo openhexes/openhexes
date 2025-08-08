@@ -18,12 +18,6 @@ export const TileView: React.FC<TileProps> = ({ tile }) => {
     const top = row * tileHeight * 0.75
     const left = column * tileWidth + (even ? 0 : tileWidth / 2)
 
-    const content = (
-        <div>
-            {tile.coordinate?.row}, {tile.coordinate?.column}
-        </div>
-    )
-
     const terrain = getTerrainRenderingSpec(tile)
 
     const className = cn(
@@ -31,6 +25,7 @@ export const TileView: React.FC<TileProps> = ({ tile }) => {
         "select-none flex items-center justify-center absolute",
         "text-xs",
         terrain.className,
+        "bg-transparent",
     )
 
     const style: React.CSSProperties = {
@@ -42,14 +37,7 @@ export const TileView: React.FC<TileProps> = ({ tile }) => {
         "--tile-y": `${top}px`,
     } as React.CSSProperties
 
-    return (
-        <div
-            className={cn(className, "bg-gray-950 text-transparent hover:text-gray-500")}
-            style={style}
-        >
-            {content}
-        </div>
-    )
+    return <div className={cn(className)} style={style} />
 }
 
 export default TileView

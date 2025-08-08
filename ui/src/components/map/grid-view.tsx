@@ -6,6 +6,7 @@ import { type Grid, type Tile as PTile, Segment_BoundsSchema } from "proto/ts/ma
 import React from "react"
 
 import "./grid-view.css"
+import { PatternLayer } from "./pattern-layer"
 import { TileView } from "./tile-view"
 
 interface MapProps {
@@ -197,6 +198,33 @@ export const GridView: React.FC<MapProps> = ({ grid }) => {
                     transform: `translate(${offset.x}px, ${offset.y}px)`,
                 }}
             >
+                <PatternLayer
+                    id="water"
+                    className="pattern--water"
+                    tiles={visibleTiles}
+                    filter={(t) => {
+                        const { row, column } = tileUtil.getCoordinates(t)
+                        return row >= 17 && row < 21 && column >= 12 && column < 15
+                    }}
+                    tileWidth={tileWidth}
+                    tileHeight={tileHeight}
+                    mapWidth={mapWidth}
+                    mapHeight={mapHeight}
+                />
+                <PatternLayer
+                    id="forest"
+                    className="pattern--forest"
+                    tiles={visibleTiles}
+                    filter={(t) =>
+                        t.terrainId === "core/terrain/forest" ||
+                        t.terrainId === "core/terrain/grass"
+                    }
+                    tileWidth={tileWidth}
+                    tileHeight={tileHeight}
+                    mapWidth={mapWidth}
+                    mapHeight={mapHeight}
+                />
+
                 {visibleTiles.map((tile) => (
                     <TileView tile={tile} key={tileUtil.getKey(tile)} />
                 ))}
