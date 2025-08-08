@@ -140,6 +140,13 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 					Column: uint32(column),
 				},
 			}
+
+			if row >= 17 && row < 21 && column >= 12 && column < 24 {
+				tile.TerrainId = "core/terrain/water"
+			} else if row >= 24 && row < 30 && column >= 26 && column < 29 {
+				tile.TerrainId = "core/terrain/forest"
+			}
+
 			segment.Tiles = append(segment.Tiles, tile)
 
 			processedTileCount++

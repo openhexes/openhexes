@@ -1,24 +1,23 @@
-// src/components/pattern-layer.tsx
 import { getCoordinates } from "@/lib/tiles"
 import { type Tile as PTile } from "proto/ts/map/v1/tile_pb"
 import React from "react"
 
 type Props = {
-    id: string // e.g. "water"
-    tiles: PTile[] // visible tiles (same set you render)
+    id: string // e.g., "water"
+    tiles: PTile[] // pass visible tiles
     filter: (t: PTile) => boolean
     tileWidth: number
     tileHeight: number
     mapWidth: number
     mapHeight: number
-    className: string // e.g. "pattern--water"
+    // pattern tile size in px (controls hatch/dot spacing)
+    cell?: number
+    // pattern SVG content (tiny string)
+    svgTile: string
+    opacity?: number
 }
 
-/**
- * One world-sized layer with a repeating background.
- * It's masked by the union of tiles that pass `filter`.
- * IMPORTANT: Put this inside the same translated container as your tiles.
- */
+/** Pure SVG pattern layer that moves with the map (no CSS writes on pan). */
 export const PatternLayer: React.FC<Props> = ({
     id,
     tiles,
@@ -27,70 +26,85 @@ export const PatternLayer: React.FC<Props> = ({
     tileHeight,
     mapWidth,
     mapHeight,
-    className,
+    cell = 16,
+    svgTile,
+    opacity = 1,
 }) => {
-    const filteredTiles = tiles.filter(filter).map((t) => {
-        const d = hexPathD(t, tileWidth, tileHeight)
-        // key is cheap + stable
-        const { row, column, depth } = getCoordinates(t)
-        return <path key={`${id}:${row},${column},${depth}`} d={d} />
-    })
-    console.info("pattern", id, filteredTiles)
+    const patternId = `pat-${id}`
+    const maskId = `mask-${id}`
 
     return (
-        <>
-            {/* Mask defs must be in the DOM */}
-            <svg width={0} height={0} aria-hidden>
-                <defs>
-                    <mask
-                        id={`mask-${id}`}
-                        maskUnits="userSpaceOnUse"
-                        maskContentUnits="userSpaceOnUse"
-                    >
-                        {/* Black clears everything; white shows pattern */}
-                        <rect x={-1e6} y={-1e6} width={2e6} height={2e6} fill="black" />
-                        <g fill="white">{filteredTiles}</g>
-                    </mask>
-                </defs>
-            </svg>
+        <svg
+            width={mapWidth}
+            height={mapHeight}
+            style={{
+                position: "absolute",
+                left: 0,
+                top: 0,
+                pointerEvents: "none",
+                opacity,
+            }}
+            aria-hidden
+        >
+            <defs>
+                {/* Tiled pattern in world/user space, using a tiny inline SVG tile */}
+                <pattern id={patternId} width={cell} height={cell} patternUnits="userSpaceOnUse">
+                    <image
+                        href={`data:image/svg+xml;utf8,${encodeURIComponent(svgTile)}`}
+                        width={cell}
+                        height={cell}
+                        x="0"
+                        y="0"
+                        preserveAspectRatio="none"
+                    />
+                </pattern>
 
-            {/* The pattern itself; masked by the union above */}
-            <div
-                className={`pattern ${className}`}
-                style={{
-                    position: "absolute",
-                    left: 0,
-                    top: 0,
-                    width: mapWidth,
-                    height: mapHeight,
-                    // Critical: mask applied to the world-sized layer
-                    mask: `url(#mask-${id})`,
-                    WebkitMask: `url(#mask-${id})`,
-                    pointerEvents: "none",
-                }}
-                aria-hidden
+                {/* Union-of-tiles mask */}
+                <mask id={maskId} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse">
+                    {/* Black clears; white shows */}
+                    <rect x={-1e6} y={-1e6} width={2e6} height={2e6} fill="black" />
+                    <g fill="white">
+                        {tiles.filter(filter).map((t) => {
+                            const d = hexPathD(t, tileWidth, tileHeight)
+                            const { row, column, depth } = getCoordinates(t)
+                            return <path key={`${id}:${row},${column},${depth}`} d={d} />
+                        })}
+                    </g>
+                </mask>
+            </defs>
+
+            {/* Full-map rect that gets patterned + masked */}
+            <rect
+                x="0"
+                y="0"
+                width={mapWidth}
+                height={mapHeight}
+                fill={`url(#${patternId})`}
+                mask={`url(#${maskId})`}
             />
-        </>
+        </svg>
     )
 }
 
-/** Hex path in world pixels that matches your TileView placement */
 function hexPathD(t: PTile, tileWidth: number, tileHeight: number): string {
     const { row, column } = getCoordinates(t)
+
+    // same placement math you use in <TileView>
     const even = row % 2 === 0
     const x = column * tileWidth + (even ? 0 : tileWidth / 2)
     const y = row * tileHeight * 0.75
 
-    // tweak these two if your hex proportions differ
-    const a = tileWidth / 4 // horizontal corner inset
-    const b = tileHeight / 4 // vertical corner inset
+    // pointy-top hex: top/bottom are points, left/right are flat
+    const w = tileWidth
+    const h = tileHeight
+    const v = h / 4 // vertical inset of the “shoulders”
 
-    const p1 = [x + a, y]
-    const p2 = [x + tileWidth - a, y]
-    const p3 = [x + tileWidth, y + b]
-    const p4 = [x + tileWidth - a, y + tileHeight]
-    const p5 = [x + a, y + tileHeight]
-    const p6 = [x, y + b]
+    const p1 = [x + w / 2, y] // top point
+    const p2 = [x + w, y + v] // upper-right
+    const p3 = [x + w, y + 3 * v] // lower-right
+    const p4 = [x + w / 2, y + h] // bottom point
+    const p5 = [x, y + 3 * v] // lower-left
+    const p6 = [x, y + v] // upper-left
 
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     return `M${p1} L${p2} L${p3} L${p4} L${p5} L${p6} Z`

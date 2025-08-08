@@ -1,5 +1,5 @@
 import { useTileDimensions } from "@/hooks/use-tiles"
-import { getCoordinates, getTerrainRenderingSpec } from "@/lib/tiles"
+import { getCoordinates } from "@/lib/tiles"
 import { cn } from "@/lib/utils"
 import type { Tile } from "proto/ts/map/v1/tile_pb"
 import React from "react"
@@ -18,14 +18,15 @@ export const TileView: React.FC<TileProps> = ({ tile }) => {
     const top = row * tileHeight * 0.75
     const left = column * tileWidth + (even ? 0 : tileWidth / 2)
 
-    const terrain = getTerrainRenderingSpec(tile)
+    // const terrain = getTerrainRenderingSpec(tile)
 
     const className = cn(
         "tile",
         "select-none flex items-center justify-center absolute",
         "text-xs",
-        terrain.className,
-        "bg-transparent",
+        // terrain.className,
+        "bg-transparent opacity-20",
+        "text-transparent hover:bg-gray-100",
     )
 
     const style: React.CSSProperties = {
