@@ -5,9 +5,12 @@
     "workspaceFolder": "/workspace",
     "remoteUser": "root",
     "forwardPorts": [
-        5173,
-        5432,
-        8080
+        // postgres
+        6000,
+        // vite
+        6001,
+        // api
+        6002
     ],
     "customizations": {
         "vscode": {

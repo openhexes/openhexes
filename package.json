@@ -24,6 +24,7 @@
         "pgcli": "pgcli --pgclirc /workspace/.devcontainer/pgcli.conf \"postgres://$POSTGRES__USER:$POSTGRES__PASSWORD@$POSTGRES__HOSTNAME:$POSTGRES__PORT/$POSTGRES__DB\"",
         "prepare": "husky",
         "sqlc": "docker run --rm -v $(pwd):/src -w /src sqlc/sqlc",
+        "psql": "docker run --rm -it postgres:17 psql \"postgres://$POSTGRES__USER:$POSTGRES__PASSWORD@$POSTGRES__HOSTNAME:$POSTGRES__PORT/$POSTGRES__DB\"",
         "test:api": "cd /workspace/api && MODE=testing go test -v ./...",
         "test:ui": "pnpm exec playwright test",
         "test": "pnpm test:api && pnpm test:ui",

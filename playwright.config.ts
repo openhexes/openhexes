@@ -25,15 +25,6 @@ export default defineConfig({
         },
     ],
     webServer: [
-        // {
-        //     name: "ui",
-        //     command: "pnpm run dev",
-        //     reuseExistingServer: false,
-        //     url: "http://localhost:5173",
-        //     env: {
-        //         VITE_API_ADDRESS: "http://localhost:9090",
-        //     },
-        // },
         {
             name: "api",
             command: "pnpm launch",
