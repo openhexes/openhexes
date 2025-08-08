@@ -6,7 +6,7 @@ import { Check, Clock, Loader2 } from "lucide-react"
 import { Stage_State } from "proto/ts/progress/v1/progress_pb"
 import React from "react"
 
-const Map = React.lazy(() => import("@/components/map/map"))
+const Map = React.lazy(() => import("@/components/map/grid-view"))
 
 const rowCount = 256
 const columnCount = 256

@@ -40,7 +40,7 @@ const buildTileGrid = async (
 
     const grid = create(GridSchema)
 
-    for await (const response of GameClient.getSampleGrid(request)) {
+    for await (const response of GameClient.getSampleGrid(request, { timeoutMs: 60000 })) {
         console.info(response)
         if (response.progress) {
             setProgress(response.progress)

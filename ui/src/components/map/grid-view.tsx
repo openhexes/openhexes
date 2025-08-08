@@ -1,10 +1,11 @@
 import { useTileDimensions as getTileDimensions } from "@/hooks/use-tiles"
 import * as tileUtil from "@/lib/tiles"
 import { create } from "@bufbuild/protobuf"
+import { useWindowSize } from "@uidotdev/usehooks"
 import { type Grid, type Tile as PTile, Segment_BoundsSchema } from "proto/ts/map/v1/tile_pb"
 import React from "react"
 
-import { TileView } from "./tile"
+import { TileView } from "./tile-view"
 
 interface MapProps {
     grid: Grid
@@ -17,7 +18,9 @@ interface Position {
 
 const { tileHeight, tileWidth, rowHeight, triangleHeight } = getTileDimensions()
 
-export const Map: React.FC<MapProps> = ({ grid }) => {
+export const GridView: React.FC<MapProps> = ({ grid }) => {
+    const windowSize = useWindowSize()
+
     React.useEffect(() => {
         // prevent "go back/forward" on overscroll
         const prev = document.body.style.overscrollBehaviorX
@@ -36,7 +39,8 @@ export const Map: React.FC<MapProps> = ({ grid }) => {
     const mapHeight = Math.ceil((((grid.totalRows + 0.4) * tileHeight) / 2) * 1.5)
     const mapWidth = (grid.totalColumns + 1) * tileWidth
 
-    React.useEffect(() => handlePan(0, 0), []) // todo
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    React.useEffect(() => handlePan(0, 0), [windowSize.height, windowSize.width]) // todo
 
     const handlePan = (dx: number, dy: number) => {
         const rect = containerRef.current?.getBoundingClientRect() ?? {
@@ -182,4 +186,4 @@ export const Map: React.FC<MapProps> = ({ grid }) => {
     )
 }
 
-export default Map
+export default GridView

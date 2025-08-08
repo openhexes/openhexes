@@ -22,6 +22,7 @@ export const TileView: React.FC<TileProps> = ({ tile }) => {
                 top: tile.renderingSpec?.top,
                 left: tile.renderingSpec?.left,
                 height: tileHeight,
+                fontSize: 8,
             }}
         >
             {tile.coordinate?.row}, {tile.coordinate?.column}

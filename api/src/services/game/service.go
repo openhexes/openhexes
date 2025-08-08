@@ -9,6 +9,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/openhexes/openhexes/api/src/auth"
 	"github.com/openhexes/openhexes/api/src/config"
+	"github.com/openhexes/openhexes/api/src/server/progress"
 	gamev1 "github.com/openhexes/proto/game/v1"
 	"github.com/openhexes/proto/game/v1/gamev1connect"
 	mapv1 "github.com/openhexes/proto/map/v1"
@@ -63,19 +64,23 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 		State: progressv1.Stage_STATE_WAITING,
 		Title: "Process tiles",
 	}
-	progress := &gamev1.GetSampleGridResponse{
-		Progress: &progressv1.Progress{
-			Stages: []*progressv1.Stage{stageSegments, stageGrid, stageTiles},
+	reporter := progress.NewReporter(
+		ctx,
+		func(p *progressv1.Progress) error {
+			return stream.Send(&gamev1.GetSampleGridResponse{
+				Progress: p,
+			})
 		},
-	}
-	if err := stream.Send(progress); err != nil {
-		return err
-	}
+		stageSegments, stageGrid, stageTiles,
+	)
+	defer reporter.Close()
+	reporter.Update()
 
 	// prepare segment containers
 	start := time.Now()
 	segmentsLength := request.Msg.TotalRows / request.Msg.MaxRowsPerSegment * request.Msg.TotalColumns / request.Msg.MaxColumnsPerSegment
 	segments := make([]*mapv1.Segment, 0, segmentsLength)
+
 	for rowStart := uint32(0); rowStart < request.Msg.TotalRows; rowStart += request.Msg.MaxRowsPerSegment {
 		for columnStart := uint32(0); columnStart < request.Msg.TotalColumns; columnStart += request.Msg.MaxColumnsPerSegment {
 			rowEnd := rowStart + request.Msg.MaxRowsPerSegment
@@ -92,17 +97,13 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 		}
 	}
 
-	// todo: redo with channel
 	stageSegments.Duration = durationpb.New(time.Since(start))
 	stageSegments.State = progressv1.Stage_STATE_DONE
 	stageGrid.State = progressv1.Stage_STATE_RUNNING
-	if err := stream.Send(progress); err != nil {
-		return err
-	}
+	reporter.Update()
 
 	// arrange segments in a grid
 	start = time.Now()
-
 	gridRowLength := request.Msg.TotalRows / request.Msg.MaxRowsPerSegment
 	segmentsPerRow := request.Msg.TotalColumns / request.Msg.MaxColumnsPerSegment
 	segmentRows := make([]*mapv1.Segment_Row, 0, request.Msg.TotalRows/request.Msg.MaxRowsPerSegment)
@@ -128,39 +129,33 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 	stageGrid.Duration = durationpb.New(time.Since(start))
 	stageGrid.State = progressv1.Stage_STATE_DONE
 	stageTiles.State = progressv1.Stage_STATE_RUNNING
-	if err := stream.Send(progress); err != nil {
-		return err
-	}
+	reporter.Update()
 
 	// generate tiles & put them into respective segments
 	start = time.Now()
-
 	totalTiles := request.Msg.TotalRows * request.Msg.TotalColumns
 	var processedTileCount int
+
 	for row := range request.Msg.TotalRows {
+		segRowIdx := row / request.Msg.MaxRowsPerSegment
+		segRow := segmentRows[segRowIdx]
+
 		for column := range request.Msg.TotalColumns {
+			segColIdx := column / request.Msg.MaxColumnsPerSegment
+			segment := segRow.Segments[segColIdx]
+
 			tile := &mapv1.Tile{
 				Coordinate: &mapv1.Tile_Coordinate{
 					Row:    uint32(row),
 					Column: uint32(column),
 				},
 			}
-
-			// todo: this is very slow
-			for _, segmentRow := range segmentRows {
-				for _, segment := range segmentRow.Segments {
-					if BoundsInclude(segment.GetBounds(), tile, 0) {
-						segment.Tiles = append(segment.Tiles, tile)
-					}
-				}
-			}
+			segment.Tiles = append(segment.Tiles, tile)
 
 			processedTileCount++
-			if processedTileCount%1000 == 0 {
+			if processedTileCount%10_000 == 0 {
 				stageTiles.Subtitle = fmt.Sprintf("%d / %d", processedTileCount, totalTiles)
-				if err := stream.Send(progress); err != nil {
-					return err
-				}
+				reporter.Update(float64(processedTileCount) / float64(totalTiles))
 			}
 		}
 	}
@@ -168,11 +163,15 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 	stageTiles.Subtitle = fmt.Sprintf("%d", totalTiles)
 	stageTiles.Duration = durationpb.New(time.Since(start))
 	stageTiles.State = progressv1.Stage_STATE_DONE
-	progress.Grid = &mapv1.Grid{
-		TotalRows:    request.Msg.TotalRows,
-		TotalColumns: request.Msg.TotalColumns,
+	reporter.Update(1)
+
+	response := &gamev1.GetSampleGridResponse{
+		Grid: &mapv1.Grid{
+			TotalRows:    request.Msg.TotalRows,
+			TotalColumns: request.Msg.TotalColumns,
+		},
 	}
-	if err := stream.Send(progress); err != nil {
+	if err := stream.Send(response); err != nil {
 		return err
 	}
 
