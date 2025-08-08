@@ -52,13 +52,9 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 		request.Msg.MaxColumnsPerSegment = defaultMaxColumnsPerSegment
 	}
 
-	stageSegments := &progressv1.Stage{
-		State: progressv1.Stage_STATE_RUNNING,
-		Title: "Prepare segment containers",
-	}
 	stageGrid := &progressv1.Stage{
-		State: progressv1.Stage_STATE_WAITING,
-		Title: "Arrange grid",
+		State: progressv1.Stage_STATE_RUNNING,
+		Title: "Prepare grid",
 	}
 	stageTiles := &progressv1.Stage{
 		State: progressv1.Stage_STATE_WAITING,
@@ -71,7 +67,7 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 				Progress: p,
 			})
 		},
-		stageSegments, stageGrid, stageTiles,
+		stageGrid, stageTiles,
 	)
 	defer reporter.Close()
 	reporter.Update()
@@ -97,13 +93,7 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 		}
 	}
 
-	stageSegments.Duration = durationpb.New(time.Since(start))
-	stageSegments.State = progressv1.Stage_STATE_DONE
-	stageGrid.State = progressv1.Stage_STATE_RUNNING
-	reporter.Update()
-
 	// arrange segments in a grid
-	start = time.Now()
 	gridRowLength := request.Msg.TotalRows / request.Msg.MaxRowsPerSegment
 	segmentsPerRow := request.Msg.TotalColumns / request.Msg.MaxColumnsPerSegment
 	segmentRows := make([]*mapv1.Segment_Row, 0, request.Msg.TotalRows/request.Msg.MaxRowsPerSegment)
