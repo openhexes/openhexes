@@ -12,10 +12,7 @@ message Tile {
   }
 
   message RenderingSpec {
-    uint32 top = 1;
-    uint32 left = 2;
-    string class_name = 3;
-    repeated string feature_ids = 4; // landscape features, e.g. trees, rocks, etc.
+    repeated string feature_ids = 1; // landscape features, e.g. trees, rocks, etc.
   }
 
   map.v1.Tile.Coordinate coordinate = 1;

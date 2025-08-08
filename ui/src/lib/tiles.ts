@@ -1,13 +1,6 @@
 import { create } from "@bufbuild/protobuf"
 import { type Terrain_RenderingSpec, Terrain_RenderingSpecSchema } from "proto/ts/map/v1/terrain_pb"
-import {
-    type Segment_Bounds,
-    Segment_BoundsSchema,
-    type Tile,
-    Tile_RenderingSpecSchema,
-} from "proto/ts/map/v1/tile_pb"
-
-import { cn } from "./utils"
+import { type Segment_Bounds, Segment_BoundsSchema, type Tile } from "proto/ts/map/v1/tile_pb"
 
 const emptyBounds = create(Segment_BoundsSchema)
 
@@ -22,30 +15,6 @@ export const boundsIntersect = (
         return false
     }
     return true
-}
-
-export const annotate = (proto: Tile, tileHeight: number, tileWidth: number) => {
-    const { row, column } = getCoordinates(proto)
-    const even = row % 2 === 0
-    const top = row * tileHeight * 0.75
-    const left = column * tileWidth + (even ? 0 : tileWidth / 2)
-
-    const terrain = getTerrainRenderingSpec(proto)
-
-    const className = cn(
-        "tile",
-        "select-none flex items-center justify-center absolute",
-        "text-xs",
-        terrain.className,
-    )
-
-    if (proto.renderingSpec === undefined) {
-        proto.renderingSpec = create(Tile_RenderingSpecSchema)
-    }
-
-    proto.renderingSpec.top = top
-    proto.renderingSpec.left = left
-    proto.renderingSpec.className = className
 }
 
 export const getCoordinates = (p: Tile) => {

@@ -1,10 +1,11 @@
-import { useTileDimensions as getTileDimensions } from "@/hooks/use-tiles"
+import { useTileDimensions } from "@/hooks/use-tiles"
 import * as tileUtil from "@/lib/tiles"
 import { create } from "@bufbuild/protobuf"
 import { useWindowSize } from "@uidotdev/usehooks"
 import { type Grid, type Tile as PTile, Segment_BoundsSchema } from "proto/ts/map/v1/tile_pb"
 import React from "react"
 
+import "./grid-view.css"
 import { TileView } from "./tile-view"
 
 interface MapProps {
@@ -16,10 +17,12 @@ interface Position {
     y: number
 }
 
-const { tileHeight, tileWidth, rowHeight, triangleHeight } = getTileDimensions()
-
 export const GridView: React.FC<MapProps> = ({ grid }) => {
     const windowSize = useWindowSize()
+    const { tileHeight, tileWidth, rowHeight, triangleHeight } = useTileDimensions()
+
+    const rafRef = React.useRef<number | null>(null)
+    const pending = React.useRef<{ dx: number; dy: number } | null>(null)
 
     React.useEffect(() => {
         // prevent "go back/forward" on overscroll
@@ -39,10 +42,27 @@ export const GridView: React.FC<MapProps> = ({ grid }) => {
     const mapHeight = Math.ceil((((grid.totalRows + 0.4) * tileHeight) / 2) * 1.5)
     const mapWidth = (grid.totalColumns + 1) * tileWidth
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     React.useEffect(() => handlePan(0, 0), [windowSize.height, windowSize.width]) // todo
 
+    const flushPan = () => {
+        if (!pending.current) return
+        const { dx, dy } = pending.current
+        pending.current = null
+        _applyPan(dx, dy)
+        rafRef.current = null
+    }
+
     const handlePan = (dx: number, dy: number) => {
+        pending.current = {
+            dx: (pending.current?.dx ?? 0) + dx,
+            dy: (pending.current?.dy ?? 0) + dy,
+        }
+        if (rafRef.current == null) {
+            rafRef.current = requestAnimationFrame(flushPan)
+        }
+    }
+
+    const _applyPan = (dx: number, dy: number) => {
         const rect = containerRef.current?.getBoundingClientRect() ?? {
             height: window.innerHeight,
             width: window.innerWidth,
@@ -138,7 +158,6 @@ export const GridView: React.FC<MapProps> = ({ grid }) => {
         setLastPosition({ x, y })
     }
 
-    // todo: throttle this!
     const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
         e.stopPropagation()
         handlePan(-e.deltaX, -e.deltaY)

@@ -1,4 +1,3 @@
-import { annotate } from "@/lib/tiles"
 import { create } from "@bufbuild/protobuf"
 import { GetSampleGridRequestSchema } from "proto/ts/game/v1/game_pb"
 import { type Grid, GridSchema } from "proto/ts/map/v1/tile_pb"
@@ -25,8 +24,6 @@ const sleep = async (ms: number) => {
 const buildTileGrid = async (
     totalRows: number,
     totalColumns: number,
-    tileHeight: number,
-    tileWidth: number,
     maxRowsPerSegment: number,
     maxColumnsPerSegment: number,
     setProgress: React.Dispatch<React.SetStateAction<Progress | undefined>>,
@@ -53,19 +50,12 @@ const buildTileGrid = async (
                 grid.totalColumns = response.grid.totalColumns
             }
             if (response.grid.segmentRows) {
-                for (const row of response.grid.segmentRows) {
-                    for (const segment of row.segments) {
-                        for (const tile of segment.tiles) {
-                            annotate(tile, tileHeight, tileWidth)
-                        }
-                    }
-                }
                 grid.segmentRows.push(...response.grid.segmentRows)
             }
         }
     }
 
-    await sleep(1000)
+    await sleep(250)
 
     return grid
 }
@@ -76,8 +66,6 @@ export const useTileGrid = (
     maxRowsPerSegment = 15,
     maxColumnsPerSegment = 15,
 ) => {
-    const { tileHeight, tileWidth } = useTileDimensions()
-
     const [progress, setProgress] = React.useState<Progress | undefined>(undefined)
     const [isLoading, setIsLoading] = React.useState<boolean>(true)
     const [error, setError] = React.useState<Error | undefined>(undefined)
@@ -86,8 +74,6 @@ export const useTileGrid = (
     const promise = buildTileGrid(
         totalRows,
         totalColumns,
-        tileHeight,
-        tileWidth,
         maxRowsPerSegment,
         maxColumnsPerSegment,
         setProgress,

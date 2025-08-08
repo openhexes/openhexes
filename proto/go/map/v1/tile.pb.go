@@ -255,10 +255,7 @@ func (x *Tile_Coordinate) GetDepth() uint32 {
 
 type Tile_RenderingSpec struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Top           uint32                 `protobuf:"varint,1,opt,name=top,proto3" json:"top,omitempty"`
-	Left          uint32                 `protobuf:"varint,2,opt,name=left,proto3" json:"left,omitempty"`
-	ClassName     string                 `protobuf:"bytes,3,opt,name=class_name,json=className,proto3" json:"class_name,omitempty"`
-	FeatureIds    []string               `protobuf:"bytes,4,rep,name=feature_ids,json=featureIds,proto3" json:"feature_ids,omitempty"` // landscape features, e.g. trees, rocks, etc.
+	FeatureIds    []string               `protobuf:"bytes,1,rep,name=feature_ids,json=featureIds,proto3" json:"feature_ids,omitempty"` // landscape features, e.g. trees, rocks, etc.
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -291,27 +288,6 @@ func (x *Tile_RenderingSpec) ProtoReflect() protoreflect.Message {
 // Deprecated: Use Tile_RenderingSpec.ProtoReflect.Descriptor instead.
 func (*Tile_RenderingSpec) Descriptor() ([]byte, []int) {
 	return file_map_v1_tile_proto_rawDescGZIP(), []int{0, 1}
-}
-
-func (x *Tile_RenderingSpec) GetTop() uint32 {
-	if x != nil {
-		return x.Top
-	}
-	return 0
-}
-
-func (x *Tile_RenderingSpec) GetLeft() uint32 {
-	if x != nil {
-		return x.Left
-	}
-	return 0
-}
-
-func (x *Tile_RenderingSpec) GetClassName() string {
-	if x != nil {
-		return x.ClassName
-	}
-	return ""
 }
 
 func (x *Tile_RenderingSpec) GetFeatureIds() []string {
@@ -437,7 +413,7 @@ var File_map_v1_tile_proto protoreflect.FileDescriptor
 
 const file_map_v1_tile_proto_rawDesc = "" +
 	"\n" +
-	"\x11map/v1/tile.proto\x12\x06map.v1\"\xe6\x02\n" +
+	"\x11map/v1/tile.proto\x12\x06map.v1\"\xa1\x02\n" +
 	"\x04Tile\x127\n" +
 	"\n" +
 	"coordinate\x18\x01 \x01(\v2\x17.map.v1.Tile.CoordinateR\n" +
@@ -449,13 +425,9 @@ const file_map_v1_tile_proto_rawDesc = "" +
 	"Coordinate\x12\x10\n" +
 	"\x03row\x18\x01 \x01(\rR\x03row\x12\x16\n" +
 	"\x06column\x18\x02 \x01(\rR\x06column\x12\x14\n" +
-	"\x05depth\x18\x03 \x01(\rR\x05depth\x1au\n" +
-	"\rRenderingSpec\x12\x10\n" +
-	"\x03top\x18\x01 \x01(\rR\x03top\x12\x12\n" +
-	"\x04left\x18\x02 \x01(\rR\x04left\x12\x1d\n" +
-	"\n" +
-	"class_name\x18\x03 \x01(\tR\tclassName\x12\x1f\n" +
-	"\vfeature_ids\x18\x04 \x03(\tR\n" +
+	"\x05depth\x18\x03 \x01(\rR\x05depth\x1a0\n" +
+	"\rRenderingSpec\x12\x1f\n" +
+	"\vfeature_ids\x18\x01 \x03(\tR\n" +
 	"featureIds\"\x8b\x02\n" +
 	"\aSegment\x12.\n" +
 	"\x06bounds\x18\x01 \x01(\v2\x16.map.v1.Segment.BoundsR\x06bounds\x12\"\n" +

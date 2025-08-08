@@ -67,24 +67,9 @@ export declare const Tile_CoordinateSchema: GenMessage<Tile_Coordinate>;
  */
 export declare type Tile_RenderingSpec = Message<"map.v1.Tile.RenderingSpec"> & {
   /**
-   * @generated from field: uint32 top = 1;
-   */
-  top: number;
-
-  /**
-   * @generated from field: uint32 left = 2;
-   */
-  left: number;
-
-  /**
-   * @generated from field: string class_name = 3;
-   */
-  className: string;
-
-  /**
    * landscape features, e.g. trees, rocks, etc.
    *
-   * @generated from field: repeated string feature_ids = 4;
+   * @generated from field: repeated string feature_ids = 1;
    */
   featureIds: string[];
 };
