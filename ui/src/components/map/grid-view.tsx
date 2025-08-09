@@ -11,6 +11,7 @@ import {
 import type { World } from "proto/ts/world/v1/world_pb"
 import React from "react"
 
+import { PatternLayer } from "./pattern-layer"
 import { TileView } from "./tile-view"
 
 interface MapProps {
@@ -214,16 +215,12 @@ export const GridView: React.FC<MapProps> = ({ world, grid }) => {
                     transform: `translate(${offset.x}px, ${offset.y}px)`,
                 }}
             >
-                {/* background: each segment SVG at (0,0); its own viewBox places it */}
                 {visibleSegments.map((segment) => (
-                    <div
+                    <PatternLayer
                         key={segmentUtil.getKey(segment)}
-                        className="absolute pointer-events-none"
-                        style={{
-                            left: 0,
-                            top: 0 /* no width/height; or width:mapWidth,height:mapHeight */,
-                        }}
-                        dangerouslySetInnerHTML={{ __html: segment.renderingSpec?.svg ?? "" }}
+                        segment={segment}
+                        tileHeight={tileHeight}
+                        tileWidth={tileWidth}
                     />
                 ))}
 

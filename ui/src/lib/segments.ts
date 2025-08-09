@@ -17,6 +17,16 @@ export const getDimensions = (segment: Segment, tileWidth: number, tileHeight: n
     return { width, height }
 }
 
+export function segmentOriginWorldPx(segment: Segment, tileWidth: number, tileHeight: number) {
+    const rowHeight = 0.75 * tileHeight
+    const minRow = segment.bounds?.minRow ?? 0
+    const minCol = segment.bounds?.minColumn ?? 0
+
+    const originX = minCol * tileWidth + (minRow % 2 !== 0 ? tileWidth / 2 : 0)
+    const originY = minRow * rowHeight
+    return { x: originX, y: originY }
+}
+
 // Given a segment's bounds, calculate its top-left pixel coordinates
 export function getSegmentOriginPx(segment: Segment, tileWidth: number, tileHeight: number) {
     const { minRow, minColumn } = getBounds(segment)
