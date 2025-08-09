@@ -169,13 +169,7 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 
 	idx := make(tiles.Index, totalTiles)
 	for row := range request.Msg.TotalRows {
-		segRowIdx := row / request.Msg.MaxRowsPerSegment
-		segRow := segmentRows[segRowIdx]
-
 		for column := range request.Msg.TotalColumns {
-			segColIdx := column / request.Msg.MaxColumnsPerSegment
-			segment := segRow.Segments[segColIdx]
-
 			tile := &mapv1.Tile{
 				Coordinate: &mapv1.Tile_Coordinate{
 					Row:    uint32(row),
@@ -191,13 +185,31 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 				tile.TerrainId = "water"
 			}
 
-			segment.Tiles = append(segment.Tiles, tile)
-
 			processedTileCount++
 			if processedTileCount%10_000 == 0 {
 				stageTiles.Subtitle = fmt.Sprintf("%d / %d", processedTileCount, totalTiles)
 				reporter.Update(float64(processedTileCount) / float64(totalTiles))
 			}
+		}
+	}
+
+	// Assign tiles to their primary segments (no overlap for tile data)
+	for row := range request.Msg.TotalRows {
+		segRowIdx := row / request.Msg.MaxRowsPerSegment
+		segRow := segmentRows[segRowIdx]
+
+		for column := range request.Msg.TotalColumns {
+			segColIdx := column / request.Msg.MaxColumnsPerSegment
+			segment := segRow.Segments[segColIdx]
+
+			coordinate := &mapv1.Tile_Coordinate{
+				Row:    uint32(row),
+				Column: uint32(column),
+			}
+			k := tiles.CoordinateToKey(coordinate)
+			tile := idx[k]
+
+			segment.Tiles = append(segment.Tiles, tile)
 		}
 	}
 
@@ -259,10 +271,11 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 
 	start = time.Now()
 	var processedSegmentCount int
+	
 	for _, row := range segmentRows {
 		for _, segment := range row.Segments {
 			segment.RenderingSpec = &mapv1.Segment_RenderingSpec{
-				Svg: render.GenerateSVGSegment(segment),
+				Svg: render.GenerateSVGSegmentWithIndex(segment, idx),
 			}
 
 			processedSegmentCount++
