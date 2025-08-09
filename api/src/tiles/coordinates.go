@@ -1,14 +1,26 @@
 package tiles
 
 import (
-	"fmt"
 	"iter"
 
 	mapv1 "github.com/openhexes/proto/map/v1"
 )
 
-func CoordinateToString(c *mapv1.Tile_Coordinate) string {
-	return fmt.Sprintf("%d.%d.%d", c.Depth, c.Row, c.Column)
+type CoordinateKey struct {
+	Depth  uint32
+	Row    uint32
+	Column uint32
+}
+
+type Index = map[CoordinateKey]*mapv1.Tile
+
+type Neighbour struct {
+	Direction     mapv1.Direction
+	CoordinateKey CoordinateKey
+}
+
+func CoordinateToKey(c *mapv1.Tile_Coordinate) CoordinateKey {
+	return CoordinateKey{Depth: c.Depth, Row: c.Row, Column: c.Column}
 }
 
 func EqualCoordinates(a, b *mapv1.Tile_Coordinate) bool {
@@ -20,62 +32,120 @@ func EqualCoordinates(a, b *mapv1.Tile_Coordinate) bool {
 	return a.Row == b.Row && a.Column == b.Column && a.Depth == b.Depth
 }
 
-func GetNeighbours(c *mapv1.Tile_Coordinate) iter.Seq[*mapv1.Tile_Coordinate] {
-	if c.Row%2 == 0 {
-		return func(yield func(*mapv1.Tile_Coordinate) bool) {
-			if c.Column > 0 {
-				if !yield(&mapv1.Tile_Coordinate{Depth: c.Depth, Row: c.Row, Column: c.Column - 1}) {
-					return
-				}
-			}
-			if c.Row > 0 && c.Column > 0 {
-				if !yield(&mapv1.Tile_Coordinate{Depth: c.Depth, Row: c.Row - 1, Column: c.Column - 1}) {
-					return
-				}
-			}
-			if c.Row > 0 {
-				if !yield(&mapv1.Tile_Coordinate{Depth: c.Depth, Row: c.Row - 1, Column: c.Column}) {
-					return
-				}
-			}
-			if !yield(&mapv1.Tile_Coordinate{Depth: c.Depth, Row: c.Row, Column: c.Column + 1}) {
-				return
-			}
-			if !yield(&mapv1.Tile_Coordinate{Depth: c.Depth, Row: c.Row + 1, Column: c.Column}) {
-				return
-			}
-			if c.Column > 0 {
-				if !yield(&mapv1.Tile_Coordinate{Depth: c.Depth, Row: c.Row + 1, Column: c.Column - 1}) {
-					return
-				}
-			}
-		}
-	}
+func IterNeighbours(c CoordinateKey) iter.Seq[Neighbour] {
+	return func(yield func(Neighbour) bool) {
+		var n Neighbour
 
-	return func(yield func(*mapv1.Tile_Coordinate) bool) {
-		if c.Column > 0 {
-			if !yield(&mapv1.Tile_Coordinate{Depth: c.Depth, Row: c.Row, Column: c.Column - 1}) {
+		if c.Row%2 == 0 {
+			if c.Column > 0 {
+				n = Neighbour{
+					Direction:     mapv1.Direction_DIRECTION_W,
+					CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row, Column: c.Column - 1},
+				}
+				if !yield(n) {
+					return
+				}
+			}
+
+			if c.Row > 0 && c.Column > 0 {
+				n = Neighbour{
+					Direction:     mapv1.Direction_DIRECTION_NW,
+					CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row - 1, Column: c.Column - 1},
+				}
+				if !yield(n) {
+					return
+				}
+			}
+
+			if c.Row > 0 {
+				n = Neighbour{
+					Direction:     mapv1.Direction_DIRECTION_NE,
+					CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row - 1, Column: c.Column},
+				}
+				if !yield(n) {
+					return
+				}
+			}
+
+			n = Neighbour{
+				Direction:     mapv1.Direction_DIRECTION_E,
+				CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row, Column: c.Column + 1},
+			}
+			if !yield(n) {
 				return
 			}
-		}
-		if c.Row > 0 {
-			if !yield(&mapv1.Tile_Coordinate{Depth: c.Depth, Row: c.Row - 1, Column: c.Column}) {
+
+			n = Neighbour{
+				Direction:     mapv1.Direction_DIRECTION_SE,
+				CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row + 1, Column: c.Column},
+			}
+			if !yield(n) {
 				return
 			}
-		}
-		if c.Row > 0 {
-			if !yield(&mapv1.Tile_Coordinate{Depth: c.Depth, Row: c.Row - 1, Column: c.Column + 1}) {
+
+			if c.Column > 0 {
+				n = Neighbour{
+					Direction:     mapv1.Direction_DIRECTION_SW,
+					CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row + 1, Column: c.Column - 1},
+				}
+				if !yield(n) {
+					return
+				}
+			}
+		} else {
+			if c.Column > 0 {
+				n = Neighbour{
+					Direction:     mapv1.Direction_DIRECTION_W,
+					CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row, Column: c.Column - 1},
+				}
+				if !yield(n) {
+					return
+				}
+			}
+
+			if c.Row > 0 {
+				n = Neighbour{
+					Direction:     mapv1.Direction_DIRECTION_NW,
+					CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row - 1, Column: c.Column},
+				}
+				if !yield(n) {
+					return
+				}
+			}
+
+			if c.Row > 0 {
+				n = Neighbour{
+					Direction:     mapv1.Direction_DIRECTION_NE,
+					CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row - 1, Column: c.Column + 1},
+				}
+				if !yield(n) {
+					return
+				}
+			}
+
+			n = Neighbour{
+				Direction:     mapv1.Direction_DIRECTION_E,
+				CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row, Column: c.Column + 1},
+			}
+			if !yield(n) {
 				return
 			}
-		}
-		if !yield(&mapv1.Tile_Coordinate{Depth: c.Depth, Row: c.Row, Column: c.Column + 1}) {
-			return
-		}
-		if !yield(&mapv1.Tile_Coordinate{Depth: c.Depth, Row: c.Row + 1, Column: c.Column + 1}) {
-			return
-		}
-		if !yield(&mapv1.Tile_Coordinate{Depth: c.Depth, Row: c.Row + 1, Column: c.Column}) {
-			return
+
+			n = Neighbour{
+				Direction:     mapv1.Direction_DIRECTION_SE,
+				CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row + 1, Column: c.Column + 1},
+			}
+			if !yield(n) {
+				return
+			}
+
+			n = Neighbour{
+				Direction:     mapv1.Direction_DIRECTION_SW,
+				CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row + 1, Column: c.Column},
+			}
+			if !yield(n) {
+				return
+			}
 		}
 	}
 }

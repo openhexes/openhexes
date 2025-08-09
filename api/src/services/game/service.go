@@ -61,6 +61,10 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 		State: progressv1.Stage_STATE_WAITING,
 		Title: "Process tiles",
 	}
+	stageEdges := &progressv1.Stage{
+		State: progressv1.Stage_STATE_WAITING,
+		Title: "Process edges",
+	}
 	reporter := progress.NewReporter(
 		ctx,
 		func(p *progressv1.Progress) error {
@@ -68,7 +72,7 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 				Progress: p,
 			})
 		},
-		stageGrid, stageTiles,
+		stageGrid, stageTiles, stageEdges,
 	)
 	defer reporter.Close()
 	reporter.Update()
@@ -142,19 +146,21 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 		},
 	}
 
-	islandSet := make(map[string]bool)
+	islandSet := make(map[tiles.CoordinateKey]bool)
 	for _, center := range islandCenters {
+		ck := tiles.CoordinateToKey(center)
 
-		islandSet[tiles.CoordinateToString(center)] = true
-		for c := range tiles.GetNeighbours(center) {
-			islandSet[tiles.CoordinateToString(c)] = true
+		islandSet[ck] = true
+		for c := range tiles.IterNeighbours(ck) {
+			islandSet[c.CoordinateKey] = true
 
-			for cc := range tiles.GetNeighbours(c) {
-				islandSet[tiles.CoordinateToString(cc)] = true
+			for cc := range tiles.IterNeighbours(c.CoordinateKey) {
+				islandSet[cc.CoordinateKey] = true
 			}
 		}
 	}
 
+	idx := make(tiles.Index, totalTiles)
 	for row := range request.Msg.TotalRows {
 		segRowIdx := row / request.Msg.MaxRowsPerSegment
 		segRow := segmentRows[segRowIdx]
@@ -169,9 +175,10 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 					Column: uint32(column),
 				},
 			}
+			k := tiles.CoordinateToKey(tile.Coordinate)
+			idx[k] = tile
 
-			cs := tiles.CoordinateToString(tile.Coordinate)
-			if islandSet[cs] {
+			if islandSet[k] {
 				tile.TerrainId = "core/terrain/mountains"
 			} else {
 				tile.TerrainId = "core/terrain/water"
@@ -190,6 +197,38 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 	stageTiles.Subtitle = fmt.Sprintf("%d", totalTiles)
 	stageTiles.Duration = durationpb.New(time.Since(start))
 	stageTiles.State = progressv1.Stage_STATE_DONE
+	stageEdges.State = progressv1.Stage_STATE_RUNNING
+	reporter.Update(0)
+
+	// calculate edges
+	start = time.Now()
+	processedTileCount = 0
+
+	for k, tile := range idx {
+		tile.RenderingSpec = &mapv1.Tile_RenderingSpec{
+			Edges: make([]*mapv1.Tile_Edge, 0, 6),
+		}
+		for c := range tiles.IterNeighbours(k) {
+			neighbour, ok := idx[c.CoordinateKey]
+			if !ok || neighbour.TerrainId == tile.TerrainId {
+				continue
+			}
+			tile.RenderingSpec.Edges = append(tile.RenderingSpec.Edges, &mapv1.Tile_Edge{
+				Direction:          c.Direction,
+				NeighbourTerrainId: neighbour.TerrainId,
+			})
+		}
+
+		processedTileCount++
+		if processedTileCount%10_000 == 0 {
+			stageEdges.Subtitle = fmt.Sprintf("%d / %d", processedTileCount, totalTiles)
+			reporter.Update(float64(processedTileCount) / float64(totalTiles))
+		}
+	}
+
+	stageEdges.Subtitle = fmt.Sprintf("%d", totalTiles)
+	stageEdges.Duration = durationpb.New(time.Since(start))
+	stageEdges.State = progressv1.Stage_STATE_DONE
 	reporter.Update(1)
 
 	response := &gamev1.GetSampleGridResponse{
