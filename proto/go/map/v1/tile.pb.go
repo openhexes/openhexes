@@ -85,6 +85,7 @@ type Segment struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Bounds        *Segment_Bounds        `protobuf:"bytes,1,opt,name=bounds,proto3" json:"bounds,omitempty"`
 	Tiles         []*Tile                `protobuf:"bytes,2,rep,name=tiles,proto3" json:"tiles,omitempty"`
+	RenderingSpec *Segment_RenderingSpec `protobuf:"bytes,3,opt,name=rendering_spec,json=renderingSpec,proto3" json:"rendering_spec,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -129,6 +130,13 @@ func (x *Segment) GetBounds() *Segment_Bounds {
 func (x *Segment) GetTiles() []*Tile {
 	if x != nil {
 		return x.Tiles
+	}
+	return nil
+}
+
+func (x *Segment) GetRenderingSpec() *Segment_RenderingSpec {
+	if x != nil {
+		return x.RenderingSpec
 	}
 	return nil
 }
@@ -263,7 +271,7 @@ func (x *Tile_Coordinate) GetDepth() uint32 {
 
 type Tile_Edge struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
-	Direction          Direction              `protobuf:"varint,1,opt,name=direction,proto3,enum=map.v1.Direction" json:"direction,omitempty"`
+	Direction          EdgeDirection          `protobuf:"varint,1,opt,name=direction,proto3,enum=map.v1.EdgeDirection" json:"direction,omitempty"`
 	NeighbourTerrainId string                 `protobuf:"bytes,2,opt,name=neighbour_terrain_id,json=neighbourTerrainId,proto3" json:"neighbour_terrain_id,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
@@ -299,11 +307,11 @@ func (*Tile_Edge) Descriptor() ([]byte, []int) {
 	return file_map_v1_tile_proto_rawDescGZIP(), []int{0, 1}
 }
 
-func (x *Tile_Edge) GetDirection() Direction {
+func (x *Tile_Edge) GetDirection() EdgeDirection {
 	if x != nil {
 		return x.Direction
 	}
-	return Direction_DIRECTION_UNSPECIFIED
+	return EdgeDirection_EDGE_DIRECTION_UNSPECIFIED
 }
 
 func (x *Tile_Edge) GetNeighbourTerrainId() string {
@@ -313,17 +321,70 @@ func (x *Tile_Edge) GetNeighbourTerrainId() string {
 	return ""
 }
 
+type Tile_Corner struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Direction           CornerDirection        `protobuf:"varint,1,opt,name=direction,proto3,enum=map.v1.CornerDirection" json:"direction,omitempty"`
+	NeighbourTerrainIds []string               `protobuf:"bytes,2,rep,name=neighbour_terrain_ids,json=neighbourTerrainIds,proto3" json:"neighbour_terrain_ids,omitempty"` // order follows direction enum
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *Tile_Corner) Reset() {
+	*x = Tile_Corner{}
+	mi := &file_map_v1_tile_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Tile_Corner) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Tile_Corner) ProtoMessage() {}
+
+func (x *Tile_Corner) ProtoReflect() protoreflect.Message {
+	mi := &file_map_v1_tile_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Tile_Corner.ProtoReflect.Descriptor instead.
+func (*Tile_Corner) Descriptor() ([]byte, []int) {
+	return file_map_v1_tile_proto_rawDescGZIP(), []int{0, 2}
+}
+
+func (x *Tile_Corner) GetDirection() CornerDirection {
+	if x != nil {
+		return x.Direction
+	}
+	return CornerDirection_CORNER_DIRECTION_UNSPECIFIED
+}
+
+func (x *Tile_Corner) GetNeighbourTerrainIds() []string {
+	if x != nil {
+		return x.NeighbourTerrainIds
+	}
+	return nil
+}
+
 type Tile_RenderingSpec struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Edges         []*Tile_Edge           `protobuf:"bytes,1,rep,name=edges,proto3" json:"edges,omitempty"`
-	FeatureIds    []string               `protobuf:"bytes,2,rep,name=feature_ids,json=featureIds,proto3" json:"feature_ids,omitempty"` // landscape features, e.g. trees, rocks, etc.
+	Corners       []*Tile_Corner         `protobuf:"bytes,2,rep,name=corners,proto3" json:"corners,omitempty"`
+	FeatureIds    []string               `protobuf:"bytes,3,rep,name=feature_ids,json=featureIds,proto3" json:"feature_ids,omitempty"` // landscape features, e.g. trees, rocks, etc.
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Tile_RenderingSpec) Reset() {
 	*x = Tile_RenderingSpec{}
-	mi := &file_map_v1_tile_proto_msgTypes[5]
+	mi := &file_map_v1_tile_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -335,7 +396,7 @@ func (x *Tile_RenderingSpec) String() string {
 func (*Tile_RenderingSpec) ProtoMessage() {}
 
 func (x *Tile_RenderingSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_tile_proto_msgTypes[5]
+	mi := &file_map_v1_tile_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -348,12 +409,19 @@ func (x *Tile_RenderingSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Tile_RenderingSpec.ProtoReflect.Descriptor instead.
 func (*Tile_RenderingSpec) Descriptor() ([]byte, []int) {
-	return file_map_v1_tile_proto_rawDescGZIP(), []int{0, 2}
+	return file_map_v1_tile_proto_rawDescGZIP(), []int{0, 3}
 }
 
 func (x *Tile_RenderingSpec) GetEdges() []*Tile_Edge {
 	if x != nil {
 		return x.Edges
+	}
+	return nil
+}
+
+func (x *Tile_RenderingSpec) GetCorners() []*Tile_Corner {
+	if x != nil {
+		return x.Corners
 	}
 	return nil
 }
@@ -377,7 +445,7 @@ type Segment_Bounds struct {
 
 func (x *Segment_Bounds) Reset() {
 	*x = Segment_Bounds{}
-	mi := &file_map_v1_tile_proto_msgTypes[6]
+	mi := &file_map_v1_tile_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -389,7 +457,7 @@ func (x *Segment_Bounds) String() string {
 func (*Segment_Bounds) ProtoMessage() {}
 
 func (x *Segment_Bounds) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_tile_proto_msgTypes[6]
+	mi := &file_map_v1_tile_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -433,6 +501,50 @@ func (x *Segment_Bounds) GetMaxColumn() int32 {
 	return 0
 }
 
+type Segment_RenderingSpec struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Svg           string                 `protobuf:"bytes,1,opt,name=svg,proto3" json:"svg,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Segment_RenderingSpec) Reset() {
+	*x = Segment_RenderingSpec{}
+	mi := &file_map_v1_tile_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Segment_RenderingSpec) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Segment_RenderingSpec) ProtoMessage() {}
+
+func (x *Segment_RenderingSpec) ProtoReflect() protoreflect.Message {
+	mi := &file_map_v1_tile_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Segment_RenderingSpec.ProtoReflect.Descriptor instead.
+func (*Segment_RenderingSpec) Descriptor() ([]byte, []int) {
+	return file_map_v1_tile_proto_rawDescGZIP(), []int{1, 1}
+}
+
+func (x *Segment_RenderingSpec) GetSvg() string {
+	if x != nil {
+		return x.Svg
+	}
+	return ""
+}
+
 type Segment_Row struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Segments      []*Segment             `protobuf:"bytes,1,rep,name=segments,proto3" json:"segments,omitempty"`
@@ -442,7 +554,7 @@ type Segment_Row struct {
 
 func (x *Segment_Row) Reset() {
 	*x = Segment_Row{}
-	mi := &file_map_v1_tile_proto_msgTypes[7]
+	mi := &file_map_v1_tile_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -454,7 +566,7 @@ func (x *Segment_Row) String() string {
 func (*Segment_Row) ProtoMessage() {}
 
 func (x *Segment_Row) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_tile_proto_msgTypes[7]
+	mi := &file_map_v1_tile_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -467,7 +579,7 @@ func (x *Segment_Row) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Segment_Row.ProtoReflect.Descriptor instead.
 func (*Segment_Row) Descriptor() ([]byte, []int) {
-	return file_map_v1_tile_proto_rawDescGZIP(), []int{1, 1}
+	return file_map_v1_tile_proto_rawDescGZIP(), []int{1, 2}
 }
 
 func (x *Segment_Row) GetSegments() []*Segment {
@@ -481,7 +593,7 @@ var File_map_v1_tile_proto protoreflect.FileDescriptor
 
 const file_map_v1_tile_proto_rawDesc = "" +
 	"\n" +
-	"\x11map/v1/tile.proto\x12\x06map.v1\x1a\x14map/v1/compass.proto\"\xb5\x03\n" +
+	"\x11map/v1/tile.proto\x12\x06map.v1\x1a\x14map/v1/compass.proto\"\xde\x04\n" +
 	"\x04Tile\x127\n" +
 	"\n" +
 	"coordinate\x18\x01 \x01(\v2\x17.map.v1.Tile.CoordinateR\n" +
@@ -493,24 +605,31 @@ const file_map_v1_tile_proto_rawDesc = "" +
 	"Coordinate\x12\x10\n" +
 	"\x03row\x18\x01 \x01(\rR\x03row\x12\x16\n" +
 	"\x06column\x18\x02 \x01(\rR\x06column\x12\x14\n" +
-	"\x05depth\x18\x03 \x01(\rR\x05depth\x1ai\n" +
-	"\x04Edge\x12/\n" +
-	"\tdirection\x18\x01 \x01(\x0e2\x11.map.v1.DirectionR\tdirection\x120\n" +
-	"\x14neighbour_terrain_id\x18\x02 \x01(\tR\x12neighbourTerrainId\x1aY\n" +
+	"\x05depth\x18\x03 \x01(\rR\x05depth\x1am\n" +
+	"\x04Edge\x123\n" +
+	"\tdirection\x18\x01 \x01(\x0e2\x15.map.v1.EdgeDirectionR\tdirection\x120\n" +
+	"\x14neighbour_terrain_id\x18\x02 \x01(\tR\x12neighbourTerrainId\x1as\n" +
+	"\x06Corner\x125\n" +
+	"\tdirection\x18\x01 \x01(\x0e2\x17.map.v1.CornerDirectionR\tdirection\x122\n" +
+	"\x15neighbour_terrain_ids\x18\x02 \x03(\tR\x13neighbourTerrainIds\x1a\x88\x01\n" +
 	"\rRenderingSpec\x12'\n" +
-	"\x05edges\x18\x01 \x03(\v2\x11.map.v1.Tile.EdgeR\x05edges\x12\x1f\n" +
-	"\vfeature_ids\x18\x02 \x03(\tR\n" +
-	"featureIds\"\x8b\x02\n" +
+	"\x05edges\x18\x01 \x03(\v2\x11.map.v1.Tile.EdgeR\x05edges\x12-\n" +
+	"\acorners\x18\x02 \x03(\v2\x13.map.v1.Tile.CornerR\acorners\x12\x1f\n" +
+	"\vfeature_ids\x18\x03 \x03(\tR\n" +
+	"featureIds\"\xf4\x02\n" +
 	"\aSegment\x12.\n" +
 	"\x06bounds\x18\x01 \x01(\v2\x16.map.v1.Segment.BoundsR\x06bounds\x12\"\n" +
-	"\x05tiles\x18\x02 \x03(\v2\f.map.v1.TileR\x05tiles\x1ax\n" +
+	"\x05tiles\x18\x02 \x03(\v2\f.map.v1.TileR\x05tiles\x12D\n" +
+	"\x0erendering_spec\x18\x03 \x01(\v2\x1d.map.v1.Segment.RenderingSpecR\rrenderingSpec\x1ax\n" +
 	"\x06Bounds\x12\x17\n" +
 	"\amin_row\x18\x01 \x01(\x05R\x06minRow\x12\x17\n" +
 	"\amax_row\x18\x02 \x01(\x05R\x06maxRow\x12\x1d\n" +
 	"\n" +
 	"min_column\x18\x03 \x01(\x05R\tminColumn\x12\x1d\n" +
 	"\n" +
-	"max_column\x18\x04 \x01(\x05R\tmaxColumn\x1a2\n" +
+	"max_column\x18\x04 \x01(\x05R\tmaxColumn\x1a!\n" +
+	"\rRenderingSpec\x12\x10\n" +
+	"\x03svg\x18\x01 \x01(\tR\x03svg\x1a2\n" +
 	"\x03Row\x12+\n" +
 	"\bsegments\x18\x01 \x03(\v2\x0f.map.v1.SegmentR\bsegments\"\x98\x01\n" +
 	"\x04Grid\x126\n" +
@@ -534,32 +653,38 @@ func file_map_v1_tile_proto_rawDescGZIP() []byte {
 	return file_map_v1_tile_proto_rawDescData
 }
 
-var file_map_v1_tile_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_map_v1_tile_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_map_v1_tile_proto_goTypes = []any{
-	(*Tile)(nil),               // 0: map.v1.Tile
-	(*Segment)(nil),            // 1: map.v1.Segment
-	(*Grid)(nil),               // 2: map.v1.Grid
-	(*Tile_Coordinate)(nil),    // 3: map.v1.Tile.Coordinate
-	(*Tile_Edge)(nil),          // 4: map.v1.Tile.Edge
-	(*Tile_RenderingSpec)(nil), // 5: map.v1.Tile.RenderingSpec
-	(*Segment_Bounds)(nil),     // 6: map.v1.Segment.Bounds
-	(*Segment_Row)(nil),        // 7: map.v1.Segment.Row
-	(Direction)(0),             // 8: map.v1.Direction
+	(*Tile)(nil),                  // 0: map.v1.Tile
+	(*Segment)(nil),               // 1: map.v1.Segment
+	(*Grid)(nil),                  // 2: map.v1.Grid
+	(*Tile_Coordinate)(nil),       // 3: map.v1.Tile.Coordinate
+	(*Tile_Edge)(nil),             // 4: map.v1.Tile.Edge
+	(*Tile_Corner)(nil),           // 5: map.v1.Tile.Corner
+	(*Tile_RenderingSpec)(nil),    // 6: map.v1.Tile.RenderingSpec
+	(*Segment_Bounds)(nil),        // 7: map.v1.Segment.Bounds
+	(*Segment_RenderingSpec)(nil), // 8: map.v1.Segment.RenderingSpec
+	(*Segment_Row)(nil),           // 9: map.v1.Segment.Row
+	(EdgeDirection)(0),            // 10: map.v1.EdgeDirection
+	(CornerDirection)(0),          // 11: map.v1.CornerDirection
 }
 var file_map_v1_tile_proto_depIdxs = []int32{
-	3, // 0: map.v1.Tile.coordinate:type_name -> map.v1.Tile.Coordinate
-	5, // 1: map.v1.Tile.rendering_spec:type_name -> map.v1.Tile.RenderingSpec
-	6, // 2: map.v1.Segment.bounds:type_name -> map.v1.Segment.Bounds
-	0, // 3: map.v1.Segment.tiles:type_name -> map.v1.Tile
-	7, // 4: map.v1.Grid.segment_rows:type_name -> map.v1.Segment.Row
-	8, // 5: map.v1.Tile.Edge.direction:type_name -> map.v1.Direction
-	4, // 6: map.v1.Tile.RenderingSpec.edges:type_name -> map.v1.Tile.Edge
-	1, // 7: map.v1.Segment.Row.segments:type_name -> map.v1.Segment
-	8, // [8:8] is the sub-list for method output_type
-	8, // [8:8] is the sub-list for method input_type
-	8, // [8:8] is the sub-list for extension type_name
-	8, // [8:8] is the sub-list for extension extendee
-	0, // [0:8] is the sub-list for field type_name
+	3,  // 0: map.v1.Tile.coordinate:type_name -> map.v1.Tile.Coordinate
+	6,  // 1: map.v1.Tile.rendering_spec:type_name -> map.v1.Tile.RenderingSpec
+	7,  // 2: map.v1.Segment.bounds:type_name -> map.v1.Segment.Bounds
+	0,  // 3: map.v1.Segment.tiles:type_name -> map.v1.Tile
+	8,  // 4: map.v1.Segment.rendering_spec:type_name -> map.v1.Segment.RenderingSpec
+	9,  // 5: map.v1.Grid.segment_rows:type_name -> map.v1.Segment.Row
+	10, // 6: map.v1.Tile.Edge.direction:type_name -> map.v1.EdgeDirection
+	11, // 7: map.v1.Tile.Corner.direction:type_name -> map.v1.CornerDirection
+	4,  // 8: map.v1.Tile.RenderingSpec.edges:type_name -> map.v1.Tile.Edge
+	5,  // 9: map.v1.Tile.RenderingSpec.corners:type_name -> map.v1.Tile.Corner
+	1,  // 10: map.v1.Segment.Row.segments:type_name -> map.v1.Segment
+	11, // [11:11] is the sub-list for method output_type
+	11, // [11:11] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_map_v1_tile_proto_init() }
@@ -574,7 +699,7 @@ func file_map_v1_tile_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_map_v1_tile_proto_rawDesc), len(file_map_v1_tile_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

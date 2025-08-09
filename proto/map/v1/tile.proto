@@ -14,13 +14,19 @@ message Tile {
   }
 
   message Edge {
-    map.v1.Direction direction = 1;
+    map.v1.EdgeDirection direction = 1;
     string neighbour_terrain_id = 2;
+  }
+
+  message Corner {
+    map.v1.CornerDirection direction = 1;
+    repeated string neighbour_terrain_ids = 2; // order follows direction enum
   }
 
   message RenderingSpec {
     repeated map.v1.Tile.Edge edges = 1;
-    repeated string feature_ids = 2; // landscape features, e.g. trees, rocks, etc.
+    repeated map.v1.Tile.Corner corners = 2;
+    repeated string feature_ids = 3; // landscape features, e.g. trees, rocks, etc.
   }
 
   map.v1.Tile.Coordinate coordinate = 1;
@@ -36,12 +42,17 @@ message Segment {
     int32 max_column = 4;
   }
 
+  message RenderingSpec {
+    string svg = 1;
+  }
+
   message Row {
     repeated map.v1.Segment segments = 1;
   }
 
   map.v1.Segment.Bounds bounds = 1;
   repeated map.v1.Tile tiles = 2;
+  map.v1.Segment.RenderingSpec rendering_spec = 3;
 }
 
 message Grid {

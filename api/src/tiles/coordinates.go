@@ -1,6 +1,7 @@
 package tiles
 
 import (
+	"fmt"
 	"iter"
 
 	mapv1 "github.com/openhexes/proto/map/v1"
@@ -12,10 +13,14 @@ type CoordinateKey struct {
 	Column uint32
 }
 
+func (k CoordinateKey) String() string {
+	return fmt.Sprintf("%d.%d.%d", k.Depth, k.Row, k.Column)
+}
+
 type Index = map[CoordinateKey]*mapv1.Tile
 
 type Neighbour struct {
-	Direction     mapv1.Direction
+	Direction     mapv1.EdgeDirection
 	CoordinateKey CoordinateKey
 }
 
@@ -39,7 +44,7 @@ func IterNeighbours(c CoordinateKey) iter.Seq[Neighbour] {
 		if c.Row%2 == 0 {
 			if c.Column > 0 {
 				n = Neighbour{
-					Direction:     mapv1.Direction_DIRECTION_W,
+					Direction:     mapv1.EdgeDirection_EDGE_DIRECTION_W,
 					CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row, Column: c.Column - 1},
 				}
 				if !yield(n) {
@@ -49,7 +54,7 @@ func IterNeighbours(c CoordinateKey) iter.Seq[Neighbour] {
 
 			if c.Row > 0 && c.Column > 0 {
 				n = Neighbour{
-					Direction:     mapv1.Direction_DIRECTION_NW,
+					Direction:     mapv1.EdgeDirection_EDGE_DIRECTION_NW,
 					CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row - 1, Column: c.Column - 1},
 				}
 				if !yield(n) {
@@ -59,7 +64,7 @@ func IterNeighbours(c CoordinateKey) iter.Seq[Neighbour] {
 
 			if c.Row > 0 {
 				n = Neighbour{
-					Direction:     mapv1.Direction_DIRECTION_NE,
+					Direction:     mapv1.EdgeDirection_EDGE_DIRECTION_NE,
 					CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row - 1, Column: c.Column},
 				}
 				if !yield(n) {
@@ -68,7 +73,7 @@ func IterNeighbours(c CoordinateKey) iter.Seq[Neighbour] {
 			}
 
 			n = Neighbour{
-				Direction:     mapv1.Direction_DIRECTION_E,
+				Direction:     mapv1.EdgeDirection_EDGE_DIRECTION_E,
 				CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row, Column: c.Column + 1},
 			}
 			if !yield(n) {
@@ -76,7 +81,7 @@ func IterNeighbours(c CoordinateKey) iter.Seq[Neighbour] {
 			}
 
 			n = Neighbour{
-				Direction:     mapv1.Direction_DIRECTION_SE,
+				Direction:     mapv1.EdgeDirection_EDGE_DIRECTION_SE,
 				CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row + 1, Column: c.Column},
 			}
 			if !yield(n) {
@@ -85,7 +90,7 @@ func IterNeighbours(c CoordinateKey) iter.Seq[Neighbour] {
 
 			if c.Column > 0 {
 				n = Neighbour{
-					Direction:     mapv1.Direction_DIRECTION_SW,
+					Direction:     mapv1.EdgeDirection_EDGE_DIRECTION_SW,
 					CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row + 1, Column: c.Column - 1},
 				}
 				if !yield(n) {
@@ -95,7 +100,7 @@ func IterNeighbours(c CoordinateKey) iter.Seq[Neighbour] {
 		} else {
 			if c.Column > 0 {
 				n = Neighbour{
-					Direction:     mapv1.Direction_DIRECTION_W,
+					Direction:     mapv1.EdgeDirection_EDGE_DIRECTION_W,
 					CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row, Column: c.Column - 1},
 				}
 				if !yield(n) {
@@ -105,7 +110,7 @@ func IterNeighbours(c CoordinateKey) iter.Seq[Neighbour] {
 
 			if c.Row > 0 {
 				n = Neighbour{
-					Direction:     mapv1.Direction_DIRECTION_NW,
+					Direction:     mapv1.EdgeDirection_EDGE_DIRECTION_NW,
 					CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row - 1, Column: c.Column},
 				}
 				if !yield(n) {
@@ -115,7 +120,7 @@ func IterNeighbours(c CoordinateKey) iter.Seq[Neighbour] {
 
 			if c.Row > 0 {
 				n = Neighbour{
-					Direction:     mapv1.Direction_DIRECTION_NE,
+					Direction:     mapv1.EdgeDirection_EDGE_DIRECTION_NE,
 					CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row - 1, Column: c.Column + 1},
 				}
 				if !yield(n) {
@@ -124,7 +129,7 @@ func IterNeighbours(c CoordinateKey) iter.Seq[Neighbour] {
 			}
 
 			n = Neighbour{
-				Direction:     mapv1.Direction_DIRECTION_E,
+				Direction:     mapv1.EdgeDirection_EDGE_DIRECTION_E,
 				CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row, Column: c.Column + 1},
 			}
 			if !yield(n) {
@@ -132,7 +137,7 @@ func IterNeighbours(c CoordinateKey) iter.Seq[Neighbour] {
 			}
 
 			n = Neighbour{
-				Direction:     mapv1.Direction_DIRECTION_SE,
+				Direction:     mapv1.EdgeDirection_EDGE_DIRECTION_SE,
 				CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row + 1, Column: c.Column + 1},
 			}
 			if !yield(n) {
@@ -140,7 +145,7 @@ func IterNeighbours(c CoordinateKey) iter.Seq[Neighbour] {
 			}
 
 			n = Neighbour{
-				Direction:     mapv1.Direction_DIRECTION_SW,
+				Direction:     mapv1.EdgeDirection_EDGE_DIRECTION_SW,
 				CoordinateKey: CoordinateKey{Depth: c.Depth, Row: c.Row + 1, Column: c.Column},
 			}
 			if !yield(n) {

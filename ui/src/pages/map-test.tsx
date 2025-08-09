@@ -5,8 +5,8 @@ import React from "react"
 
 const Map = React.lazy(() => import("@/components/map/grid-view"))
 
-const rowCount = 300
-const columnCount = 300
+const rowCount = 100
+const columnCount = 100
 
 export const MapTest = () => {
     const { world, isLoading, progress, error } = useWorld(rowCount, columnCount, 30, 30)
@@ -16,7 +16,7 @@ export const MapTest = () => {
     }
 
     if (world?.layers[0] !== undefined) {
-        return <Map grid={world.layers[0]} />
+        return <Map world={world} grid={world.layers[0]} />
     }
 
     return <ErrorView error={error ?? new Error("unknown error")} />

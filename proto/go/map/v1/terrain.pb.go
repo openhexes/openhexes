@@ -162,9 +162,10 @@ type Terrain struct {
 	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Tags            []string               `protobuf:"bytes,2,rep,name=tags,proto3" json:"tags,omitempty"`
 	MovementPenalty uint32                 `protobuf:"varint,3,opt,name=movement_penalty,json=movementPenalty,proto3" json:"movement_penalty,omitempty"`
-	PassableWith    []Terrain_MovementType `protobuf:"varint,4,rep,packed,name=passable_with,json=passableWith,proto3,enum=map.v1.Terrain_MovementType" json:"passable_with,omitempty"`
-	Effects         []*Terrain_Effect      `protobuf:"bytes,5,rep,name=effects,proto3" json:"effects,omitempty"`
-	RenderingSpec   *Terrain_RenderingSpec `protobuf:"bytes,6,opt,name=rendering_spec,json=renderingSpec,proto3" json:"rendering_spec,omitempty"`
+	CanPassWith     []Terrain_MovementType `protobuf:"varint,4,rep,packed,name=can_pass_with,json=canPassWith,proto3,enum=map.v1.Terrain_MovementType" json:"can_pass_with,omitempty"`
+	CanStopWith     []Terrain_MovementType `protobuf:"varint,5,rep,packed,name=can_stop_with,json=canStopWith,proto3,enum=map.v1.Terrain_MovementType" json:"can_stop_with,omitempty"`
+	Effects         []*Terrain_Effect      `protobuf:"bytes,6,rep,name=effects,proto3" json:"effects,omitempty"`
+	RenderingSpec   *Terrain_RenderingSpec `protobuf:"bytes,7,opt,name=rendering_spec,json=renderingSpec,proto3" json:"rendering_spec,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -220,9 +221,16 @@ func (x *Terrain) GetMovementPenalty() uint32 {
 	return 0
 }
 
-func (x *Terrain) GetPassableWith() []Terrain_MovementType {
+func (x *Terrain) GetCanPassWith() []Terrain_MovementType {
 	if x != nil {
-		return x.PassableWith
+		return x.CanPassWith
+	}
+	return nil
+}
+
+func (x *Terrain) GetCanStopWith() []Terrain_MovementType {
+	if x != nil {
+		return x.CanStopWith
 	}
 	return nil
 }
@@ -951,14 +959,15 @@ var File_map_v1_terrain_proto protoreflect.FileDescriptor
 
 const file_map_v1_terrain_proto_rawDesc = "" +
 	"\n" +
-	"\x14map/v1/terrain.proto\x12\x06map.v1\x1a\x1acreature/v1/creature.proto\x1a\x14magic/v1/spell.proto\"\xd4\x18\n" +
+	"\x14map/v1/terrain.proto\x12\x06map.v1\x1a\x1acreature/v1/creature.proto\x1a\x14magic/v1/spell.proto\"\x95\x19\n" +
 	"\aTerrain\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04tags\x18\x02 \x03(\tR\x04tags\x12)\n" +
-	"\x10movement_penalty\x18\x03 \x01(\rR\x0fmovementPenalty\x12A\n" +
-	"\rpassable_with\x18\x04 \x03(\x0e2\x1c.map.v1.Terrain.MovementTypeR\fpassableWith\x120\n" +
-	"\aeffects\x18\x05 \x03(\v2\x16.map.v1.Terrain.EffectR\aeffects\x12D\n" +
-	"\x0erendering_spec\x18\x06 \x01(\v2\x1d.map.v1.Terrain.RenderingSpecR\rrenderingSpec\x1a\xd5\x11\n" +
+	"\x10movement_penalty\x18\x03 \x01(\rR\x0fmovementPenalty\x12@\n" +
+	"\rcan_pass_with\x18\x04 \x03(\x0e2\x1c.map.v1.Terrain.MovementTypeR\vcanPassWith\x12@\n" +
+	"\rcan_stop_with\x18\x05 \x03(\x0e2\x1c.map.v1.Terrain.MovementTypeR\vcanStopWith\x120\n" +
+	"\aeffects\x18\x06 \x03(\v2\x16.map.v1.Terrain.EffectR\aeffects\x12D\n" +
+	"\x0erendering_spec\x18\a \x01(\v2\x1d.map.v1.Terrain.RenderingSpecR\rrenderingSpec\x1a\xd5\x11\n" +
 	"\x06Effect\x12W\n" +
 	"\x12modify_spell_level\x18\x01 \x01(\v2'.map.v1.Terrain.Effect.ModifySpellLevelH\x00R\x10modifySpellLevel\x12`\n" +
 	"\x15prevent_spell_casting\x18\x02 \x01(\v2*.map.v1.Terrain.Effect.PreventSpellCastingH\x00R\x13preventSpellCasting\x12y\n" +
@@ -1062,39 +1071,40 @@ var file_map_v1_terrain_proto_goTypes = []any{
 	(*v11.Creature_AttributeModification)(nil),         // 17: creature.v1.Creature.AttributeModification
 }
 var file_map_v1_terrain_proto_depIdxs = []int32{
-	0,  // 0: map.v1.Terrain.passable_with:type_name -> map.v1.Terrain.MovementType
-	3,  // 1: map.v1.Terrain.effects:type_name -> map.v1.Terrain.Effect
-	4,  // 2: map.v1.Terrain.rendering_spec:type_name -> map.v1.Terrain.RenderingSpec
-	5,  // 3: map.v1.Terrain.Effect.modify_spell_level:type_name -> map.v1.Terrain.Effect.ModifySpellLevel
-	6,  // 4: map.v1.Terrain.Effect.prevent_spell_casting:type_name -> map.v1.Terrain.Effect.PreventSpellCasting
-	7,  // 5: map.v1.Terrain.Effect.disable_native_terrain_bonuses:type_name -> map.v1.Terrain.Effect.DisableNativeTerrainBonuses
-	8,  // 6: map.v1.Terrain.Effect.modify_creature_movement_type:type_name -> map.v1.Terrain.Effect.ModifyCreatureMovementType
-	9,  // 7: map.v1.Terrain.Effect.modify_creature_morale:type_name -> map.v1.Terrain.Effect.ModifyCreatureMorale
-	10, // 8: map.v1.Terrain.Effect.modify_creature_luck:type_name -> map.v1.Terrain.Effect.ModifyCreatureLuck
-	11, // 9: map.v1.Terrain.Effect.modify_creature_attack:type_name -> map.v1.Terrain.Effect.ModifyCreatureAttack
-	12, // 10: map.v1.Terrain.Effect.modify_creature_defence:type_name -> map.v1.Terrain.Effect.ModifyCreatureDefence
-	13, // 11: map.v1.Terrain.Effect.modify_creature_speed:type_name -> map.v1.Terrain.Effect.ModifyCreatureSpeed
-	1,  // 12: map.v1.Terrain.RenderingSpec.rendering_type:type_name -> map.v1.Terrain.RenderingType
-	14, // 13: map.v1.Terrain.Effect.ModifySpellLevel.filter:type_name -> magic.v1.Spell.Filter
-	14, // 14: map.v1.Terrain.Effect.PreventSpellCasting.filter:type_name -> magic.v1.Spell.Filter
-	15, // 15: map.v1.Terrain.Effect.ModifyCreatureMovementType.filter:type_name -> creature.v1.Creature.Kind.Filter
-	16, // 16: map.v1.Terrain.Effect.ModifyCreatureMovementType.remove:type_name -> creature.v1.Creature.MovementType
-	16, // 17: map.v1.Terrain.Effect.ModifyCreatureMovementType.add:type_name -> creature.v1.Creature.MovementType
-	15, // 18: map.v1.Terrain.Effect.ModifyCreatureMorale.filter:type_name -> creature.v1.Creature.Kind.Filter
-	17, // 19: map.v1.Terrain.Effect.ModifyCreatureMorale.modification:type_name -> creature.v1.Creature.AttributeModification
-	15, // 20: map.v1.Terrain.Effect.ModifyCreatureLuck.filter:type_name -> creature.v1.Creature.Kind.Filter
-	17, // 21: map.v1.Terrain.Effect.ModifyCreatureLuck.modification:type_name -> creature.v1.Creature.AttributeModification
-	15, // 22: map.v1.Terrain.Effect.ModifyCreatureAttack.filter:type_name -> creature.v1.Creature.Kind.Filter
-	17, // 23: map.v1.Terrain.Effect.ModifyCreatureAttack.modification:type_name -> creature.v1.Creature.AttributeModification
-	15, // 24: map.v1.Terrain.Effect.ModifyCreatureDefence.filter:type_name -> creature.v1.Creature.Kind.Filter
-	17, // 25: map.v1.Terrain.Effect.ModifyCreatureDefence.modification:type_name -> creature.v1.Creature.AttributeModification
-	15, // 26: map.v1.Terrain.Effect.ModifyCreatureSpeed.filter:type_name -> creature.v1.Creature.Kind.Filter
-	17, // 27: map.v1.Terrain.Effect.ModifyCreatureSpeed.modification:type_name -> creature.v1.Creature.AttributeModification
-	28, // [28:28] is the sub-list for method output_type
-	28, // [28:28] is the sub-list for method input_type
-	28, // [28:28] is the sub-list for extension type_name
-	28, // [28:28] is the sub-list for extension extendee
-	0,  // [0:28] is the sub-list for field type_name
+	0,  // 0: map.v1.Terrain.can_pass_with:type_name -> map.v1.Terrain.MovementType
+	0,  // 1: map.v1.Terrain.can_stop_with:type_name -> map.v1.Terrain.MovementType
+	3,  // 2: map.v1.Terrain.effects:type_name -> map.v1.Terrain.Effect
+	4,  // 3: map.v1.Terrain.rendering_spec:type_name -> map.v1.Terrain.RenderingSpec
+	5,  // 4: map.v1.Terrain.Effect.modify_spell_level:type_name -> map.v1.Terrain.Effect.ModifySpellLevel
+	6,  // 5: map.v1.Terrain.Effect.prevent_spell_casting:type_name -> map.v1.Terrain.Effect.PreventSpellCasting
+	7,  // 6: map.v1.Terrain.Effect.disable_native_terrain_bonuses:type_name -> map.v1.Terrain.Effect.DisableNativeTerrainBonuses
+	8,  // 7: map.v1.Terrain.Effect.modify_creature_movement_type:type_name -> map.v1.Terrain.Effect.ModifyCreatureMovementType
+	9,  // 8: map.v1.Terrain.Effect.modify_creature_morale:type_name -> map.v1.Terrain.Effect.ModifyCreatureMorale
+	10, // 9: map.v1.Terrain.Effect.modify_creature_luck:type_name -> map.v1.Terrain.Effect.ModifyCreatureLuck
+	11, // 10: map.v1.Terrain.Effect.modify_creature_attack:type_name -> map.v1.Terrain.Effect.ModifyCreatureAttack
+	12, // 11: map.v1.Terrain.Effect.modify_creature_defence:type_name -> map.v1.Terrain.Effect.ModifyCreatureDefence
+	13, // 12: map.v1.Terrain.Effect.modify_creature_speed:type_name -> map.v1.Terrain.Effect.ModifyCreatureSpeed
+	1,  // 13: map.v1.Terrain.RenderingSpec.rendering_type:type_name -> map.v1.Terrain.RenderingType
+	14, // 14: map.v1.Terrain.Effect.ModifySpellLevel.filter:type_name -> magic.v1.Spell.Filter
+	14, // 15: map.v1.Terrain.Effect.PreventSpellCasting.filter:type_name -> magic.v1.Spell.Filter
+	15, // 16: map.v1.Terrain.Effect.ModifyCreatureMovementType.filter:type_name -> creature.v1.Creature.Kind.Filter
+	16, // 17: map.v1.Terrain.Effect.ModifyCreatureMovementType.remove:type_name -> creature.v1.Creature.MovementType
+	16, // 18: map.v1.Terrain.Effect.ModifyCreatureMovementType.add:type_name -> creature.v1.Creature.MovementType
+	15, // 19: map.v1.Terrain.Effect.ModifyCreatureMorale.filter:type_name -> creature.v1.Creature.Kind.Filter
+	17, // 20: map.v1.Terrain.Effect.ModifyCreatureMorale.modification:type_name -> creature.v1.Creature.AttributeModification
+	15, // 21: map.v1.Terrain.Effect.ModifyCreatureLuck.filter:type_name -> creature.v1.Creature.Kind.Filter
+	17, // 22: map.v1.Terrain.Effect.ModifyCreatureLuck.modification:type_name -> creature.v1.Creature.AttributeModification
+	15, // 23: map.v1.Terrain.Effect.ModifyCreatureAttack.filter:type_name -> creature.v1.Creature.Kind.Filter
+	17, // 24: map.v1.Terrain.Effect.ModifyCreatureAttack.modification:type_name -> creature.v1.Creature.AttributeModification
+	15, // 25: map.v1.Terrain.Effect.ModifyCreatureDefence.filter:type_name -> creature.v1.Creature.Kind.Filter
+	17, // 26: map.v1.Terrain.Effect.ModifyCreatureDefence.modification:type_name -> creature.v1.Creature.AttributeModification
+	15, // 27: map.v1.Terrain.Effect.ModifyCreatureSpeed.filter:type_name -> creature.v1.Creature.Kind.Filter
+	17, // 28: map.v1.Terrain.Effect.ModifyCreatureSpeed.modification:type_name -> creature.v1.Creature.AttributeModification
+	29, // [29:29] is the sub-list for method output_type
+	29, // [29:29] is the sub-list for method input_type
+	29, // [29:29] is the sub-list for extension type_name
+	29, // [29:29] is the sub-list for extension extendee
+	0,  // [0:29] is the sub-list for field type_name
 }
 
 func init() { file_map_v1_terrain_proto_init() }

@@ -10,9 +10,17 @@ import "map/v1/tile.proto";
 option go_package = "github.com/openhexes/proto;worldv1";
 
 message World {
-  repeated map.v1.Grid layers = 1;
+  message RenderingSpec {
+    // Both `tile_height` and `tile_width` are in "world units",
+    // they're used to sync client- and server-generated SVGs.
+    double tile_height = 1;
+    double tile_width = 2;
+  }
 
-  map<string, map.v1.Terrain> terrain_registry = 2;
-  map<string, magic.v1.Spell> spell_registry = 3;
-  map<string, creature.v1.Creature> creature_registry = 4;
+  repeated map.v1.Grid layers = 1;
+  world.v1.World.RenderingSpec rendering_spec = 2;
+
+  map<string, map.v1.Terrain> terrain_registry = 3;
+  map<string, magic.v1.Spell> spell_registry = 4;
+  map<string, creature.v1.Creature> creature_registry = 5;
 }

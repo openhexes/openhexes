@@ -24,17 +24,22 @@ export declare type World = Message<"world.v1.World"> & {
   layers: Grid[];
 
   /**
-   * @generated from field: map<string, map.v1.Terrain> terrain_registry = 2;
+   * @generated from field: world.v1.World.RenderingSpec rendering_spec = 2;
+   */
+  renderingSpec?: World_RenderingSpec;
+
+  /**
+   * @generated from field: map<string, map.v1.Terrain> terrain_registry = 3;
    */
   terrainRegistry: { [key: string]: Terrain };
 
   /**
-   * @generated from field: map<string, magic.v1.Spell> spell_registry = 3;
+   * @generated from field: map<string, magic.v1.Spell> spell_registry = 4;
    */
   spellRegistry: { [key: string]: Spell };
 
   /**
-   * @generated from field: map<string, creature.v1.Creature> creature_registry = 4;
+   * @generated from field: map<string, creature.v1.Creature> creature_registry = 5;
    */
   creatureRegistry: { [key: string]: Creature };
 };
@@ -44,4 +49,28 @@ export declare type World = Message<"world.v1.World"> & {
  * Use `create(WorldSchema)` to create a new message.
  */
 export declare const WorldSchema: GenMessage<World>;
+
+/**
+ * @generated from message world.v1.World.RenderingSpec
+ */
+export declare type World_RenderingSpec = Message<"world.v1.World.RenderingSpec"> & {
+  /**
+   * Both `tile_height` and `tile_width` are in "world units",
+   * they're used to sync client- and server-generated SVGs.
+   *
+   * @generated from field: double tile_height = 1;
+   */
+  tileHeight: number;
+
+  /**
+   * @generated from field: double tile_width = 2;
+   */
+  tileWidth: number;
+};
+
+/**
+ * Describes the message world.v1.World.RenderingSpec.
+ * Use `create(World_RenderingSpecSchema)` to create a new message.
+ */
+export declare const World_RenderingSpecSchema: GenMessage<World_RenderingSpec>;
 

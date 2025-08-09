@@ -7,17 +7,6 @@ import React from "react"
 
 import { GameClient } from "./fetch"
 
-export const useTileDimensions = () => {
-    const tileHeight = 60 // long diagonal
-    const tileWidth = (Math.sqrt(3) * tileHeight) / 2 // short diagonal
-
-    const sideLength = tileHeight / 2
-    const triangleHeight = Math.sqrt(4 * sideLength ** 2 - tileWidth ** 2) / 2
-    const rowHeight = tileHeight - triangleHeight
-
-    return { tileHeight, tileWidth, rowHeight, triangleHeight }
-}
-
 const sleep = async (ms: number) => {
     return await new Promise((resolve) => setTimeout(resolve, ms))
 }
@@ -50,6 +39,10 @@ const buildWorld = async (
 
         if (!response.world) {
             continue
+        }
+
+        if (response.world.renderingSpec) {
+            world.renderingSpec = response.world.renderingSpec
         }
 
         for (const [k, v] of Object.entries(response.world.terrainRegistry)) {

@@ -1,5 +1,5 @@
 import { create } from "@bufbuild/protobuf"
-import { Direction } from "proto/ts/map/v1/compass_pb"
+import { EdgeDirection } from "proto/ts/map/v1/compass_pb"
 import { type Segment_Bounds, Segment_BoundsSchema, type Tile } from "proto/ts/map/v1/tile_pb"
 
 const emptyBounds = create(Segment_BoundsSchema)
@@ -92,8 +92,8 @@ type EdgePaint = {
 
 export const edgePaint = (self: string, neigh: string): EdgePaint => {
     // tweak palette to match yours
-    const water = "#1e4c60"
-    const shore = "#9bd3e5"
+    const water = "var(--color-sky-900)"
+    const shore = "var(--color-sky-900)"
     const dark = "rgba(0,0,0,.35)"
     const rock = "#6b5f56"
     const grass = "#0ea37e"
@@ -119,14 +119,14 @@ export const edgePaint = (self: string, neigh: string): EdgePaint => {
     return { fill: rock, under: { fill: dark, grow: 0.4 } }
 }
 
-export const SEG_BY_DIR: Record<Direction, [number, number]> = {
-    [Direction.UNSPECIFIED]: [0, 0],
-    [Direction.NE]: [0, 1],
-    [Direction.E]: [1, 2],
-    [Direction.SE]: [2, 3],
-    [Direction.SW]: [3, 4],
-    [Direction.W]: [4, 5],
-    [Direction.NW]: [5, 0],
+export const SEG_BY_DIR: Record<EdgeDirection, [number, number]> = {
+    [EdgeDirection.UNSPECIFIED]: [0, 0],
+    [EdgeDirection.NE]: [0, 1],
+    [EdgeDirection.E]: [1, 2],
+    [EdgeDirection.SE]: [2, 3],
+    [EdgeDirection.SW]: [3, 4],
+    [EdgeDirection.W]: [4, 5],
+    [EdgeDirection.NW]: [5, 0],
 }
 
 export const shorten = (a: Pt, b: Pt, px = 2): [Pt, Pt] => {

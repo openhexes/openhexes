@@ -1,3 +1,15 @@
 :root {
     --shape-hex: polygon(-50% 50%, 50% 100%, 150% 50%, 50% 0);
 }
+
+:root {
+    --terrain-core-terrain-water-fill: url(#pattern-water);
+    --terrain-core-terrain-grass-fill: url(#pattern-grass);
+    --terrain-core-terrain-snow-fill: #e0e0e0;
+
+    --edge-core-terrain-water-fill: #3abff0;
+    --edge-core-terrain-grass-fill: #2d682d;
+
+    --corner-core-terrain-water-fill: #3abff0;
+    --corner-core-terrain-snow-fill: #e0e0e0;
+}

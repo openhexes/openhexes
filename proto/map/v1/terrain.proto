@@ -98,7 +98,9 @@ message Terrain {
   repeated string tags = 2;
 
   uint32 movement_penalty = 3;
-  repeated map.v1.Terrain.MovementType passable_with = 4;
-  repeated map.v1.Terrain.Effect effects = 5;
-  map.v1.Terrain.RenderingSpec rendering_spec = 6;
+  repeated map.v1.Terrain.MovementType can_pass_with = 4;
+  repeated map.v1.Terrain.MovementType can_stop_with = 5;
+
+  repeated map.v1.Terrain.Effect effects = 6;
+  map.v1.Terrain.RenderingSpec rendering_spec = 7;
 }

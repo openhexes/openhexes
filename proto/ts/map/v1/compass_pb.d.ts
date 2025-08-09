@@ -10,47 +10,92 @@ import type { GenEnum, GenFile } from "@bufbuild/protobuf/codegenv2";
 export declare const file_map_v1_compass: GenFile;
 
 /**
- * @generated from enum map.v1.Direction
+ * @generated from enum map.v1.EdgeDirection
  */
-export enum Direction {
+export enum EdgeDirection {
   /**
-   * @generated from enum value: DIRECTION_UNSPECIFIED = 0;
+   * @generated from enum value: EDGE_DIRECTION_UNSPECIFIED = 0;
    */
   UNSPECIFIED = 0,
 
   /**
-   * @generated from enum value: DIRECTION_W = 1;
+   * @generated from enum value: EDGE_DIRECTION_W = 1;
    */
   W = 1,
 
   /**
-   * @generated from enum value: DIRECTION_NW = 2;
+   * @generated from enum value: EDGE_DIRECTION_NW = 2;
    */
   NW = 2,
 
   /**
-   * @generated from enum value: DIRECTION_NE = 4;
+   * @generated from enum value: EDGE_DIRECTION_NE = 4;
    */
   NE = 4,
 
   /**
-   * @generated from enum value: DIRECTION_E = 5;
+   * @generated from enum value: EDGE_DIRECTION_E = 5;
    */
   E = 5,
 
   /**
-   * @generated from enum value: DIRECTION_SE = 6;
+   * @generated from enum value: EDGE_DIRECTION_SE = 6;
    */
   SE = 6,
 
   /**
-   * @generated from enum value: DIRECTION_SW = 7;
+   * @generated from enum value: EDGE_DIRECTION_SW = 7;
    */
   SW = 7,
 }
 
 /**
- * Describes the enum map.v1.Direction.
+ * Describes the enum map.v1.EdgeDirection.
  */
-export declare const DirectionSchema: GenEnum<Direction>;
+export declare const EdgeDirectionSchema: GenEnum<EdgeDirection>;
+
+/**
+ * @generated from enum map.v1.CornerDirection
+ */
+export enum CornerDirection {
+  /**
+   * @generated from enum value: CORNER_DIRECTION_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: CORNER_DIRECTION_NW = 1;
+   */
+  NW = 1,
+
+  /**
+   * @generated from enum value: CORNER_DIRECTION_N = 2;
+   */
+  N = 2,
+
+  /**
+   * @generated from enum value: CORNER_DIRECTION_NE = 3;
+   */
+  NE = 3,
+
+  /**
+   * @generated from enum value: CORNER_DIRECTION_SE = 4;
+   */
+  SE = 4,
+
+  /**
+   * @generated from enum value: CORNER_DIRECTION_S = 5;
+   */
+  S = 5,
+
+  /**
+   * @generated from enum value: CORNER_DIRECTION_SW = 6;
+   */
+  SW = 6,
+}
+
+/**
+ * Describes the enum map.v1.CornerDirection.
+ */
+export declare const CornerDirectionSchema: GenEnum<CornerDirection>;
 

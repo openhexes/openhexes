@@ -4,7 +4,7 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import type { Message } from "@bufbuild/protobuf";
-import type { Direction } from "./compass_pb";
+import type { CornerDirection, EdgeDirection } from "./compass_pb";
 
 /**
  * Describes the file map/v1/tile.proto.
@@ -68,9 +68,9 @@ export declare const Tile_CoordinateSchema: GenMessage<Tile_Coordinate>;
  */
 export declare type Tile_Edge = Message<"map.v1.Tile.Edge"> & {
   /**
-   * @generated from field: map.v1.Direction direction = 1;
+   * @generated from field: map.v1.EdgeDirection direction = 1;
    */
-  direction: Direction;
+  direction: EdgeDirection;
 
   /**
    * @generated from field: string neighbour_terrain_id = 2;
@@ -85,6 +85,29 @@ export declare type Tile_Edge = Message<"map.v1.Tile.Edge"> & {
 export declare const Tile_EdgeSchema: GenMessage<Tile_Edge>;
 
 /**
+ * @generated from message map.v1.Tile.Corner
+ */
+export declare type Tile_Corner = Message<"map.v1.Tile.Corner"> & {
+  /**
+   * @generated from field: map.v1.CornerDirection direction = 1;
+   */
+  direction: CornerDirection;
+
+  /**
+   * order follows direction enum
+   *
+   * @generated from field: repeated string neighbour_terrain_ids = 2;
+   */
+  neighbourTerrainIds: string[];
+};
+
+/**
+ * Describes the message map.v1.Tile.Corner.
+ * Use `create(Tile_CornerSchema)` to create a new message.
+ */
+export declare const Tile_CornerSchema: GenMessage<Tile_Corner>;
+
+/**
  * @generated from message map.v1.Tile.RenderingSpec
  */
 export declare type Tile_RenderingSpec = Message<"map.v1.Tile.RenderingSpec"> & {
@@ -94,9 +117,14 @@ export declare type Tile_RenderingSpec = Message<"map.v1.Tile.RenderingSpec"> & 
   edges: Tile_Edge[];
 
   /**
+   * @generated from field: repeated map.v1.Tile.Corner corners = 2;
+   */
+  corners: Tile_Corner[];
+
+  /**
    * landscape features, e.g. trees, rocks, etc.
    *
-   * @generated from field: repeated string feature_ids = 2;
+   * @generated from field: repeated string feature_ids = 3;
    */
   featureIds: string[];
 };
@@ -120,6 +148,11 @@ export declare type Segment = Message<"map.v1.Segment"> & {
    * @generated from field: repeated map.v1.Tile tiles = 2;
    */
   tiles: Tile[];
+
+  /**
+   * @generated from field: map.v1.Segment.RenderingSpec rendering_spec = 3;
+   */
+  renderingSpec?: Segment_RenderingSpec;
 };
 
 /**
@@ -158,6 +191,22 @@ export declare type Segment_Bounds = Message<"map.v1.Segment.Bounds"> & {
  * Use `create(Segment_BoundsSchema)` to create a new message.
  */
 export declare const Segment_BoundsSchema: GenMessage<Segment_Bounds>;
+
+/**
+ * @generated from message map.v1.Segment.RenderingSpec
+ */
+export declare type Segment_RenderingSpec = Message<"map.v1.Segment.RenderingSpec"> & {
+  /**
+   * @generated from field: string svg = 1;
+   */
+  svg: string;
+};
+
+/**
+ * Describes the message map.v1.Segment.RenderingSpec.
+ * Use `create(Segment_RenderingSpecSchema)` to create a new message.
+ */
+export declare const Segment_RenderingSpecSchema: GenMessage<Segment_RenderingSpec>;
 
 /**
  * @generated from message map.v1.Segment.Row

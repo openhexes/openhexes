@@ -8,17 +8,29 @@ import { enumDesc, fileDesc, tsEnum } from "@bufbuild/protobuf/codegenv2";
  * Describes the file map/v1/compass.proto.
  */
 export const file_map_v1_compass = /*@__PURE__*/
-  fileDesc("ChRtYXAvdjEvY29tcGFzcy5wcm90bxIGbWFwLnYxKpABCglEaXJlY3Rpb24SGQoVRElSRUNUSU9OX1VOU1BFQ0lGSUVEEAASDwoLRElSRUNUSU9OX1cQARIQCgxESVJFQ1RJT05fTlcQAhIQCgxESVJFQ1RJT05fTkUQBBIPCgtESVJFQ1RJT05fRRAFEhAKDERJUkVDVElPTl9TRRAGEhAKDERJUkVDVElPTl9TVxAHQnwKCmNvbS5tYXAudjFCDENvbXBhc3NQcm90b1ABWidnaXRodWIuY29tL29wZW5oZXhlcy9wcm90by9tYXAvdjE7bWFwdjGiAgNNWFiqAgZNYXAuVjHKAgZNYXBcVjHiAhJNYXBcVjFcR1BCTWV0YWRhdGHqAgdNYXA6OlYxYgZwcm90bzM");
+  fileDesc("ChRtYXAvdjEvY29tcGFzcy5wcm90bxIGbWFwLnYxKrcBCg1FZGdlRGlyZWN0aW9uEh4KGkVER0VfRElSRUNUSU9OX1VOU1BFQ0lGSUVEEAASFAoQRURHRV9ESVJFQ1RJT05fVxABEhUKEUVER0VfRElSRUNUSU9OX05XEAISFQoRRURHRV9ESVJFQ1RJT05fTkUQBBIUChBFREdFX0RJUkVDVElPTl9FEAUSFQoRRURHRV9ESVJFQ1RJT05fU0UQBhIVChFFREdFX0RJUkVDVElPTl9TVxAHKscBCg9Db3JuZXJEaXJlY3Rpb24SIAocQ09STkVSX0RJUkVDVElPTl9VTlNQRUNJRklFRBAAEhcKE0NPUk5FUl9ESVJFQ1RJT05fTlcQARIWChJDT1JORVJfRElSRUNUSU9OX04QAhIXChNDT1JORVJfRElSRUNUSU9OX05FEAMSFwoTQ09STkVSX0RJUkVDVElPTl9TRRAEEhYKEkNPUk5FUl9ESVJFQ1RJT05fUxAFEhcKE0NPUk5FUl9ESVJFQ1RJT05fU1cQBkJ8Cgpjb20ubWFwLnYxQgxDb21wYXNzUHJvdG9QAVonZ2l0aHViLmNvbS9vcGVuaGV4ZXMvcHJvdG8vbWFwL3YxO21hcHYxogIDTVhYqgIGTWFwLlYxygIGTWFwXFYx4gISTWFwXFYxXEdQQk1ldGFkYXRh6gIHTWFwOjpWMWIGcHJvdG8z");
 
 /**
- * Describes the enum map.v1.Direction.
+ * Describes the enum map.v1.EdgeDirection.
  */
-export const DirectionSchema = /*@__PURE__*/
+export const EdgeDirectionSchema = /*@__PURE__*/
   enumDesc(file_map_v1_compass, 0);
 
 /**
- * @generated from enum map.v1.Direction
+ * @generated from enum map.v1.EdgeDirection
  */
-export const Direction = /*@__PURE__*/
-  tsEnum(DirectionSchema);
+export const EdgeDirection = /*@__PURE__*/
+  tsEnum(EdgeDirectionSchema);
+
+/**
+ * Describes the enum map.v1.CornerDirection.
+ */
+export const CornerDirectionSchema = /*@__PURE__*/
+  enumDesc(file_map_v1_compass, 1);
+
+/**
+ * @generated from enum map.v1.CornerDirection
+ */
+export const CornerDirection = /*@__PURE__*/
+  tsEnum(CornerDirectionSchema);
 

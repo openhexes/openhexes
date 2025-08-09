@@ -9,7 +9,7 @@ import { file_map_v1_compass } from "./compass_pb";
  * Describes the file map/v1/tile.proto.
  */
 export const file_map_v1_tile = /*@__PURE__*/
-  fileDesc("ChFtYXAvdjEvdGlsZS5wcm90bxIGbWFwLnYxIskCCgRUaWxlEisKCmNvb3JkaW5hdGUYASABKAsyFy5tYXAudjEuVGlsZS5Db29yZGluYXRlEhIKCnRlcnJhaW5faWQYAiABKAkSMgoOcmVuZGVyaW5nX3NwZWMYAyABKAsyGi5tYXAudjEuVGlsZS5SZW5kZXJpbmdTcGVjGjgKCkNvb3JkaW5hdGUSCwoDcm93GAEgASgNEg4KBmNvbHVtbhgCIAEoDRINCgVkZXB0aBgDIAEoDRpKCgRFZGdlEiQKCWRpcmVjdGlvbhgBIAEoDjIRLm1hcC52MS5EaXJlY3Rpb24SHAoUbmVpZ2hib3VyX3RlcnJhaW5faWQYAiABKAkaRgoNUmVuZGVyaW5nU3BlYxIgCgVlZGdlcxgBIAMoCzIRLm1hcC52MS5UaWxlLkVkZ2USEwoLZmVhdHVyZV9pZHMYAiADKAkizAEKB1NlZ21lbnQSJgoGYm91bmRzGAEgASgLMhYubWFwLnYxLlNlZ21lbnQuQm91bmRzEhsKBXRpbGVzGAIgAygLMgwubWFwLnYxLlRpbGUaUgoGQm91bmRzEg8KB21pbl9yb3cYASABKAUSDwoHbWF4X3JvdxgCIAEoBRISCgptaW5fY29sdW1uGAMgASgFEhIKCm1heF9jb2x1bW4YBCABKAUaKAoDUm93EiEKCHNlZ21lbnRzGAEgAygLMg8ubWFwLnYxLlNlZ21lbnQiawoER3JpZBIpCgxzZWdtZW50X3Jvd3MYASADKAsyEy5tYXAudjEuU2VnbWVudC5Sb3cSEgoKdG90YWxfcm93cxgCIAEoDRIVCg10b3RhbF9jb2x1bW5zGAMgASgNEg0KBWRlcHRoGAQgASgNQnkKCmNvbS5tYXAudjFCCVRpbGVQcm90b1ABWidnaXRodWIuY29tL29wZW5oZXhlcy9wcm90by9tYXAvdjE7bWFwdjGiAgNNWFiqAgZNYXAuVjHKAgZNYXBcVjHiAhJNYXBcVjFcR1BCTWV0YWRhdGHqAgdNYXA6OlYxYgZwcm90bzM", [file_map_v1_compass]);
+  fileDesc("ChFtYXAvdjEvdGlsZS5wcm90bxIGbWFwLnYxIsgDCgRUaWxlEisKCmNvb3JkaW5hdGUYASABKAsyFy5tYXAudjEuVGlsZS5Db29yZGluYXRlEhIKCnRlcnJhaW5faWQYAiABKAkSMgoOcmVuZGVyaW5nX3NwZWMYAyABKAsyGi5tYXAudjEuVGlsZS5SZW5kZXJpbmdTcGVjGjgKCkNvb3JkaW5hdGUSCwoDcm93GAEgASgNEg4KBmNvbHVtbhgCIAEoDRINCgVkZXB0aBgDIAEoDRpOCgRFZGdlEigKCWRpcmVjdGlvbhgBIAEoDjIVLm1hcC52MS5FZGdlRGlyZWN0aW9uEhwKFG5laWdoYm91cl90ZXJyYWluX2lkGAIgASgJGlMKBkNvcm5lchIqCglkaXJlY3Rpb24YASABKA4yFy5tYXAudjEuQ29ybmVyRGlyZWN0aW9uEh0KFW5laWdoYm91cl90ZXJyYWluX2lkcxgCIAMoCRpsCg1SZW5kZXJpbmdTcGVjEiAKBWVkZ2VzGAEgAygLMhEubWFwLnYxLlRpbGUuRWRnZRIkCgdjb3JuZXJzGAIgAygLMhMubWFwLnYxLlRpbGUuQ29ybmVyEhMKC2ZlYXR1cmVfaWRzGAMgAygJIqECCgdTZWdtZW50EiYKBmJvdW5kcxgBIAEoCzIWLm1hcC52MS5TZWdtZW50LkJvdW5kcxIbCgV0aWxlcxgCIAMoCzIMLm1hcC52MS5UaWxlEjUKDnJlbmRlcmluZ19zcGVjGAMgASgLMh0ubWFwLnYxLlNlZ21lbnQuUmVuZGVyaW5nU3BlYxpSCgZCb3VuZHMSDwoHbWluX3JvdxgBIAEoBRIPCgdtYXhfcm93GAIgASgFEhIKCm1pbl9jb2x1bW4YAyABKAUSEgoKbWF4X2NvbHVtbhgEIAEoBRocCg1SZW5kZXJpbmdTcGVjEgsKA3N2ZxgBIAEoCRooCgNSb3cSIQoIc2VnbWVudHMYASADKAsyDy5tYXAudjEuU2VnbWVudCJrCgRHcmlkEikKDHNlZ21lbnRfcm93cxgBIAMoCzITLm1hcC52MS5TZWdtZW50LlJvdxISCgp0b3RhbF9yb3dzGAIgASgNEhUKDXRvdGFsX2NvbHVtbnMYAyABKA0SDQoFZGVwdGgYBCABKA1CeQoKY29tLm1hcC52MUIJVGlsZVByb3RvUAFaJ2dpdGh1Yi5jb20vb3BlbmhleGVzL3Byb3RvL21hcC92MTttYXB2MaICA01YWKoCBk1hcC5WMcoCBk1hcFxWMeICEk1hcFxWMVxHUEJNZXRhZGF0YeoCB01hcDo6VjFiBnByb3RvMw", [file_map_v1_compass]);
 
 /**
  * Describes the message map.v1.Tile.
@@ -33,11 +33,18 @@ export const Tile_EdgeSchema = /*@__PURE__*/
   messageDesc(file_map_v1_tile, 0, 1);
 
 /**
+ * Describes the message map.v1.Tile.Corner.
+ * Use `create(Tile_CornerSchema)` to create a new message.
+ */
+export const Tile_CornerSchema = /*@__PURE__*/
+  messageDesc(file_map_v1_tile, 0, 2);
+
+/**
  * Describes the message map.v1.Tile.RenderingSpec.
  * Use `create(Tile_RenderingSpecSchema)` to create a new message.
  */
 export const Tile_RenderingSpecSchema = /*@__PURE__*/
-  messageDesc(file_map_v1_tile, 0, 2);
+  messageDesc(file_map_v1_tile, 0, 3);
 
 /**
  * Describes the message map.v1.Segment.
@@ -54,11 +61,18 @@ export const Segment_BoundsSchema = /*@__PURE__*/
   messageDesc(file_map_v1_tile, 1, 0);
 
 /**
+ * Describes the message map.v1.Segment.RenderingSpec.
+ * Use `create(Segment_RenderingSpecSchema)` to create a new message.
+ */
+export const Segment_RenderingSpecSchema = /*@__PURE__*/
+  messageDesc(file_map_v1_tile, 1, 1);
+
+/**
  * Describes the message map.v1.Segment.Row.
  * Use `create(Segment_RowSchema)` to create a new message.
  */
 export const Segment_RowSchema = /*@__PURE__*/
-  messageDesc(file_map_v1_tile, 1, 1);
+  messageDesc(file_map_v1_tile, 1, 2);
 
 /**
  * Describes the message map.v1.Grid.

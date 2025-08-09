@@ -21,80 +21,149 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type Direction int32
+type EdgeDirection int32
 
 const (
-	Direction_DIRECTION_UNSPECIFIED Direction = 0
-	Direction_DIRECTION_W           Direction = 1
-	Direction_DIRECTION_NW          Direction = 2
-	Direction_DIRECTION_NE          Direction = 4
-	Direction_DIRECTION_E           Direction = 5
-	Direction_DIRECTION_SE          Direction = 6
-	Direction_DIRECTION_SW          Direction = 7
+	EdgeDirection_EDGE_DIRECTION_UNSPECIFIED EdgeDirection = 0
+	EdgeDirection_EDGE_DIRECTION_W           EdgeDirection = 1
+	EdgeDirection_EDGE_DIRECTION_NW          EdgeDirection = 2
+	EdgeDirection_EDGE_DIRECTION_NE          EdgeDirection = 4
+	EdgeDirection_EDGE_DIRECTION_E           EdgeDirection = 5
+	EdgeDirection_EDGE_DIRECTION_SE          EdgeDirection = 6
+	EdgeDirection_EDGE_DIRECTION_SW          EdgeDirection = 7
 )
 
-// Enum value maps for Direction.
+// Enum value maps for EdgeDirection.
 var (
-	Direction_name = map[int32]string{
-		0: "DIRECTION_UNSPECIFIED",
-		1: "DIRECTION_W",
-		2: "DIRECTION_NW",
-		4: "DIRECTION_NE",
-		5: "DIRECTION_E",
-		6: "DIRECTION_SE",
-		7: "DIRECTION_SW",
+	EdgeDirection_name = map[int32]string{
+		0: "EDGE_DIRECTION_UNSPECIFIED",
+		1: "EDGE_DIRECTION_W",
+		2: "EDGE_DIRECTION_NW",
+		4: "EDGE_DIRECTION_NE",
+		5: "EDGE_DIRECTION_E",
+		6: "EDGE_DIRECTION_SE",
+		7: "EDGE_DIRECTION_SW",
 	}
-	Direction_value = map[string]int32{
-		"DIRECTION_UNSPECIFIED": 0,
-		"DIRECTION_W":           1,
-		"DIRECTION_NW":          2,
-		"DIRECTION_NE":          4,
-		"DIRECTION_E":           5,
-		"DIRECTION_SE":          6,
-		"DIRECTION_SW":          7,
+	EdgeDirection_value = map[string]int32{
+		"EDGE_DIRECTION_UNSPECIFIED": 0,
+		"EDGE_DIRECTION_W":           1,
+		"EDGE_DIRECTION_NW":          2,
+		"EDGE_DIRECTION_NE":          4,
+		"EDGE_DIRECTION_E":           5,
+		"EDGE_DIRECTION_SE":          6,
+		"EDGE_DIRECTION_SW":          7,
 	}
 )
 
-func (x Direction) Enum() *Direction {
-	p := new(Direction)
+func (x EdgeDirection) Enum() *EdgeDirection {
+	p := new(EdgeDirection)
 	*p = x
 	return p
 }
 
-func (x Direction) String() string {
+func (x EdgeDirection) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (Direction) Descriptor() protoreflect.EnumDescriptor {
+func (EdgeDirection) Descriptor() protoreflect.EnumDescriptor {
 	return file_map_v1_compass_proto_enumTypes[0].Descriptor()
 }
 
-func (Direction) Type() protoreflect.EnumType {
+func (EdgeDirection) Type() protoreflect.EnumType {
 	return &file_map_v1_compass_proto_enumTypes[0]
 }
 
-func (x Direction) Number() protoreflect.EnumNumber {
+func (x EdgeDirection) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use Direction.Descriptor instead.
-func (Direction) EnumDescriptor() ([]byte, []int) {
+// Deprecated: Use EdgeDirection.Descriptor instead.
+func (EdgeDirection) EnumDescriptor() ([]byte, []int) {
 	return file_map_v1_compass_proto_rawDescGZIP(), []int{0}
+}
+
+type CornerDirection int32
+
+const (
+	CornerDirection_CORNER_DIRECTION_UNSPECIFIED CornerDirection = 0
+	CornerDirection_CORNER_DIRECTION_NW          CornerDirection = 1
+	CornerDirection_CORNER_DIRECTION_N           CornerDirection = 2
+	CornerDirection_CORNER_DIRECTION_NE          CornerDirection = 3
+	CornerDirection_CORNER_DIRECTION_SE          CornerDirection = 4
+	CornerDirection_CORNER_DIRECTION_S           CornerDirection = 5
+	CornerDirection_CORNER_DIRECTION_SW          CornerDirection = 6
+)
+
+// Enum value maps for CornerDirection.
+var (
+	CornerDirection_name = map[int32]string{
+		0: "CORNER_DIRECTION_UNSPECIFIED",
+		1: "CORNER_DIRECTION_NW",
+		2: "CORNER_DIRECTION_N",
+		3: "CORNER_DIRECTION_NE",
+		4: "CORNER_DIRECTION_SE",
+		5: "CORNER_DIRECTION_S",
+		6: "CORNER_DIRECTION_SW",
+	}
+	CornerDirection_value = map[string]int32{
+		"CORNER_DIRECTION_UNSPECIFIED": 0,
+		"CORNER_DIRECTION_NW":          1,
+		"CORNER_DIRECTION_N":           2,
+		"CORNER_DIRECTION_NE":          3,
+		"CORNER_DIRECTION_SE":          4,
+		"CORNER_DIRECTION_S":           5,
+		"CORNER_DIRECTION_SW":          6,
+	}
+)
+
+func (x CornerDirection) Enum() *CornerDirection {
+	p := new(CornerDirection)
+	*p = x
+	return p
+}
+
+func (x CornerDirection) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (CornerDirection) Descriptor() protoreflect.EnumDescriptor {
+	return file_map_v1_compass_proto_enumTypes[1].Descriptor()
+}
+
+func (CornerDirection) Type() protoreflect.EnumType {
+	return &file_map_v1_compass_proto_enumTypes[1]
+}
+
+func (x CornerDirection) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use CornerDirection.Descriptor instead.
+func (CornerDirection) EnumDescriptor() ([]byte, []int) {
+	return file_map_v1_compass_proto_rawDescGZIP(), []int{1}
 }
 
 var File_map_v1_compass_proto protoreflect.FileDescriptor
 
 const file_map_v1_compass_proto_rawDesc = "" +
 	"\n" +
-	"\x14map/v1/compass.proto\x12\x06map.v1*\x90\x01\n" +
-	"\tDirection\x12\x19\n" +
-	"\x15DIRECTION_UNSPECIFIED\x10\x00\x12\x0f\n" +
-	"\vDIRECTION_W\x10\x01\x12\x10\n" +
-	"\fDIRECTION_NW\x10\x02\x12\x10\n" +
-	"\fDIRECTION_NE\x10\x04\x12\x0f\n" +
-	"\vDIRECTION_E\x10\x05\x12\x10\n" +
-	"\fDIRECTION_SE\x10\x06\x12\x10\n" +
-	"\fDIRECTION_SW\x10\aB|\n" +
+	"\x14map/v1/compass.proto\x12\x06map.v1*\xb7\x01\n" +
+	"\rEdgeDirection\x12\x1e\n" +
+	"\x1aEDGE_DIRECTION_UNSPECIFIED\x10\x00\x12\x14\n" +
+	"\x10EDGE_DIRECTION_W\x10\x01\x12\x15\n" +
+	"\x11EDGE_DIRECTION_NW\x10\x02\x12\x15\n" +
+	"\x11EDGE_DIRECTION_NE\x10\x04\x12\x14\n" +
+	"\x10EDGE_DIRECTION_E\x10\x05\x12\x15\n" +
+	"\x11EDGE_DIRECTION_SE\x10\x06\x12\x15\n" +
+	"\x11EDGE_DIRECTION_SW\x10\a*\xc7\x01\n" +
+	"\x0fCornerDirection\x12 \n" +
+	"\x1cCORNER_DIRECTION_UNSPECIFIED\x10\x00\x12\x17\n" +
+	"\x13CORNER_DIRECTION_NW\x10\x01\x12\x16\n" +
+	"\x12CORNER_DIRECTION_N\x10\x02\x12\x17\n" +
+	"\x13CORNER_DIRECTION_NE\x10\x03\x12\x17\n" +
+	"\x13CORNER_DIRECTION_SE\x10\x04\x12\x16\n" +
+	"\x12CORNER_DIRECTION_S\x10\x05\x12\x17\n" +
+	"\x13CORNER_DIRECTION_SW\x10\x06B|\n" +
 	"\n" +
 	"com.map.v1B\fCompassProtoP\x01Z'github.com/openhexes/proto/map/v1;mapv1\xa2\x02\x03MXX\xaa\x02\x06Map.V1\xca\x02\x06Map\\V1\xe2\x02\x12Map\\V1\\GPBMetadata\xea\x02\aMap::V1b\x06proto3"
 
@@ -110,9 +179,10 @@ func file_map_v1_compass_proto_rawDescGZIP() []byte {
 	return file_map_v1_compass_proto_rawDescData
 }
 
-var file_map_v1_compass_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_map_v1_compass_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
 var file_map_v1_compass_proto_goTypes = []any{
-	(Direction)(0), // 0: map.v1.Direction
+	(EdgeDirection)(0),   // 0: map.v1.EdgeDirection
+	(CornerDirection)(0), // 1: map.v1.CornerDirection
 }
 var file_map_v1_compass_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -132,7 +202,7 @@ func file_map_v1_compass_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_map_v1_compass_proto_rawDesc), len(file_map_v1_compass_proto_rawDesc)),
-			NumEnums:      1,
+			NumEnums:      2,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,

@@ -1,14 +1,20 @@
-import { useTileDimensions } from "@/hooks/use-tiles"
+import * as segmentUtil from "@/lib/segments"
 import * as tileUtil from "@/lib/tiles"
 import { create } from "@bufbuild/protobuf"
 import { useWindowSize } from "@uidotdev/usehooks"
-import { type Grid, type Tile as PTile, Segment_BoundsSchema } from "proto/ts/map/v1/tile_pb"
+import {
+    type Grid,
+    type Tile as PTile,
+    type Segment,
+    Segment_BoundsSchema,
+} from "proto/ts/map/v1/tile_pb"
+import type { World } from "proto/ts/world/v1/world_pb"
 import React from "react"
 
-import { LeavesPattern, MountainsPattern, PlusPattern, WavesPattern } from "./patterns"
 import { TileView } from "./tile-view"
 
 interface MapProps {
+    world: World
     grid: Grid
 }
 
@@ -17,9 +23,9 @@ interface Position {
     y: number
 }
 
-export const GridView: React.FC<MapProps> = ({ grid }) => {
+export const GridView: React.FC<MapProps> = ({ world, grid }) => {
     const windowSize = useWindowSize()
-    const { tileHeight, tileWidth, rowHeight, triangleHeight } = useTileDimensions()
+    const { tileHeight = 0, tileWidth = 0 } = world.renderingSpec || {}
 
     const rafRef = React.useRef<number | null>(null)
     const pending = React.useRef<{ dx: number; dy: number } | null>(null)
@@ -37,11 +43,15 @@ export const GridView: React.FC<MapProps> = ({ grid }) => {
     const [lastPosition, setLastPosition] = React.useState<Position | null>(null)
     const [offset, setOffset] = React.useState<Position>({ x: 0, y: 0 })
 
+    const [visibleSegments, setVisibleSegments] = React.useState<Segment[]>([])
     const [visibleTiles, setVisibleTiles] = React.useState<PTile[]>([])
-    const [terrainIndex, setTerrainIndex] = React.useState<Record<string, PTile[]>>({})
 
-    const mapHeight = Math.ceil((((grid.totalRows + 0.4) * tileHeight) / 2) * 1.5)
-    const mapWidth = (grid.totalColumns + 1) * tileWidth
+    // const mapHeight = Math.ceil((((grid.totalRows + 0.4) * tileHeight) / 2) * 1.5)
+    // const mapWidth = (grid.totalColumns + 1) * tileWidth
+
+    const rowHeight = tileHeight * 0.75
+    const mapWidth = Math.ceil(grid.totalColumns * tileWidth + tileWidth / 2) // extra half for shifted rows
+    const mapHeight = Math.ceil((grid.totalRows - 1) * rowHeight + tileHeight) // = tileHeight*(0.75*rows + 0.25)
 
     React.useEffect(() => handlePan(0, 0), [windowSize.height, windowSize.width]) // todo
 
@@ -88,7 +98,8 @@ export const GridView: React.FC<MapProps> = ({ grid }) => {
             return next
         })
 
-        const maxVisibleRows = Math.ceil((rect.height - 2 * triangleHeight) / rowHeight)
+        // const maxVisibleRows = Math.ceil((rect.height - 2 * triangleHeight) / rowHeight)
+        const maxVisibleRows = Math.ceil(rect.height / rowHeight)
         const maxVisibleColumns = Math.ceil(rect.width / tileWidth)
         const skippedColumnCount = Math.ceil(-offset.x / tileWidth)
         const skippedRowCount = Math.ceil(-offset.y / rowHeight)
@@ -102,6 +113,7 @@ export const GridView: React.FC<MapProps> = ({ grid }) => {
         const rowStartingIndex =
             Math.floor((skippedRowCount / grid.totalRows) * grid.segmentRows.length) - 1
 
+        const visibleSegments: Segment[] = []
         const visibleTiles: PTile[] = []
         for (let i = rowStartingIndex; i < grid.segmentRows.length; i++) {
             const row = grid.segmentRows[i]
@@ -120,6 +132,7 @@ export const GridView: React.FC<MapProps> = ({ grid }) => {
                 }
 
                 if (tileUtil.boundsIntersect(segment.bounds, visibleBounds)) {
+                    visibleSegments.push(segment)
                     visibleTiles.push(
                         ...segment.tiles.filter((tile) =>
                             tileUtil.boundsInclude(tile, visibleBounds, 2),
@@ -137,17 +150,8 @@ export const GridView: React.FC<MapProps> = ({ grid }) => {
                 break
             }
         }
+        setVisibleSegments(visibleSegments)
         setVisibleTiles(visibleTiles)
-
-        const tm: Record<string, PTile[]> = {}
-        for (const t of visibleTiles) {
-            if (tm[t.terrainId] === undefined) {
-                tm[t.terrainId] = [t]
-            } else {
-                tm[t.terrainId].push(t)
-            }
-        }
-        setTerrainIndex(tm)
     }
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -203,47 +207,35 @@ export const GridView: React.FC<MapProps> = ({ grid }) => {
         >
             <div
                 data-testid="map"
-                className="select-none cursor-pointer"
+                className="relative select-none cursor-pointer"
                 style={{
+                    width: mapWidth,
+                    height: mapHeight,
                     transform: `translate(${offset.x}px, ${offset.y}px)`,
                 }}
             >
-                <div className="absolute inset-0 z-0 pointer-events-none">
-                    <WavesPattern
-                        tiles={terrainIndex["core/terrain/water"] ?? []}
-                        tileWidth={tileWidth}
-                        tileHeight={tileHeight}
-                        mapWidth={mapWidth}
-                        mapHeight={mapHeight}
+                {/* background: each segment SVG at (0,0); its own viewBox places it */}
+                {visibleSegments.map((segment) => (
+                    <div
+                        key={segmentUtil.getKey(segment)}
+                        className="absolute pointer-events-none"
+                        style={{
+                            left: 0,
+                            top: 0 /* no width/height; or width:mapWidth,height:mapHeight */,
+                        }}
+                        dangerouslySetInnerHTML={{ __html: segment.renderingSpec?.svg ?? "" }}
                     />
-                    <LeavesPattern
-                        tiles={terrainIndex["core/terrain/forest"] ?? []}
-                        tileWidth={tileWidth}
-                        tileHeight={tileHeight}
-                        mapWidth={mapWidth}
-                        mapHeight={mapHeight}
-                    />
-                    <MountainsPattern
-                        tiles={terrainIndex["core/terrain/mountains"] ?? []}
-                        tileWidth={tileWidth}
-                        tileHeight={tileHeight}
-                        mapWidth={mapWidth}
-                        mapHeight={mapHeight}
-                    />
-                    <PlusPattern
-                        tiles={terrainIndex[""] ?? []}
-                        tileWidth={tileWidth}
-                        tileHeight={tileHeight}
-                        mapWidth={mapWidth}
-                        mapHeight={mapHeight}
-                    />
-                </div>
+                ))}
 
-                <div className="absolute inset-0 z-10">
-                    {visibleTiles.map((tile) => (
-                        <TileView tile={tile} key={tileUtil.getKey(tile)} />
-                    ))}
-                </div>
+                {/* interactive tiles on top */}
+                {visibleTiles.map((tile) => (
+                    <TileView
+                        tile={tile}
+                        key={tileUtil.getKey(tile)}
+                        height={tileHeight}
+                        width={tileWidth}
+                    />
+                ))}
             </div>
         </div>
     )

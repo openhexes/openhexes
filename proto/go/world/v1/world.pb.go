@@ -27,9 +27,10 @@ const (
 type World struct {
 	state            protoimpl.MessageState   `protogen:"open.v1"`
 	Layers           []*v1.Grid               `protobuf:"bytes,1,rep,name=layers,proto3" json:"layers,omitempty"`
-	TerrainRegistry  map[string]*v1.Terrain   `protobuf:"bytes,2,rep,name=terrain_registry,json=terrainRegistry,proto3" json:"terrain_registry,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	SpellRegistry    map[string]*v11.Spell    `protobuf:"bytes,3,rep,name=spell_registry,json=spellRegistry,proto3" json:"spell_registry,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	CreatureRegistry map[string]*v12.Creature `protobuf:"bytes,4,rep,name=creature_registry,json=creatureRegistry,proto3" json:"creature_registry,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	RenderingSpec    *World_RenderingSpec     `protobuf:"bytes,2,opt,name=rendering_spec,json=renderingSpec,proto3" json:"rendering_spec,omitempty"`
+	TerrainRegistry  map[string]*v1.Terrain   `protobuf:"bytes,3,rep,name=terrain_registry,json=terrainRegistry,proto3" json:"terrain_registry,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	SpellRegistry    map[string]*v11.Spell    `protobuf:"bytes,4,rep,name=spell_registry,json=spellRegistry,proto3" json:"spell_registry,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	CreatureRegistry map[string]*v12.Creature `protobuf:"bytes,5,rep,name=creature_registry,json=creatureRegistry,proto3" json:"creature_registry,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -71,6 +72,13 @@ func (x *World) GetLayers() []*v1.Grid {
 	return nil
 }
 
+func (x *World) GetRenderingSpec() *World_RenderingSpec {
+	if x != nil {
+		return x.RenderingSpec
+	}
+	return nil
+}
+
 func (x *World) GetTerrainRegistry() map[string]*v1.Terrain {
 	if x != nil {
 		return x.TerrainRegistry
@@ -92,16 +100,76 @@ func (x *World) GetCreatureRegistry() map[string]*v12.Creature {
 	return nil
 }
 
+type World_RenderingSpec struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Both `tile_height` and `tile_width` are in "world units",
+	// they're used to sync client- and server-generated SVGs.
+	TileHeight    float64 `protobuf:"fixed64,1,opt,name=tile_height,json=tileHeight,proto3" json:"tile_height,omitempty"`
+	TileWidth     float64 `protobuf:"fixed64,2,opt,name=tile_width,json=tileWidth,proto3" json:"tile_width,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *World_RenderingSpec) Reset() {
+	*x = World_RenderingSpec{}
+	mi := &file_world_v1_world_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *World_RenderingSpec) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*World_RenderingSpec) ProtoMessage() {}
+
+func (x *World_RenderingSpec) ProtoReflect() protoreflect.Message {
+	mi := &file_world_v1_world_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use World_RenderingSpec.ProtoReflect.Descriptor instead.
+func (*World_RenderingSpec) Descriptor() ([]byte, []int) {
+	return file_world_v1_world_proto_rawDescGZIP(), []int{0, 0}
+}
+
+func (x *World_RenderingSpec) GetTileHeight() float64 {
+	if x != nil {
+		return x.TileHeight
+	}
+	return 0
+}
+
+func (x *World_RenderingSpec) GetTileWidth() float64 {
+	if x != nil {
+		return x.TileWidth
+	}
+	return 0
+}
+
 var File_world_v1_world_proto protoreflect.FileDescriptor
 
 const file_world_v1_world_proto_rawDesc = "" +
 	"\n" +
-	"\x14world/v1/world.proto\x12\bworld.v1\x1a\x1acreature/v1/creature.proto\x1a\x14magic/v1/spell.proto\x1a\x14map/v1/terrain.proto\x1a\x11map/v1/tile.proto\"\xa1\x04\n" +
+	"\x14world/v1/world.proto\x12\bworld.v1\x1a\x1acreature/v1/creature.proto\x1a\x14magic/v1/spell.proto\x1a\x14map/v1/terrain.proto\x1a\x11map/v1/tile.proto\"\xb8\x05\n" +
 	"\x05World\x12$\n" +
-	"\x06layers\x18\x01 \x03(\v2\f.map.v1.GridR\x06layers\x12O\n" +
-	"\x10terrain_registry\x18\x02 \x03(\v2$.world.v1.World.TerrainRegistryEntryR\x0fterrainRegistry\x12I\n" +
-	"\x0espell_registry\x18\x03 \x03(\v2\".world.v1.World.SpellRegistryEntryR\rspellRegistry\x12R\n" +
-	"\x11creature_registry\x18\x04 \x03(\v2%.world.v1.World.CreatureRegistryEntryR\x10creatureRegistry\x1aS\n" +
+	"\x06layers\x18\x01 \x03(\v2\f.map.v1.GridR\x06layers\x12D\n" +
+	"\x0erendering_spec\x18\x02 \x01(\v2\x1d.world.v1.World.RenderingSpecR\rrenderingSpec\x12O\n" +
+	"\x10terrain_registry\x18\x03 \x03(\v2$.world.v1.World.TerrainRegistryEntryR\x0fterrainRegistry\x12I\n" +
+	"\x0espell_registry\x18\x04 \x03(\v2\".world.v1.World.SpellRegistryEntryR\rspellRegistry\x12R\n" +
+	"\x11creature_registry\x18\x05 \x03(\v2%.world.v1.World.CreatureRegistryEntryR\x10creatureRegistry\x1aO\n" +
+	"\rRenderingSpec\x12\x1f\n" +
+	"\vtile_height\x18\x01 \x01(\x01R\n" +
+	"tileHeight\x12\x1d\n" +
+	"\n" +
+	"tile_width\x18\x02 \x01(\x01R\ttileWidth\x1aS\n" +
 	"\x14TerrainRegistryEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12%\n" +
 	"\x05value\x18\x02 \x01(\v2\x0f.map.v1.TerrainR\x05value:\x028\x01\x1aQ\n" +
@@ -126,30 +194,32 @@ func file_world_v1_world_proto_rawDescGZIP() []byte {
 	return file_world_v1_world_proto_rawDescData
 }
 
-var file_world_v1_world_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_world_v1_world_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_world_v1_world_proto_goTypes = []any{
-	(*World)(nil),        // 0: world.v1.World
-	nil,                  // 1: world.v1.World.TerrainRegistryEntry
-	nil,                  // 2: world.v1.World.SpellRegistryEntry
-	nil,                  // 3: world.v1.World.CreatureRegistryEntry
-	(*v1.Grid)(nil),      // 4: map.v1.Grid
-	(*v1.Terrain)(nil),   // 5: map.v1.Terrain
-	(*v11.Spell)(nil),    // 6: magic.v1.Spell
-	(*v12.Creature)(nil), // 7: creature.v1.Creature
+	(*World)(nil),               // 0: world.v1.World
+	(*World_RenderingSpec)(nil), // 1: world.v1.World.RenderingSpec
+	nil,                         // 2: world.v1.World.TerrainRegistryEntry
+	nil,                         // 3: world.v1.World.SpellRegistryEntry
+	nil,                         // 4: world.v1.World.CreatureRegistryEntry
+	(*v1.Grid)(nil),             // 5: map.v1.Grid
+	(*v1.Terrain)(nil),          // 6: map.v1.Terrain
+	(*v11.Spell)(nil),           // 7: magic.v1.Spell
+	(*v12.Creature)(nil),        // 8: creature.v1.Creature
 }
 var file_world_v1_world_proto_depIdxs = []int32{
-	4, // 0: world.v1.World.layers:type_name -> map.v1.Grid
-	1, // 1: world.v1.World.terrain_registry:type_name -> world.v1.World.TerrainRegistryEntry
-	2, // 2: world.v1.World.spell_registry:type_name -> world.v1.World.SpellRegistryEntry
-	3, // 3: world.v1.World.creature_registry:type_name -> world.v1.World.CreatureRegistryEntry
-	5, // 4: world.v1.World.TerrainRegistryEntry.value:type_name -> map.v1.Terrain
-	6, // 5: world.v1.World.SpellRegistryEntry.value:type_name -> magic.v1.Spell
-	7, // 6: world.v1.World.CreatureRegistryEntry.value:type_name -> creature.v1.Creature
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	5, // 0: world.v1.World.layers:type_name -> map.v1.Grid
+	1, // 1: world.v1.World.rendering_spec:type_name -> world.v1.World.RenderingSpec
+	2, // 2: world.v1.World.terrain_registry:type_name -> world.v1.World.TerrainRegistryEntry
+	3, // 3: world.v1.World.spell_registry:type_name -> world.v1.World.SpellRegistryEntry
+	4, // 4: world.v1.World.creature_registry:type_name -> world.v1.World.CreatureRegistryEntry
+	6, // 5: world.v1.World.TerrainRegistryEntry.value:type_name -> map.v1.Terrain
+	7, // 6: world.v1.World.SpellRegistryEntry.value:type_name -> magic.v1.Spell
+	8, // 7: world.v1.World.CreatureRegistryEntry.value:type_name -> creature.v1.Creature
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_world_v1_world_proto_init() }
@@ -163,7 +233,7 @@ func file_world_v1_world_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_world_v1_world_proto_rawDesc), len(file_world_v1_world_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

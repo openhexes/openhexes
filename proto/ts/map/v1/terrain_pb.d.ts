@@ -32,17 +32,22 @@ export declare type Terrain = Message<"map.v1.Terrain"> & {
   movementPenalty: number;
 
   /**
-   * @generated from field: repeated map.v1.Terrain.MovementType passable_with = 4;
+   * @generated from field: repeated map.v1.Terrain.MovementType can_pass_with = 4;
    */
-  passableWith: Terrain_MovementType[];
+  canPassWith: Terrain_MovementType[];
 
   /**
-   * @generated from field: repeated map.v1.Terrain.Effect effects = 5;
+   * @generated from field: repeated map.v1.Terrain.MovementType can_stop_with = 5;
+   */
+  canStopWith: Terrain_MovementType[];
+
+  /**
+   * @generated from field: repeated map.v1.Terrain.Effect effects = 6;
    */
   effects: Terrain_Effect[];
 
   /**
-   * @generated from field: map.v1.Terrain.RenderingSpec rendering_spec = 6;
+   * @generated from field: map.v1.Terrain.RenderingSpec rendering_spec = 7;
    */
   renderingSpec?: Terrain_RenderingSpec;
 };

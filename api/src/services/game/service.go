@@ -8,6 +8,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/openhexes/openhexes/api/src/auth"
 	"github.com/openhexes/openhexes/api/src/config"
+	"github.com/openhexes/openhexes/api/src/render"
 	"github.com/openhexes/openhexes/api/src/server/progress"
 	"github.com/openhexes/openhexes/api/src/tiles"
 	gamev1 "github.com/openhexes/proto/game/v1"
@@ -67,6 +68,10 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 		State: progressv1.Stage_STATE_WAITING,
 		Title: "Process edges",
 	}
+	stageRender := &progressv1.Stage{
+		State: progressv1.Stage_STATE_WAITING,
+		Title: "Render segments",
+	}
 	reporter := progress.NewReporter(
 		ctx,
 		func(p *progressv1.Progress) error {
@@ -74,7 +79,7 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 				Progress: p,
 			})
 		},
-		stageGrid, stageTiles, stageEdges,
+		stageGrid, stageTiles, stageEdges, stageRender,
 	)
 	defer reporter.Close()
 	reporter.Update()
@@ -181,9 +186,9 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 			idx[k] = tile
 
 			if islandSet[k] {
-				tile.TerrainId = "core/terrain/mountains"
+				tile.TerrainId = "ash"
 			} else {
-				tile.TerrainId = "core/terrain/water"
+				tile.TerrainId = "water"
 			}
 
 			segment.Tiles = append(segment.Tiles, tile)
@@ -210,11 +215,28 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 		tile.RenderingSpec = &mapv1.Tile_RenderingSpec{
 			Edges: make([]*mapv1.Tile_Edge, 0, 6),
 		}
+		tileTerrain, ok := config.TerrainRegistry[tile.TerrainId]
+		if !ok {
+			return fmt.Errorf("unregistered terrain id: %s: %q", k, tile.TerrainId)
+		}
+		tileTerrainZ := tileTerrain.RenderingSpec.RenderingType.Number()
+
 		for c := range tiles.IterNeighbours(k) {
 			neighbour, ok := idx[c.CoordinateKey]
 			if !ok || neighbour.TerrainId == tile.TerrainId {
 				continue
 			}
+
+			neighbourTerrain, ok := config.TerrainRegistry[neighbour.TerrainId]
+			if !ok {
+				return fmt.Errorf("unregistered terrain id: %s (neighbour of %s): %q", c.CoordinateKey, k, neighbour.TerrainId)
+			}
+			neighbourTerrainZ := neighbourTerrain.RenderingSpec.RenderingType.Number()
+
+			if tileTerrainZ > neighbourTerrainZ {
+				continue
+			}
+
 			tile.RenderingSpec.Edges = append(tile.RenderingSpec.Edges, &mapv1.Tile_Edge{
 				Direction:          c.Direction,
 				NeighbourTerrainId: neighbour.TerrainId,
@@ -231,11 +253,39 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 	stageEdges.Subtitle = fmt.Sprintf("%d", totalTiles)
 	stageEdges.Duration = durationpb.New(time.Since(start))
 	stageEdges.State = progressv1.Stage_STATE_DONE
+	stageRender.State = progressv1.Stage_STATE_RUNNING
+	reporter.Update(0)
+
+	start = time.Now()
+	var processedSegmentCount int
+	for _, row := range segmentRows {
+		for _, segment := range row.Segments {
+			segment.RenderingSpec = &mapv1.Segment_RenderingSpec{
+				Svg: render.GenerateSVGSegment(segment),
+			}
+
+			processedSegmentCount++
+			if processedSegmentCount%100 == 0 {
+				stageRender.Subtitle = fmt.Sprintf("%d / %d", processedSegmentCount, len(segments))
+				reporter.Update(float64(processedSegmentCount) / float64(len(segments)))
+			}
+		}
+	}
+
+	stageRender.Subtitle = fmt.Sprintf("%d", len(segments))
+	stageRender.Duration = durationpb.New(time.Since(start))
+	stageRender.State = progressv1.Stage_STATE_DONE
 	reporter.Update(1)
+
+	// generation done, time to send
 
 	// grid dimensions
 	dimensionsResponse := &gamev1.GetSampleWorldResponse{
 		World: &worldv1.World{
+			RenderingSpec: &worldv1.World_RenderingSpec{
+				TileHeight: config.TileHeight,
+				TileWidth:  config.TileWidth,
+			},
 			Layers: []*mapv1.Grid{
 				{
 					TotalRows:    request.Msg.TotalRows,
