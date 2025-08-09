@@ -2,12 +2,23 @@ package render
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
 	"github.com/openhexes/openhexes/api/src/config"
 	mapv1 "github.com/openhexes/proto/map/v1"
 )
+
+const snapScale = 1000.0 // 1/1000 px grid; bump to 2000 if needed
+
+func snap(v float64) float64 {
+	return math.Round(v*snapScale) / snapScale
+}
+
+func f64(v float64) string {
+	return strconv.FormatFloat(snap(v), 'f', -1, 64)
+}
 
 // cssVarFill returns an SVG fill attribute string with a CSS variable
 // name and a hardcoded fallback value (CSS variable syntax supports fallbacks).
@@ -140,6 +151,31 @@ func segmentWorldRect(b *mapv1.Segment_Bounds) (minX, minY, width, height float6
 	return
 }
 
+// hexagonPathD returns an SVG path for a canonical hex at (0,0) using config tile dimensions.
+func hexagonPathD() string {
+	v := config.TileHeight / 4.0
+	return fmt.Sprintf(
+		"M%g,%g L%g,%g L%g,%g L%g,%g L%g,%g L%g,%g Z",
+		config.TileWidth/2.0, 0.0, // N
+		config.TileWidth, v, // NE
+		config.TileWidth, 3*v, // SE
+		config.TileWidth/2.0, config.TileHeight, // S
+		0.0, 3*v, // SW
+		0.0, v, // NW
+	)
+}
+
+// tileOriginWorld returns the world top-left origin for a tile (row/column).
+func tileOriginWorld(row, column uint32) (float64, float64) {
+	isEvenRow := row%2 == 0
+	xOrigin := float64(column) * config.TileWidth
+	if !isEvenRow {
+		xOrigin += config.TileWidth / 2.0
+	}
+	yOrigin := float64(row) * config.RowHeight
+	return xOrigin, yOrigin
+}
+
 // EdgeSegmentByDirection maps an EdgeDirection enum to two vertex indexes.
 func EdgeSegmentByDirection(direction mapv1.EdgeDirection) [2]int {
 	switch direction {
@@ -180,8 +216,6 @@ func CornerVertexIndex(direction mapv1.CornerDirection) int {
 	}
 }
 
-func f64(v float64) string { return strconv.FormatFloat(v, 'f', -1, 64) }
-
 func getSegmentKey(segment *mapv1.Segment) string {
 	b := segment.Bounds
 	return fmt.Sprintf("segment-%d-%d-%d-%d", b.MinRow, b.MaxRow, b.MinColumn, b.MaxColumn)
@@ -189,7 +223,8 @@ func getSegmentKey(segment *mapv1.Segment) string {
 
 const (
 	svgHeader = `<svg xmlns="http://www.w3.org/2000/svg" width="%s" height="%s" viewBox="%s %s %s %s" preserveAspectRatio="none">`
-	svgDefs   = `<defs><clipPath id="%s" clipPathUnits="userSpaceOnUse"><rect x="%s" y="%s" width="%s" height="%s"/></clipPath></defs>`
+	// %s (1): hex symbol id, %s (2): hex path d, %s (3): clip id, %s (4): <use> elements
+	svgDefsHex = `<defs><path id="%s" d="%s"/><clipPath id="%s" clipPathUnits="userSpaceOnUse">%s</clipPath></defs>`
 )
 
 // GenerateSVGSegment returns an SVG string for all tiles in a segment.
@@ -199,18 +234,26 @@ func GenerateSVGSegment(segment *mapv1.Segment) string {
 	minX, minY, segW, segH := segmentWorldRect(segment.Bounds)
 	key := getSegmentKey(segment)
 
-	fmt.Fprintf(
-		&builder, svgHeader,
-		f64(segW), f64(segH), f64(minX), f64(minY), f64(segW), f64(segH),
-	)
+	// SVG root
+	fmt.Fprintf(&builder, svgHeader, f64(segW), f64(segH), f64(minX), f64(minY), f64(segW), f64(segH))
 
-	fmt.Fprintf(
-		&builder, svgDefs,
-		key, f64(minX), f64(minY), f64(segW), f64(segH),
-	)
+	// Build the clip path uses: one <use> for each tile in the *segment bounds*
+	hexSymbolID := key + "-hex"
+	clipID := key + "-clip"
 
-	// everything gets clipped to the segment rect
-	fmt.Fprintf(&builder, `<g clip-path="url(#%s)">`, key)
+	var uses strings.Builder
+	for row := segment.Bounds.MinRow; row <= segment.Bounds.MaxRow; row++ {
+		for col := segment.Bounds.MinColumn; col <= segment.Bounds.MaxColumn; col++ {
+			ox, oy := tileOriginWorld(uint32(row), uint32(col))
+			fmt.Fprintf(&uses, `<use href="#%s" x="%s" y="%s"/>`, hexSymbolID, f64(ox), f64(oy))
+		}
+	}
+
+	// Emit defs: hex symbol + union clip made from <use> items
+	fmt.Fprintf(&builder, svgDefsHex, hexSymbolID, hexagonPathD(), clipID, uses.String())
+
+	// Everything we draw is clipped to the union of the hexes in this segment
+	fmt.Fprintf(&builder, `<g clip-path="url(#%s)" shape-rendering="geometricPrecision">`, clipID)
 
 	for _, tile := range segment.Tiles {
 		// 1. Terrain fill

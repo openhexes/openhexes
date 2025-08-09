@@ -213,7 +213,8 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 
 	for k, tile := range idx {
 		tile.RenderingSpec = &mapv1.Tile_RenderingSpec{
-			Edges: make([]*mapv1.Tile_Edge, 0, 6),
+			Edges:   make([]*mapv1.Tile_Edge, 0, 6),
+			Corners: make([]*mapv1.Tile_Corner, 0, 6),
 		}
 		tileTerrain, ok := config.TerrainRegistry[tile.TerrainId]
 		if !ok {
@@ -348,20 +349,6 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 			return err
 		}
 	}
-
-	// const segmentRowsPerChunk = 10 // todo: smarter way to pick this value
-	// for rows := range slices.Chunk(segmentRows, segmentRowsPerChunk) {
-	// 	response := &gamev1.GetSampleWorldResponse{
-	// 		World: &worldv1.World{
-	// 			Layers: []*mapv1.Grid{
-	// 				{SegmentRows: rows},
-	// 			},
-	// 		},
-	// 	}
-	// 	if err := stream.Send(response); err != nil {
-	// 		return err
-	// 	}
-	// }
 
 	return nil
 }
