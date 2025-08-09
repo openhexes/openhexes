@@ -7,8 +7,8 @@
 package gamev1
 
 import (
-	v1 "github.com/openhexes/proto/map/v1"
 	v11 "github.com/openhexes/proto/progress/v1"
+	v1 "github.com/openhexes/proto/world/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -23,7 +23,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type GetSampleGridRequest struct {
+type GetSampleWorldRequest struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
 	TotalRows            uint32                 `protobuf:"varint,1,opt,name=total_rows,json=totalRows,proto3" json:"total_rows,omitempty"`
 	TotalColumns         uint32                 `protobuf:"varint,2,opt,name=total_columns,json=totalColumns,proto3" json:"total_columns,omitempty"`
@@ -33,20 +33,20 @@ type GetSampleGridRequest struct {
 	sizeCache            protoimpl.SizeCache
 }
 
-func (x *GetSampleGridRequest) Reset() {
-	*x = GetSampleGridRequest{}
+func (x *GetSampleWorldRequest) Reset() {
+	*x = GetSampleWorldRequest{}
 	mi := &file_game_v1_game_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetSampleGridRequest) String() string {
+func (x *GetSampleWorldRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetSampleGridRequest) ProtoMessage() {}
+func (*GetSampleWorldRequest) ProtoMessage() {}
 
-func (x *GetSampleGridRequest) ProtoReflect() protoreflect.Message {
+func (x *GetSampleWorldRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_game_v1_game_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -58,61 +58,61 @@ func (x *GetSampleGridRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetSampleGridRequest.ProtoReflect.Descriptor instead.
-func (*GetSampleGridRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetSampleWorldRequest.ProtoReflect.Descriptor instead.
+func (*GetSampleWorldRequest) Descriptor() ([]byte, []int) {
 	return file_game_v1_game_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *GetSampleGridRequest) GetTotalRows() uint32 {
+func (x *GetSampleWorldRequest) GetTotalRows() uint32 {
 	if x != nil {
 		return x.TotalRows
 	}
 	return 0
 }
 
-func (x *GetSampleGridRequest) GetTotalColumns() uint32 {
+func (x *GetSampleWorldRequest) GetTotalColumns() uint32 {
 	if x != nil {
 		return x.TotalColumns
 	}
 	return 0
 }
 
-func (x *GetSampleGridRequest) GetMaxRowsPerSegment() uint32 {
+func (x *GetSampleWorldRequest) GetMaxRowsPerSegment() uint32 {
 	if x != nil {
 		return x.MaxRowsPerSegment
 	}
 	return 0
 }
 
-func (x *GetSampleGridRequest) GetMaxColumnsPerSegment() uint32 {
+func (x *GetSampleWorldRequest) GetMaxColumnsPerSegment() uint32 {
 	if x != nil {
 		return x.MaxColumnsPerSegment
 	}
 	return 0
 }
 
-type GetSampleGridResponse struct {
+type GetSampleWorldResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Grid          *v1.Grid               `protobuf:"bytes,1,opt,name=grid,proto3" json:"grid,omitempty"` // may be partial, containing a subset of segment rows
+	World         *v1.World              `protobuf:"bytes,1,opt,name=world,proto3" json:"world,omitempty"` // partial
 	Progress      *v11.Progress          `protobuf:"bytes,2,opt,name=progress,proto3" json:"progress,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetSampleGridResponse) Reset() {
-	*x = GetSampleGridResponse{}
+func (x *GetSampleWorldResponse) Reset() {
+	*x = GetSampleWorldResponse{}
 	mi := &file_game_v1_game_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetSampleGridResponse) String() string {
+func (x *GetSampleWorldResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetSampleGridResponse) ProtoMessage() {}
+func (*GetSampleWorldResponse) ProtoMessage() {}
 
-func (x *GetSampleGridResponse) ProtoReflect() protoreflect.Message {
+func (x *GetSampleWorldResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_game_v1_game_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -124,19 +124,19 @@ func (x *GetSampleGridResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetSampleGridResponse.ProtoReflect.Descriptor instead.
-func (*GetSampleGridResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetSampleWorldResponse.ProtoReflect.Descriptor instead.
+func (*GetSampleWorldResponse) Descriptor() ([]byte, []int) {
 	return file_game_v1_game_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetSampleGridResponse) GetGrid() *v1.Grid {
+func (x *GetSampleWorldResponse) GetWorld() *v1.World {
 	if x != nil {
-		return x.Grid
+		return x.World
 	}
 	return nil
 }
 
-func (x *GetSampleGridResponse) GetProgress() *v11.Progress {
+func (x *GetSampleWorldResponse) GetProgress() *v11.Progress {
 	if x != nil {
 		return x.Progress
 	}
@@ -147,18 +147,18 @@ var File_game_v1_game_proto protoreflect.FileDescriptor
 
 const file_game_v1_game_proto_rawDesc = "" +
 	"\n" +
-	"\x12game/v1/game.proto\x12\agame.v1\x1a\x11map/v1/tile.proto\x1a\x1aprogress/v1/progress.proto\"\xc2\x01\n" +
-	"\x14GetSampleGridRequest\x12\x1d\n" +
+	"\x12game/v1/game.proto\x12\agame.v1\x1a\x1aprogress/v1/progress.proto\x1a\x14world/v1/world.proto\"\xc3\x01\n" +
+	"\x15GetSampleWorldRequest\x12\x1d\n" +
 	"\n" +
 	"total_rows\x18\x01 \x01(\rR\ttotalRows\x12#\n" +
 	"\rtotal_columns\x18\x02 \x01(\rR\ftotalColumns\x12/\n" +
 	"\x14max_rows_per_segment\x18\x03 \x01(\rR\x11maxRowsPerSegment\x125\n" +
-	"\x17max_columns_per_segment\x18\x04 \x01(\rR\x14maxColumnsPerSegment\"l\n" +
-	"\x15GetSampleGridResponse\x12 \n" +
-	"\x04grid\x18\x01 \x01(\v2\f.map.v1.GridR\x04grid\x121\n" +
-	"\bprogress\x18\x02 \x01(\v2\x15.progress.v1.ProgressR\bprogress2_\n" +
-	"\vGameService\x12P\n" +
-	"\rGetSampleGrid\x12\x1d.game.v1.GetSampleGridRequest\x1a\x1e.game.v1.GetSampleGridResponse0\x01B\x80\x01\n" +
+	"\x17max_columns_per_segment\x18\x04 \x01(\rR\x14maxColumnsPerSegment\"r\n" +
+	"\x16GetSampleWorldResponse\x12%\n" +
+	"\x05world\x18\x01 \x01(\v2\x0f.world.v1.WorldR\x05world\x121\n" +
+	"\bprogress\x18\x02 \x01(\v2\x15.progress.v1.ProgressR\bprogress2b\n" +
+	"\vGameService\x12S\n" +
+	"\x0eGetSampleWorld\x12\x1e.game.v1.GetSampleWorldRequest\x1a\x1f.game.v1.GetSampleWorldResponse0\x01B\x80\x01\n" +
 	"\vcom.game.v1B\tGameProtoP\x01Z)github.com/openhexes/proto/game/v1;gamev1\xa2\x02\x03GXX\xaa\x02\aGame.V1\xca\x02\aGame\\V1\xe2\x02\x13Game\\V1\\GPBMetadata\xea\x02\bGame::V1b\x06proto3"
 
 var (
@@ -175,16 +175,16 @@ func file_game_v1_game_proto_rawDescGZIP() []byte {
 
 var file_game_v1_game_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_game_v1_game_proto_goTypes = []any{
-	(*GetSampleGridRequest)(nil),  // 0: game.v1.GetSampleGridRequest
-	(*GetSampleGridResponse)(nil), // 1: game.v1.GetSampleGridResponse
-	(*v1.Grid)(nil),               // 2: map.v1.Grid
-	(*v11.Progress)(nil),          // 3: progress.v1.Progress
+	(*GetSampleWorldRequest)(nil),  // 0: game.v1.GetSampleWorldRequest
+	(*GetSampleWorldResponse)(nil), // 1: game.v1.GetSampleWorldResponse
+	(*v1.World)(nil),               // 2: world.v1.World
+	(*v11.Progress)(nil),           // 3: progress.v1.Progress
 }
 var file_game_v1_game_proto_depIdxs = []int32{
-	2, // 0: game.v1.GetSampleGridResponse.grid:type_name -> map.v1.Grid
-	3, // 1: game.v1.GetSampleGridResponse.progress:type_name -> progress.v1.Progress
-	0, // 2: game.v1.GameService.GetSampleGrid:input_type -> game.v1.GetSampleGridRequest
-	1, // 3: game.v1.GameService.GetSampleGrid:output_type -> game.v1.GetSampleGridResponse
+	2, // 0: game.v1.GetSampleWorldResponse.world:type_name -> world.v1.World
+	3, // 1: game.v1.GetSampleWorldResponse.progress:type_name -> progress.v1.Progress
+	0, // 2: game.v1.GameService.GetSampleWorld:input_type -> game.v1.GetSampleWorldRequest
+	1, // 3: game.v1.GameService.GetSampleWorld:output_type -> game.v1.GetSampleWorldResponse
 	3, // [3:4] is the sub-list for method output_type
 	2, // [2:3] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

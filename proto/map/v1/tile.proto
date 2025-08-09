@@ -48,4 +48,5 @@ message Grid {
   repeated map.v1.Segment.Row segment_rows = 1;
   uint32 total_rows = 2;
   uint32 total_columns = 3;
+  uint32 depth = 4;
 }

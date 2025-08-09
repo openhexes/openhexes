@@ -5,7 +5,7 @@
 import type { GenEnum, GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import type { Message } from "@bufbuild/protobuf";
 import type { Spell_Filter } from "../../magic/v1/spell_pb";
-import type { Creature_AttributeModification, Creature_Kind_Filter, Creature_MovementType } from "../../creatures/v1/creature_pb";
+import type { Creature_AttributeModification, Creature_Kind_Filter, Creature_MovementType } from "../../creature/v1/creature_pb";
 
 /**
  * Describes the file map/v1/terrain.proto.
@@ -187,17 +187,17 @@ export declare const Terrain_Effect_DisableNativeTerrainBonusesSchema: GenMessag
  */
 export declare type Terrain_Effect_ModifyCreatureMovementType = Message<"map.v1.Terrain.Effect.ModifyCreatureMovementType"> & {
   /**
-   * @generated from field: creatures.v1.Creature.Kind.Filter filter = 1;
+   * @generated from field: creature.v1.Creature.Kind.Filter filter = 1;
    */
   filter?: Creature_Kind_Filter;
 
   /**
-   * @generated from field: repeated creatures.v1.Creature.MovementType remove = 2;
+   * @generated from field: repeated creature.v1.Creature.MovementType remove = 2;
    */
   remove: Creature_MovementType[];
 
   /**
-   * @generated from field: repeated creatures.v1.Creature.MovementType add = 3;
+   * @generated from field: repeated creature.v1.Creature.MovementType add = 3;
    */
   add: Creature_MovementType[];
 };
@@ -213,12 +213,12 @@ export declare const Terrain_Effect_ModifyCreatureMovementTypeSchema: GenMessage
  */
 export declare type Terrain_Effect_ModifyCreatureMorale = Message<"map.v1.Terrain.Effect.ModifyCreatureMorale"> & {
   /**
-   * @generated from field: creatures.v1.Creature.Kind.Filter filter = 1;
+   * @generated from field: creature.v1.Creature.Kind.Filter filter = 1;
    */
   filter?: Creature_Kind_Filter;
 
   /**
-   * @generated from field: creatures.v1.Creature.AttributeModification modification = 2;
+   * @generated from field: creature.v1.Creature.AttributeModification modification = 2;
    */
   modification?: Creature_AttributeModification;
 };
@@ -234,12 +234,12 @@ export declare const Terrain_Effect_ModifyCreatureMoraleSchema: GenMessage<Terra
  */
 export declare type Terrain_Effect_ModifyCreatureLuck = Message<"map.v1.Terrain.Effect.ModifyCreatureLuck"> & {
   /**
-   * @generated from field: creatures.v1.Creature.Kind.Filter filter = 1;
+   * @generated from field: creature.v1.Creature.Kind.Filter filter = 1;
    */
   filter?: Creature_Kind_Filter;
 
   /**
-   * @generated from field: creatures.v1.Creature.AttributeModification modification = 2;
+   * @generated from field: creature.v1.Creature.AttributeModification modification = 2;
    */
   modification?: Creature_AttributeModification;
 };
@@ -255,12 +255,12 @@ export declare const Terrain_Effect_ModifyCreatureLuckSchema: GenMessage<Terrain
  */
 export declare type Terrain_Effect_ModifyCreatureAttack = Message<"map.v1.Terrain.Effect.ModifyCreatureAttack"> & {
   /**
-   * @generated from field: creatures.v1.Creature.Kind.Filter filter = 1;
+   * @generated from field: creature.v1.Creature.Kind.Filter filter = 1;
    */
   filter?: Creature_Kind_Filter;
 
   /**
-   * @generated from field: creatures.v1.Creature.AttributeModification modification = 2;
+   * @generated from field: creature.v1.Creature.AttributeModification modification = 2;
    */
   modification?: Creature_AttributeModification;
 };
@@ -276,12 +276,12 @@ export declare const Terrain_Effect_ModifyCreatureAttackSchema: GenMessage<Terra
  */
 export declare type Terrain_Effect_ModifyCreatureDefence = Message<"map.v1.Terrain.Effect.ModifyCreatureDefence"> & {
   /**
-   * @generated from field: creatures.v1.Creature.Kind.Filter filter = 1;
+   * @generated from field: creature.v1.Creature.Kind.Filter filter = 1;
    */
   filter?: Creature_Kind_Filter;
 
   /**
-   * @generated from field: creatures.v1.Creature.AttributeModification modification = 2;
+   * @generated from field: creature.v1.Creature.AttributeModification modification = 2;
    */
   modification?: Creature_AttributeModification;
 };
@@ -297,12 +297,12 @@ export declare const Terrain_Effect_ModifyCreatureDefenceSchema: GenMessage<Terr
  */
 export declare type Terrain_Effect_ModifyCreatureSpeed = Message<"map.v1.Terrain.Effect.ModifyCreatureSpeed"> & {
   /**
-   * @generated from field: creatures.v1.Creature.Kind.Filter filter = 1;
+   * @generated from field: creature.v1.Creature.Kind.Filter filter = 1;
    */
   filter?: Creature_Kind_Filter;
 
   /**
-   * @generated from field: creatures.v1.Creature.AttributeModification modification = 2;
+   * @generated from field: creature.v1.Creature.AttributeModification modification = 2;
    */
   modification?: Creature_AttributeModification;
 };
@@ -318,14 +318,9 @@ export declare const Terrain_Effect_ModifyCreatureSpeedSchema: GenMessage<Terrai
  */
 export declare type Terrain_RenderingSpec = Message<"map.v1.Terrain.RenderingSpec"> & {
   /**
-   * @generated from field: string class_name = 1;
+   * @generated from field: map.v1.Terrain.RenderingType rendering_type = 1;
    */
-  className: string;
-
-  /**
-   * @generated from field: string texture = 2;
-   */
-  texture: string;
+  renderingType: Terrain_RenderingType;
 };
 
 /**
@@ -368,4 +363,79 @@ export enum Terrain_MovementType {
  * Describes the enum map.v1.Terrain.MovementType.
  */
 export declare const Terrain_MovementTypeSchema: GenEnum<Terrain_MovementType>;
+
+/**
+ * @generated from enum map.v1.Terrain.RenderingType
+ */
+export enum Terrain_RenderingType {
+  /**
+   * @generated from enum value: RENDERING_TYPE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: RENDERING_TYPE_ABYSS = 1;
+   */
+  ABYSS = 1,
+
+  /**
+   * @generated from enum value: RENDERING_TYPE_WATER = 2;
+   */
+  WATER = 2,
+
+  /**
+   * @generated from enum value: RENDERING_TYPE_GRASS = 3;
+   */
+  GRASS = 3,
+
+  /**
+   * @generated from enum value: RENDERING_TYPE_HIGHLANDS = 4;
+   */
+  HIGHLANDS = 4,
+
+  /**
+   * @generated from enum value: RENDERING_TYPE_DIRT = 5;
+   */
+  DIRT = 5,
+
+  /**
+   * @generated from enum value: RENDERING_TYPE_ASH = 6;
+   */
+  ASH = 6,
+
+  /**
+   * @generated from enum value: RENDERING_TYPE_SUBTERRANEAN = 7;
+   */
+  SUBTERRANEAN = 7,
+
+  /**
+   * @generated from enum value: RENDERING_TYPE_ROUGH = 8;
+   */
+  ROUGH = 8,
+
+  /**
+   * @generated from enum value: RENDERING_TYPE_WASTELAND = 9;
+   */
+  WASTELAND = 9,
+
+  /**
+   * @generated from enum value: RENDERING_TYPE_SAND = 10;
+   */
+  SAND = 10,
+
+  /**
+   * @generated from enum value: RENDERING_TYPE_SNOW = 11;
+   */
+  SNOW = 11,
+
+  /**
+   * @generated from enum value: RENDERING_TYPE_SWAMP = 12;
+   */
+  SWAMP = 12,
+}
+
+/**
+ * Describes the enum map.v1.Terrain.RenderingType.
+ */
+export declare const Terrain_RenderingTypeSchema: GenEnum<Terrain_RenderingType>;
 

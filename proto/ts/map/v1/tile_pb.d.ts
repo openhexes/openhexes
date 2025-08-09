@@ -193,6 +193,11 @@ export declare type Grid = Message<"map.v1.Grid"> & {
    * @generated from field: uint32 total_columns = 3;
    */
   totalColumns: number;
+
+  /**
+   * @generated from field: uint32 depth = 4;
+   */
+  depth: number;
 };
 
 /**

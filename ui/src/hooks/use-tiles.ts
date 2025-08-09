@@ -1,7 +1,8 @@
 import { create } from "@bufbuild/protobuf"
-import { GetSampleGridRequestSchema } from "proto/ts/game/v1/game_pb"
-import { type Grid, GridSchema } from "proto/ts/map/v1/tile_pb"
+import { GetSampleWorldRequestSchema } from "proto/ts/game/v1/game_pb"
+import { GridSchema } from "proto/ts/map/v1/tile_pb"
 import type { Progress } from "proto/ts/progress/v1/progress_pb"
+import { type World, WorldSchema } from "proto/ts/world/v1/world_pb"
 import React from "react"
 
 import { GameClient } from "./fetch"
@@ -21,46 +22,70 @@ const sleep = async (ms: number) => {
     return await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-const buildTileGrid = async (
+const buildWorld = async (
     totalRows: number,
     totalColumns: number,
     maxRowsPerSegment: number,
     maxColumnsPerSegment: number,
     setProgress: React.Dispatch<React.SetStateAction<Progress | undefined>>,
-): Promise<Grid> => {
-    const request = create(GetSampleGridRequestSchema, {
+): Promise<World> => {
+    const request = create(GetSampleWorldRequestSchema, {
         totalRows,
         totalColumns,
         maxRowsPerSegment,
         maxColumnsPerSegment,
     })
 
-    const grid = create(GridSchema)
+    const world = create(WorldSchema, {
+        terrainRegistry: {},
+        spellRegistry: {},
+        creatureRegistry: {},
+    })
 
-    for await (const response of GameClient.getSampleGrid(request, { timeoutMs: 60000 })) {
+    for await (const response of GameClient.getSampleWorld(request, { timeoutMs: 60000 })) {
         console.info(response)
         if (response.progress) {
             setProgress(response.progress)
         }
-        if (response.grid) {
-            if (response.grid.totalRows > 0) {
-                grid.totalRows = response.grid.totalRows
+
+        if (!response.world) {
+            continue
+        }
+
+        for (const [k, v] of Object.entries(response.world.terrainRegistry)) {
+            world.terrainRegistry[k] = v
+        }
+        for (const [k, v] of Object.entries(response.world.spellRegistry)) {
+            world.spellRegistry[k] = v
+        }
+        for (const [k, v] of Object.entries(response.world.creatureRegistry)) {
+            world.creatureRegistry[k] = v
+        }
+
+        for (const [idx, incoming] of response.world.layers.entries()) {
+            if (world.layers[idx] === undefined) {
+                world.layers[idx] = create(GridSchema)
             }
-            if (response.grid.totalColumns > 0) {
-                grid.totalColumns = response.grid.totalColumns
+
+            const grid = world.layers[idx]
+            if (incoming.totalRows > 0) {
+                grid.totalRows = incoming.totalRows
             }
-            if (response.grid.segmentRows) {
-                grid.segmentRows.push(...response.grid.segmentRows)
+            if (incoming.totalColumns > 0) {
+                grid.totalColumns = incoming.totalColumns
+            }
+            if (incoming.segmentRows) {
+                grid.segmentRows.push(...incoming.segmentRows)
             }
         }
     }
 
     await sleep(250)
 
-    return grid
+    return world
 }
 
-export const useTileGrid = (
+export const useWorld = (
     totalRows: number,
     totalColumns: number,
     maxRowsPerSegment = 15,
@@ -69,18 +94,18 @@ export const useTileGrid = (
     const [progress, setProgress] = React.useState<Progress | undefined>(undefined)
     const [isLoading, setIsLoading] = React.useState<boolean>(true)
     const [error, setError] = React.useState<Error | undefined>(undefined)
-    const [grid, setGrid] = React.useState<Grid | undefined>(undefined)
+    const [world, setWorld] = React.useState<World | undefined>(undefined)
 
-    const promise = buildTileGrid(
+    const promise = buildWorld(
         totalRows,
         totalColumns,
         maxRowsPerSegment,
         maxColumnsPerSegment,
         setProgress,
     )
-        .then(setGrid)
+        .then(setWorld)
         .catch(setError)
         .finally(() => setIsLoading(false))
 
-    return { promise, isLoading, grid, error, progress }
+    return { promise, isLoading, world, error, progress }
 }

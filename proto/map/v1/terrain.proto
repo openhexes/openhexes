@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package map.v1;
 
-import "creatures/v1/creature.proto";
+import "creature/v1/creature.proto";
 import "magic/v1/spell.proto";
 
 option go_package = "github.com/openhexes/proto;mapv1";
@@ -14,6 +14,22 @@ message Terrain {
     MOVEMENT_TYPE_SWIMMING = 2;
     MOVEMENT_TYPE_FLYING = 3;
     MOVEMENT_TYPE_PORTALING = 4;
+  }
+
+  enum RenderingType {
+    RENDERING_TYPE_UNSPECIFIED = 0;
+    RENDERING_TYPE_ABYSS = 1;
+    RENDERING_TYPE_WATER = 2;
+    RENDERING_TYPE_GRASS = 3;
+    RENDERING_TYPE_HIGHLANDS = 4;
+    RENDERING_TYPE_DIRT = 5;
+    RENDERING_TYPE_ASH = 6;
+    RENDERING_TYPE_SUBTERRANEAN = 7;
+    RENDERING_TYPE_ROUGH = 8;
+    RENDERING_TYPE_WASTELAND = 9;
+    RENDERING_TYPE_SAND = 10;
+    RENDERING_TYPE_SNOW = 11;
+    RENDERING_TYPE_SWAMP = 12;
   }
 
   message Effect {
@@ -31,34 +47,34 @@ message Terrain {
     message DisableNativeTerrainBonuses {}
 
     message ModifyCreatureMovementType {
-      creatures.v1.Creature.Kind.Filter filter = 1;
-      repeated creatures.v1.Creature.MovementType remove = 2;
-      repeated creatures.v1.Creature.MovementType add = 3;
+      creature.v1.Creature.Kind.Filter filter = 1;
+      repeated creature.v1.Creature.MovementType remove = 2;
+      repeated creature.v1.Creature.MovementType add = 3;
     }
 
     message ModifyCreatureMorale {
-      creatures.v1.Creature.Kind.Filter filter = 1;
-      creatures.v1.Creature.AttributeModification modification = 2;
+      creature.v1.Creature.Kind.Filter filter = 1;
+      creature.v1.Creature.AttributeModification modification = 2;
     }
 
     message ModifyCreatureLuck {
-      creatures.v1.Creature.Kind.Filter filter = 1;
-      creatures.v1.Creature.AttributeModification modification = 2;
+      creature.v1.Creature.Kind.Filter filter = 1;
+      creature.v1.Creature.AttributeModification modification = 2;
     }
 
     message ModifyCreatureAttack {
-      creatures.v1.Creature.Kind.Filter filter = 1;
-      creatures.v1.Creature.AttributeModification modification = 2;
+      creature.v1.Creature.Kind.Filter filter = 1;
+      creature.v1.Creature.AttributeModification modification = 2;
     }
 
     message ModifyCreatureDefence {
-      creatures.v1.Creature.Kind.Filter filter = 1;
-      creatures.v1.Creature.AttributeModification modification = 2;
+      creature.v1.Creature.Kind.Filter filter = 1;
+      creature.v1.Creature.AttributeModification modification = 2;
     }
 
     message ModifyCreatureSpeed {
-      creatures.v1.Creature.Kind.Filter filter = 1;
-      creatures.v1.Creature.AttributeModification modification = 2;
+      creature.v1.Creature.Kind.Filter filter = 1;
+      creature.v1.Creature.AttributeModification modification = 2;
     }
 
     oneof kind {
@@ -75,8 +91,7 @@ message Terrain {
   }
 
   message RenderingSpec {
-    string class_name = 1;
-    string texture = 2;
+    map.v1.Terrain.RenderingType rendering_type = 1;
   }
 
   string id = 1;

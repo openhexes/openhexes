@@ -3,27 +3,27 @@
 /* eslint-disable */
 
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import { file_map_v1_tile } from "../../map/v1/tile_pb";
 import { file_progress_v1_progress } from "../../progress/v1/progress_pb";
+import { file_world_v1_world } from "../../world/v1/world_pb";
 
 /**
  * Describes the file game/v1/game.proto.
  */
 export const file_game_v1_game = /*@__PURE__*/
-  fileDesc("ChJnYW1lL3YxL2dhbWUucHJvdG8SB2dhbWUudjEigAEKFEdldFNhbXBsZUdyaWRSZXF1ZXN0EhIKCnRvdGFsX3Jvd3MYASABKA0SFQoNdG90YWxfY29sdW1ucxgCIAEoDRIcChRtYXhfcm93c19wZXJfc2VnbWVudBgDIAEoDRIfChdtYXhfY29sdW1uc19wZXJfc2VnbWVudBgEIAEoDSJcChVHZXRTYW1wbGVHcmlkUmVzcG9uc2USGgoEZ3JpZBgBIAEoCzIMLm1hcC52MS5HcmlkEicKCHByb2dyZXNzGAIgASgLMhUucHJvZ3Jlc3MudjEuUHJvZ3Jlc3MyXwoLR2FtZVNlcnZpY2USUAoNR2V0U2FtcGxlR3JpZBIdLmdhbWUudjEuR2V0U2FtcGxlR3JpZFJlcXVlc3QaHi5nYW1lLnYxLkdldFNhbXBsZUdyaWRSZXNwb25zZTABQoABCgtjb20uZ2FtZS52MUIJR2FtZVByb3RvUAFaKWdpdGh1Yi5jb20vb3BlbmhleGVzL3Byb3RvL2dhbWUvdjE7Z2FtZXYxogIDR1hYqgIHR2FtZS5WMcoCB0dhbWVcVjHiAhNHYW1lXFYxXEdQQk1ldGFkYXRh6gIIR2FtZTo6VjFiBnByb3RvMw", [file_map_v1_tile, file_progress_v1_progress]);
+  fileDesc("ChJnYW1lL3YxL2dhbWUucHJvdG8SB2dhbWUudjEigQEKFUdldFNhbXBsZVdvcmxkUmVxdWVzdBISCgp0b3RhbF9yb3dzGAEgASgNEhUKDXRvdGFsX2NvbHVtbnMYAiABKA0SHAoUbWF4X3Jvd3NfcGVyX3NlZ21lbnQYAyABKA0SHwoXbWF4X2NvbHVtbnNfcGVyX3NlZ21lbnQYBCABKA0iYQoWR2V0U2FtcGxlV29ybGRSZXNwb25zZRIeCgV3b3JsZBgBIAEoCzIPLndvcmxkLnYxLldvcmxkEicKCHByb2dyZXNzGAIgASgLMhUucHJvZ3Jlc3MudjEuUHJvZ3Jlc3MyYgoLR2FtZVNlcnZpY2USUwoOR2V0U2FtcGxlV29ybGQSHi5nYW1lLnYxLkdldFNhbXBsZVdvcmxkUmVxdWVzdBofLmdhbWUudjEuR2V0U2FtcGxlV29ybGRSZXNwb25zZTABQoABCgtjb20uZ2FtZS52MUIJR2FtZVByb3RvUAFaKWdpdGh1Yi5jb20vb3BlbmhleGVzL3Byb3RvL2dhbWUvdjE7Z2FtZXYxogIDR1hYqgIHR2FtZS5WMcoCB0dhbWVcVjHiAhNHYW1lXFYxXEdQQk1ldGFkYXRh6gIIR2FtZTo6VjFiBnByb3RvMw", [file_progress_v1_progress, file_world_v1_world]);
 
 /**
- * Describes the message game.v1.GetSampleGridRequest.
- * Use `create(GetSampleGridRequestSchema)` to create a new message.
+ * Describes the message game.v1.GetSampleWorldRequest.
+ * Use `create(GetSampleWorldRequestSchema)` to create a new message.
  */
-export const GetSampleGridRequestSchema = /*@__PURE__*/
+export const GetSampleWorldRequestSchema = /*@__PURE__*/
   messageDesc(file_game_v1_game, 0);
 
 /**
- * Describes the message game.v1.GetSampleGridResponse.
- * Use `create(GetSampleGridResponseSchema)` to create a new message.
+ * Describes the message game.v1.GetSampleWorldResponse.
+ * Use `create(GetSampleWorldResponseSchema)` to create a new message.
  */
-export const GetSampleGridResponseSchema = /*@__PURE__*/
+export const GetSampleWorldResponseSchema = /*@__PURE__*/
   messageDesc(file_game_v1_game, 1);
 
 /**

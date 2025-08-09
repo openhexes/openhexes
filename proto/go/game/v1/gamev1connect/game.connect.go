@@ -33,14 +33,14 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// GameServiceGetSampleGridProcedure is the fully-qualified name of the GameService's GetSampleGrid
-	// RPC.
-	GameServiceGetSampleGridProcedure = "/game.v1.GameService/GetSampleGrid"
+	// GameServiceGetSampleWorldProcedure is the fully-qualified name of the GameService's
+	// GetSampleWorld RPC.
+	GameServiceGetSampleWorldProcedure = "/game.v1.GameService/GetSampleWorld"
 )
 
 // GameServiceClient is a client for the game.v1.GameService service.
 type GameServiceClient interface {
-	GetSampleGrid(context.Context, *connect.Request[v1.GetSampleGridRequest]) (*connect.ServerStreamForClient[v1.GetSampleGridResponse], error)
+	GetSampleWorld(context.Context, *connect.Request[v1.GetSampleWorldRequest]) (*connect.ServerStreamForClient[v1.GetSampleWorldResponse], error)
 }
 
 // NewGameServiceClient constructs a client for the game.v1.GameService service. By default, it uses
@@ -54,10 +54,10 @@ func NewGameServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 	baseURL = strings.TrimRight(baseURL, "/")
 	gameServiceMethods := v1.File_game_v1_game_proto.Services().ByName("GameService").Methods()
 	return &gameServiceClient{
-		getSampleGrid: connect.NewClient[v1.GetSampleGridRequest, v1.GetSampleGridResponse](
+		getSampleWorld: connect.NewClient[v1.GetSampleWorldRequest, v1.GetSampleWorldResponse](
 			httpClient,
-			baseURL+GameServiceGetSampleGridProcedure,
-			connect.WithSchema(gameServiceMethods.ByName("GetSampleGrid")),
+			baseURL+GameServiceGetSampleWorldProcedure,
+			connect.WithSchema(gameServiceMethods.ByName("GetSampleWorld")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -65,17 +65,17 @@ func NewGameServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // gameServiceClient implements GameServiceClient.
 type gameServiceClient struct {
-	getSampleGrid *connect.Client[v1.GetSampleGridRequest, v1.GetSampleGridResponse]
+	getSampleWorld *connect.Client[v1.GetSampleWorldRequest, v1.GetSampleWorldResponse]
 }
 
-// GetSampleGrid calls game.v1.GameService.GetSampleGrid.
-func (c *gameServiceClient) GetSampleGrid(ctx context.Context, req *connect.Request[v1.GetSampleGridRequest]) (*connect.ServerStreamForClient[v1.GetSampleGridResponse], error) {
-	return c.getSampleGrid.CallServerStream(ctx, req)
+// GetSampleWorld calls game.v1.GameService.GetSampleWorld.
+func (c *gameServiceClient) GetSampleWorld(ctx context.Context, req *connect.Request[v1.GetSampleWorldRequest]) (*connect.ServerStreamForClient[v1.GetSampleWorldResponse], error) {
+	return c.getSampleWorld.CallServerStream(ctx, req)
 }
 
 // GameServiceHandler is an implementation of the game.v1.GameService service.
 type GameServiceHandler interface {
-	GetSampleGrid(context.Context, *connect.Request[v1.GetSampleGridRequest], *connect.ServerStream[v1.GetSampleGridResponse]) error
+	GetSampleWorld(context.Context, *connect.Request[v1.GetSampleWorldRequest], *connect.ServerStream[v1.GetSampleWorldResponse]) error
 }
 
 // NewGameServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -85,16 +85,16 @@ type GameServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewGameServiceHandler(svc GameServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	gameServiceMethods := v1.File_game_v1_game_proto.Services().ByName("GameService").Methods()
-	gameServiceGetSampleGridHandler := connect.NewServerStreamHandler(
-		GameServiceGetSampleGridProcedure,
-		svc.GetSampleGrid,
-		connect.WithSchema(gameServiceMethods.ByName("GetSampleGrid")),
+	gameServiceGetSampleWorldHandler := connect.NewServerStreamHandler(
+		GameServiceGetSampleWorldProcedure,
+		svc.GetSampleWorld,
+		connect.WithSchema(gameServiceMethods.ByName("GetSampleWorld")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/game.v1.GameService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case GameServiceGetSampleGridProcedure:
-			gameServiceGetSampleGridHandler.ServeHTTP(w, r)
+		case GameServiceGetSampleWorldProcedure:
+			gameServiceGetSampleWorldHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -104,6 +104,6 @@ func NewGameServiceHandler(svc GameServiceHandler, opts ...connect.HandlerOption
 // UnimplementedGameServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedGameServiceHandler struct{}
 
-func (UnimplementedGameServiceHandler) GetSampleGrid(context.Context, *connect.Request[v1.GetSampleGridRequest], *connect.ServerStream[v1.GetSampleGridResponse]) error {
-	return connect.NewError(connect.CodeUnimplemented, errors.New("game.v1.GameService.GetSampleGrid is not implemented"))
+func (UnimplementedGameServiceHandler) GetSampleWorld(context.Context, *connect.Request[v1.GetSampleWorldRequest], *connect.ServerStream[v1.GetSampleWorldResponse]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("game.v1.GameService.GetSampleWorld is not implemented"))
 }

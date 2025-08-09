@@ -1,6 +1,6 @@
 import { ErrorView } from "@/components/utils/error"
 import { ProgressView } from "@/components/utils/progress-view"
-import { useTileGrid } from "@/hooks/use-tiles"
+import { useWorld } from "@/hooks/use-tiles"
 import React from "react"
 
 const Map = React.lazy(() => import("@/components/map/grid-view"))
@@ -9,14 +9,14 @@ const rowCount = 300
 const columnCount = 300
 
 export const MapTest = () => {
-    const { grid, isLoading, progress, error } = useTileGrid(rowCount, columnCount, 30, 30)
+    const { world, isLoading, progress, error } = useWorld(rowCount, columnCount, 30, 30)
 
     if (isLoading) {
         return <ProgressView progress={progress} />
     }
 
-    if (grid !== undefined) {
-        return <Map grid={grid} />
+    if (world?.layers[0] !== undefined) {
+        return <Map grid={world.layers[0]} />
     }
 
     return <ErrorView error={error ?? new Error("unknown error")} />

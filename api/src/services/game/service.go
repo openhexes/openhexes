@@ -3,7 +3,6 @@ package game
 import (
 	"context"
 	"fmt"
-	"slices"
 	"time"
 
 	"connectrpc.com/connect"
@@ -15,6 +14,8 @@ import (
 	"github.com/openhexes/proto/game/v1/gamev1connect"
 	mapv1 "github.com/openhexes/proto/map/v1"
 	progressv1 "github.com/openhexes/proto/progress/v1"
+	worldv1 "github.com/openhexes/proto/world/v1"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
 
@@ -32,12 +33,13 @@ func New(cfg *config.Config, auth *auth.Controller) *Service {
 	}
 }
 
-func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[gamev1.GetSampleGridRequest], stream *connect.ServerStream[gamev1.GetSampleGridResponse]) error {
+func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request[gamev1.GetSampleWorldRequest], stream *connect.ServerStream[gamev1.GetSampleWorldResponse]) error {
 	const (
 		defaultTotalRows            = uint32(64)
 		defaultTotalColumns         = uint32(64)
 		defaultMaxRowsPerSegment    = uint32(15)
 		defaultMaxColumnsPerSegment = uint32(15)
+		defaultMaxChunkSizeBytes    = 32 * 1024 // 32Kb
 	)
 
 	if request.Msg.TotalRows == uint32(0) {
@@ -68,7 +70,7 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 	reporter := progress.NewReporter(
 		ctx,
 		func(p *progressv1.Progress) error {
-			return stream.Send(&gamev1.GetSampleGridResponse{
+			return stream.Send(&gamev1.GetSampleWorldResponse{
 				Progress: p,
 			})
 		},
@@ -231,28 +233,85 @@ func (svc *Service) GetSampleGrid(ctx context.Context, request *connect.Request[
 	stageEdges.State = progressv1.Stage_STATE_DONE
 	reporter.Update(1)
 
-	response := &gamev1.GetSampleGridResponse{
-		Grid: &mapv1.Grid{
-			TotalRows:    request.Msg.TotalRows,
-			TotalColumns: request.Msg.TotalColumns,
+	// grid dimensions
+	dimensionsResponse := &gamev1.GetSampleWorldResponse{
+		World: &worldv1.World{
+			Layers: []*mapv1.Grid{
+				{
+					TotalRows:    request.Msg.TotalRows,
+					TotalColumns: request.Msg.TotalColumns,
+				},
+			},
 		},
 	}
-	if err := stream.Send(response); err != nil {
+	if err := stream.Send(dimensionsResponse); err != nil {
 		return err
 	}
 
-	// actually send the grid
-	const segmentRowsPerChunk = 10 // todo: smarter way to pick this value
-	for rows := range slices.Chunk(segmentRows, segmentRowsPerChunk) {
-		response := &gamev1.GetSampleGridResponse{
-			Grid: &mapv1.Grid{
-				SegmentRows: rows,
+	// registries
+	terrainsResponse := &gamev1.GetSampleWorldResponse{
+		World: &worldv1.World{
+			TerrainRegistry: make(map[string]*mapv1.Terrain),
+		},
+	}
+	for key := range config.TerrainRegistry {
+		terrainsResponse.World.TerrainRegistry[key] = config.TerrainRegistry[key]
+		if proto.Size(terrainsResponse) >= defaultMaxChunkSizeBytes {
+			if err := stream.Send(terrainsResponse); err != nil {
+				return err
+			}
+			terrainsResponse = &gamev1.GetSampleWorldResponse{
+				World: &worldv1.World{
+					TerrainRegistry: make(map[string]*mapv1.Terrain),
+				},
+			}
+		}
+	}
+
+	// tiles
+	grid := &mapv1.Grid{
+		SegmentRows: make([]*mapv1.Segment_Row, 0, 100),
+	}
+	for _, row := range segmentRows {
+		grid.SegmentRows = append(grid.SegmentRows, row)
+		if proto.Size(grid) >= defaultMaxChunkSizeBytes {
+			response := &gamev1.GetSampleWorldResponse{
+				World: &worldv1.World{
+					Layers: []*mapv1.Grid{grid},
+				},
+			}
+			if err := stream.Send(response); err != nil {
+				return err
+			}
+			grid = &mapv1.Grid{
+				SegmentRows: make([]*mapv1.Segment_Row, 0, 100),
+			}
+		}
+	}
+	if len(grid.SegmentRows) > 0 {
+		response := &gamev1.GetSampleWorldResponse{
+			World: &worldv1.World{
+				Layers: []*mapv1.Grid{grid},
 			},
 		}
 		if err := stream.Send(response); err != nil {
 			return err
 		}
 	}
+
+	// const segmentRowsPerChunk = 10 // todo: smarter way to pick this value
+	// for rows := range slices.Chunk(segmentRows, segmentRowsPerChunk) {
+	// 	response := &gamev1.GetSampleWorldResponse{
+	// 		World: &worldv1.World{
+	// 			Layers: []*mapv1.Grid{
+	// 				{SegmentRows: rows},
+	// 			},
+	// 		},
+	// 	}
+	// 	if err := stream.Send(response); err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	return nil
 }

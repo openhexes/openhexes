@@ -138,6 +138,7 @@ type Grid struct {
 	SegmentRows   []*Segment_Row         `protobuf:"bytes,1,rep,name=segment_rows,json=segmentRows,proto3" json:"segment_rows,omitempty"`
 	TotalRows     uint32                 `protobuf:"varint,2,opt,name=total_rows,json=totalRows,proto3" json:"total_rows,omitempty"`
 	TotalColumns  uint32                 `protobuf:"varint,3,opt,name=total_columns,json=totalColumns,proto3" json:"total_columns,omitempty"`
+	Depth         uint32                 `protobuf:"varint,4,opt,name=depth,proto3" json:"depth,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -189,6 +190,13 @@ func (x *Grid) GetTotalRows() uint32 {
 func (x *Grid) GetTotalColumns() uint32 {
 	if x != nil {
 		return x.TotalColumns
+	}
+	return 0
+}
+
+func (x *Grid) GetDepth() uint32 {
+	if x != nil {
+		return x.Depth
 	}
 	return 0
 }
@@ -504,12 +512,13 @@ const file_map_v1_tile_proto_rawDesc = "" +
 	"\n" +
 	"max_column\x18\x04 \x01(\x05R\tmaxColumn\x1a2\n" +
 	"\x03Row\x12+\n" +
-	"\bsegments\x18\x01 \x03(\v2\x0f.map.v1.SegmentR\bsegments\"\x82\x01\n" +
+	"\bsegments\x18\x01 \x03(\v2\x0f.map.v1.SegmentR\bsegments\"\x98\x01\n" +
 	"\x04Grid\x126\n" +
 	"\fsegment_rows\x18\x01 \x03(\v2\x13.map.v1.Segment.RowR\vsegmentRows\x12\x1d\n" +
 	"\n" +
 	"total_rows\x18\x02 \x01(\rR\ttotalRows\x12#\n" +
-	"\rtotal_columns\x18\x03 \x01(\rR\ftotalColumnsBy\n" +
+	"\rtotal_columns\x18\x03 \x01(\rR\ftotalColumns\x12\x14\n" +
+	"\x05depth\x18\x04 \x01(\rR\x05depthBy\n" +
 	"\n" +
 	"com.map.v1B\tTileProtoP\x01Z'github.com/openhexes/proto/map/v1;mapv1\xa2\x02\x03MXX\xaa\x02\x06Map.V1\xca\x02\x06Map\\V1\xe2\x02\x12Map\\V1\\GPBMetadata\xea\x02\aMap::V1b\x06proto3"
 

@@ -4,7 +4,7 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import type { Message } from "@bufbuild/protobuf";
-import type { Grid } from "../../map/v1/tile_pb";
+import type { World } from "../../world/v1/world_pb";
 import type { Progress } from "../../progress/v1/progress_pb";
 
 /**
@@ -13,9 +13,9 @@ import type { Progress } from "../../progress/v1/progress_pb";
 export declare const file_game_v1_game: GenFile;
 
 /**
- * @generated from message game.v1.GetSampleGridRequest
+ * @generated from message game.v1.GetSampleWorldRequest
  */
-export declare type GetSampleGridRequest = Message<"game.v1.GetSampleGridRequest"> & {
+export declare type GetSampleWorldRequest = Message<"game.v1.GetSampleWorldRequest"> & {
   /**
    * @generated from field: uint32 total_rows = 1;
    */
@@ -38,21 +38,21 @@ export declare type GetSampleGridRequest = Message<"game.v1.GetSampleGridRequest
 };
 
 /**
- * Describes the message game.v1.GetSampleGridRequest.
- * Use `create(GetSampleGridRequestSchema)` to create a new message.
+ * Describes the message game.v1.GetSampleWorldRequest.
+ * Use `create(GetSampleWorldRequestSchema)` to create a new message.
  */
-export declare const GetSampleGridRequestSchema: GenMessage<GetSampleGridRequest>;
+export declare const GetSampleWorldRequestSchema: GenMessage<GetSampleWorldRequest>;
 
 /**
- * @generated from message game.v1.GetSampleGridResponse
+ * @generated from message game.v1.GetSampleWorldResponse
  */
-export declare type GetSampleGridResponse = Message<"game.v1.GetSampleGridResponse"> & {
+export declare type GetSampleWorldResponse = Message<"game.v1.GetSampleWorldResponse"> & {
   /**
-   * may be partial, containing a subset of segment rows
+   * partial
    *
-   * @generated from field: map.v1.Grid grid = 1;
+   * @generated from field: world.v1.World world = 1;
    */
-  grid?: Grid;
+  world?: World;
 
   /**
    * @generated from field: progress.v1.Progress progress = 2;
@@ -61,22 +61,22 @@ export declare type GetSampleGridResponse = Message<"game.v1.GetSampleGridRespon
 };
 
 /**
- * Describes the message game.v1.GetSampleGridResponse.
- * Use `create(GetSampleGridResponseSchema)` to create a new message.
+ * Describes the message game.v1.GetSampleWorldResponse.
+ * Use `create(GetSampleWorldResponseSchema)` to create a new message.
  */
-export declare const GetSampleGridResponseSchema: GenMessage<GetSampleGridResponse>;
+export declare const GetSampleWorldResponseSchema: GenMessage<GetSampleWorldResponse>;
 
 /**
  * @generated from service game.v1.GameService
  */
 export declare const GameService: GenService<{
   /**
-   * @generated from rpc game.v1.GameService.GetSampleGrid
+   * @generated from rpc game.v1.GameService.GetSampleWorld
    */
-  getSampleGrid: {
+  getSampleWorld: {
     methodKind: "server_streaming";
-    input: typeof GetSampleGridRequestSchema;
-    output: typeof GetSampleGridResponseSchema;
+    input: typeof GetSampleWorldRequestSchema;
+    output: typeof GetSampleWorldResponseSchema;
   },
 }>;
 

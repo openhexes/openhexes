@@ -15,6 +15,7 @@ type Reporter struct {
 	send SendFunc
 	msg  *progressv1.Progress
 	ch   chan struct{}
+	done chan struct{}
 }
 
 func NewReporter(ctx context.Context, send SendFunc, stages ...*progressv1.Stage) *Reporter {
@@ -24,7 +25,8 @@ func NewReporter(ctx context.Context, send SendFunc, stages ...*progressv1.Stage
 		msg: &progressv1.Progress{
 			Stages: stages,
 		},
-		ch: make(chan struct{}, 20),
+		ch:   make(chan struct{}, 20),
+		done: make(chan struct{}),
 	}
 
 	go r.run()
@@ -41,23 +43,33 @@ func (r *Reporter) Update(percentage ...float64) {
 
 func (r *Reporter) Close() {
 	close(r.ch)
+	<-r.done
 }
 
 func (r *Reporter) run() {
 	log := config.GetLogger(r.ctx)
 
-Loop:
-	for {
-		select {
-		case <-r.ctx.Done():
-			break Loop
-		case _, ok := <-r.ch:
-			if !ok {
-				break Loop
-			}
-			if err := r.send(r.msg); err != nil {
-				log.Warn("failed to send progress", zap.Error(err))
-			}
+	for range r.ch {
+		if err := r.send(r.msg); err != nil {
+			log.Warn("failed to send progress", zap.Error(err))
 		}
 	}
+
+	close(r.done)
+
+	// Loop:
+	//
+	//	for {
+	//		select {
+	//		case <-r.ctx.Done():
+	//			break Loop
+	//		case _, ok := <-r.ch:
+	//			if !ok {
+	//				break Loop
+	//			}
+	//			if err := r.send(r.msg); err != nil {
+	//				log.Warn("failed to send progress", zap.Error(err))
+	//			}
+	//		}
+	//	}
 }

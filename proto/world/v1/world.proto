@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package world.v1;
+
+import "creature/v1/creature.proto";
+import "magic/v1/spell.proto";
+import "map/v1/terrain.proto";
+import "map/v1/tile.proto";
+
+option go_package = "github.com/openhexes/proto;worldv1";
+
+message World {
+  repeated map.v1.Grid layers = 1;
+
+  map<string, map.v1.Terrain> terrain_registry = 2;
+  map<string, magic.v1.Spell> spell_registry = 3;
+  map<string, creature.v1.Creature> creature_registry = 4;
+}

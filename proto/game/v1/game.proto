@@ -2,23 +2,23 @@ syntax = "proto3";
 
 package game.v1;
 
-import "map/v1/tile.proto";
 import "progress/v1/progress.proto";
+import "world/v1/world.proto";
 
 option go_package = "github.com/openhexes/proto;gamev1";
 
-message GetSampleGridRequest {
+message GetSampleWorldRequest {
   uint32 total_rows = 1;
   uint32 total_columns = 2;
   uint32 max_rows_per_segment = 3;
   uint32 max_columns_per_segment = 4;
 }
 
-message GetSampleGridResponse {
-  map.v1.Grid grid = 1; // may be partial, containing a subset of segment rows
+message GetSampleWorldResponse {
+  world.v1.World world = 1; // partial
   progress.v1.Progress progress = 2;
 }
 
 service GameService {
-  rpc GetSampleGrid(GetSampleGridRequest) returns (stream GetSampleGridResponse);
+  rpc GetSampleWorld(GetSampleWorldRequest) returns (stream GetSampleWorldResponse);
 }
