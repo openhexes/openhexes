@@ -34,7 +34,7 @@ export default defineConfig({
                 TEST__ENABLED: "true",
                 SERVER__ADDRESS: "localhost:9090",
                 SERVER__ALLOWED_ORIGINS: "http://localhost:9090",
-                LOGGING__LEVEL: "0",
+                LOGGING__LEVEL: "1",
                 VITE_API_ADDRESS: "http://localhost:9090",
             },
             gracefulShutdown: {
