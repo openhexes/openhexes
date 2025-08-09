@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package map.v1;
+
+option go_package = "github.com/openhexes/proto;mapv1";
+
+enum Direction {
+  DIRECTION_UNSPECIFIED = 0;
+  DIRECTION_W = 1;
+  DIRECTION_NW = 2;
+  DIRECTION_NE = 4;
+  DIRECTION_E = 5;
+  DIRECTION_SE = 6;
+  DIRECTION_SW = 7;
+}

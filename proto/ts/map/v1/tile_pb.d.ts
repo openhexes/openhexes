@@ -4,6 +4,7 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import type { Message } from "@bufbuild/protobuf";
+import type { Direction } from "./compass_pb";
 
 /**
  * Describes the file map/v1/tile.proto.
@@ -63,13 +64,39 @@ export declare type Tile_Coordinate = Message<"map.v1.Tile.Coordinate"> & {
 export declare const Tile_CoordinateSchema: GenMessage<Tile_Coordinate>;
 
 /**
+ * @generated from message map.v1.Tile.Edge
+ */
+export declare type Tile_Edge = Message<"map.v1.Tile.Edge"> & {
+  /**
+   * @generated from field: map.v1.Direction direction = 1;
+   */
+  direction: Direction;
+
+  /**
+   * @generated from field: string neighbour_terrain_id = 2;
+   */
+  neighbourTerrainId: string;
+};
+
+/**
+ * Describes the message map.v1.Tile.Edge.
+ * Use `create(Tile_EdgeSchema)` to create a new message.
+ */
+export declare const Tile_EdgeSchema: GenMessage<Tile_Edge>;
+
+/**
  * @generated from message map.v1.Tile.RenderingSpec
  */
 export declare type Tile_RenderingSpec = Message<"map.v1.Tile.RenderingSpec"> & {
   /**
+   * @generated from field: repeated map.v1.Tile.Edge edges = 1;
+   */
+  edges: Tile_Edge[];
+
+  /**
    * landscape features, e.g. trees, rocks, etc.
    *
-   * @generated from field: repeated string feature_ids = 1;
+   * @generated from field: repeated string feature_ids = 2;
    */
   featureIds: string[];
 };

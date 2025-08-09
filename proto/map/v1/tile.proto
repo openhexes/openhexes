@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package map.v1;
 
+import "map/v1/compass.proto";
+
 option go_package = "github.com/openhexes/proto;mapv1";
 
 message Tile {
@@ -11,8 +13,14 @@ message Tile {
     uint32 depth = 3;
   }
 
+  message Edge {
+    map.v1.Direction direction = 1;
+    string neighbour_terrain_id = 2;
+  }
+
   message RenderingSpec {
-    repeated string feature_ids = 1; // landscape features, e.g. trees, rocks, etc.
+    repeated map.v1.Tile.Edge edges = 1;
+    repeated string feature_ids = 2; // landscape features, e.g. trees, rocks, etc.
   }
 
   map.v1.Tile.Coordinate coordinate = 1;

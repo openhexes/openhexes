@@ -3,12 +3,13 @@
 /* eslint-disable */
 
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
+import { file_map_v1_compass } from "./compass_pb";
 
 /**
  * Describes the file map/v1/tile.proto.
  */
 export const file_map_v1_tile = /*@__PURE__*/
-  fileDesc("ChFtYXAvdjEvdGlsZS5wcm90bxIGbWFwLnYxItsBCgRUaWxlEisKCmNvb3JkaW5hdGUYASABKAsyFy5tYXAudjEuVGlsZS5Db29yZGluYXRlEhIKCnRlcnJhaW5faWQYAiABKAkSMgoOcmVuZGVyaW5nX3NwZWMYAyABKAsyGi5tYXAudjEuVGlsZS5SZW5kZXJpbmdTcGVjGjgKCkNvb3JkaW5hdGUSCwoDcm93GAEgASgNEg4KBmNvbHVtbhgCIAEoDRINCgVkZXB0aBgDIAEoDRokCg1SZW5kZXJpbmdTcGVjEhMKC2ZlYXR1cmVfaWRzGAEgAygJIswBCgdTZWdtZW50EiYKBmJvdW5kcxgBIAEoCzIWLm1hcC52MS5TZWdtZW50LkJvdW5kcxIbCgV0aWxlcxgCIAMoCzIMLm1hcC52MS5UaWxlGlIKBkJvdW5kcxIPCgdtaW5fcm93GAEgASgFEg8KB21heF9yb3cYAiABKAUSEgoKbWluX2NvbHVtbhgDIAEoBRISCgptYXhfY29sdW1uGAQgASgFGigKA1JvdxIhCghzZWdtZW50cxgBIAMoCzIPLm1hcC52MS5TZWdtZW50IlwKBEdyaWQSKQoMc2VnbWVudF9yb3dzGAEgAygLMhMubWFwLnYxLlNlZ21lbnQuUm93EhIKCnRvdGFsX3Jvd3MYAiABKA0SFQoNdG90YWxfY29sdW1ucxgDIAEoDUJ5Cgpjb20ubWFwLnYxQglUaWxlUHJvdG9QAVonZ2l0aHViLmNvbS9vcGVuaGV4ZXMvcHJvdG8vbWFwL3YxO21hcHYxogIDTVhYqgIGTWFwLlYxygIGTWFwXFYx4gISTWFwXFYxXEdQQk1ldGFkYXRh6gIHTWFwOjpWMWIGcHJvdG8z");
+  fileDesc("ChFtYXAvdjEvdGlsZS5wcm90bxIGbWFwLnYxIskCCgRUaWxlEisKCmNvb3JkaW5hdGUYASABKAsyFy5tYXAudjEuVGlsZS5Db29yZGluYXRlEhIKCnRlcnJhaW5faWQYAiABKAkSMgoOcmVuZGVyaW5nX3NwZWMYAyABKAsyGi5tYXAudjEuVGlsZS5SZW5kZXJpbmdTcGVjGjgKCkNvb3JkaW5hdGUSCwoDcm93GAEgASgNEg4KBmNvbHVtbhgCIAEoDRINCgVkZXB0aBgDIAEoDRpKCgRFZGdlEiQKCWRpcmVjdGlvbhgBIAEoDjIRLm1hcC52MS5EaXJlY3Rpb24SHAoUbmVpZ2hib3VyX3RlcnJhaW5faWQYAiABKAkaRgoNUmVuZGVyaW5nU3BlYxIgCgVlZGdlcxgBIAMoCzIRLm1hcC52MS5UaWxlLkVkZ2USEwoLZmVhdHVyZV9pZHMYAiADKAkizAEKB1NlZ21lbnQSJgoGYm91bmRzGAEgASgLMhYubWFwLnYxLlNlZ21lbnQuQm91bmRzEhsKBXRpbGVzGAIgAygLMgwubWFwLnYxLlRpbGUaUgoGQm91bmRzEg8KB21pbl9yb3cYASABKAUSDwoHbWF4X3JvdxgCIAEoBRISCgptaW5fY29sdW1uGAMgASgFEhIKCm1heF9jb2x1bW4YBCABKAUaKAoDUm93EiEKCHNlZ21lbnRzGAEgAygLMg8ubWFwLnYxLlNlZ21lbnQiXAoER3JpZBIpCgxzZWdtZW50X3Jvd3MYASADKAsyEy5tYXAudjEuU2VnbWVudC5Sb3cSEgoKdG90YWxfcm93cxgCIAEoDRIVCg10b3RhbF9jb2x1bW5zGAMgASgNQnkKCmNvbS5tYXAudjFCCVRpbGVQcm90b1ABWidnaXRodWIuY29tL29wZW5oZXhlcy9wcm90by9tYXAvdjE7bWFwdjGiAgNNWFiqAgZNYXAuVjHKAgZNYXBcVjHiAhJNYXBcVjFcR1BCTWV0YWRhdGHqAgdNYXA6OlYxYgZwcm90bzM", [file_map_v1_compass]);
 
 /**
  * Describes the message map.v1.Tile.
@@ -25,11 +26,18 @@ export const Tile_CoordinateSchema = /*@__PURE__*/
   messageDesc(file_map_v1_tile, 0, 0);
 
 /**
+ * Describes the message map.v1.Tile.Edge.
+ * Use `create(Tile_EdgeSchema)` to create a new message.
+ */
+export const Tile_EdgeSchema = /*@__PURE__*/
+  messageDesc(file_map_v1_tile, 0, 1);
+
+/**
  * Describes the message map.v1.Tile.RenderingSpec.
  * Use `create(Tile_RenderingSpecSchema)` to create a new message.
  */
 export const Tile_RenderingSpecSchema = /*@__PURE__*/
-  messageDesc(file_map_v1_tile, 0, 1);
+  messageDesc(file_map_v1_tile, 0, 2);
 
 /**
  * Describes the message map.v1.Segment.
