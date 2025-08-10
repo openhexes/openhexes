@@ -309,7 +309,7 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index) string {
 					&builder,
 					`<path d="%s" %s/>`,
 					wedgePath(outerVertices, innerVertices, segment[0], segment[1]),
-					cssVarFill(terrainVarName("edge", edge.NeighbourTerrainId), "#44403c"),
+					cssVarFill(terrainVarName("edge", edge.NeighbourTerrainId), "rgba(255, 255, 255, 0.1)"),
 				)
 			}
 		}
@@ -324,7 +324,7 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index) string {
 					if !ok {
 						continue
 					}
-					if terrain == nil || t.RenderingSpec.RenderingType.Number() > terrain.RenderingSpec.RenderingType.Number() {
+					if terrain == nil || t.RenderingSpec.RenderingType > terrain.RenderingSpec.RenderingType {
 						terrain = t
 					}
 				}
@@ -338,7 +338,7 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index) string {
 					&builder,
 					`<path d="%s" %s/>`,
 					cornerPath(outerVertices, innerVertices, vertexIndex),
-					cssVarFill(terrainVarName("corner", terrain.Id), "#44403c"),
+					cssVarFill(terrainVarName("corner", terrain.Id), "rgba(255, 255, 255, 0.1)"),
 				)
 			}
 		}

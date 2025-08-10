@@ -3,18 +3,51 @@
 }
 
 :root {
-    --terrain-water-fill: var(--color-sky-900);
+    --terrain-abyss-fill: var(--color-black);
+    --corner-abyss-fill: var(--color-black);
+    --edge-abyss-fill: var(--color-black);
 
-    --terrain-ash-fill: var(--color-stone-900);
-    --edge-ash-fill: var(--color-stone-800);
-    --corner-ash-fill: var(--color-stone-800);
+    --terrain-water-fill: var(--color-sky-950);
+    --corner-water-fill: var(--color-sky-900);
+    --edge-water-fill: var(--color-sky-900);
 
-    --terrain-grass-fill: var(--color-green-900);
-    --edge-grass-fill: var(--color-green-800);
-    --corner-grass-fill: var(--color-green-800);
+    --terrain-grass-fill: var(--color-green-950);
+    --edge-grass-fill: var(--color-green-900);
+    --corner-grass-fill: var(--color-green-900);
 
-    --terrain-snow-fill: #e0e0e0;
-    --edge-water-fill: #3abff0;
-    --corner-water-fill: #3abff0;
-    --corner-snow-fill: #e0e0e0;
+    --terrain-highlands-fill: var(--color-lime-950);
+    --edge-highlands-fill: var(--color-lime-900);
+    --corner-highlands-fill: var(--color-lime-900);
+
+    --terrain-dirt-fill: var(--color-stone-800);
+    --edge-dirt-fill: var(--color-stone-700);
+    --corner-dirt-fill: var(--color-stone-700);
+
+    --terrain-ash-fill: var(--color-stone-950);
+    --edge-ash-fill: var(--color-stone-900);
+    --corner-ash-fill: var(--color-stone-900);
+
+    --terrain-subterranean-fill: var(--color-neutral-950);
+    --edge-subterranean-fill: var(--color-neutral-900);
+    --corner-subterranean-fill: var(--color-neutral-900);
+
+    --terrain-rough-fill: var(--color-stone-700);
+    --edge-rough-fill: var(--color-stone-600);
+    --corner-rough-fill: var(--color-stone-600);
+
+    --terrain-wasteland-fill: var(--color-yellow-950);
+    --edge-wasteland-fill: var(--color-yellow-900);
+    --corner-wasteland-fill: var(--color-yellow-900);
+
+    --terrain-sand-fill: var(--color-amber-300);
+    --edge-sand-fill: var(--color-amber-400);
+    --corner-sand-fill: var(--color-amber-400);
+
+    --terrain-snow-fill: var(--color-stone-300);
+    --edge-snow-fill: var(--color-stone-400);
+    --corner-snow-fill: var(--color-stone-400);
+
+    --terrain-swamp-fill: var(--color-teal-950);
+    --edge-swamp-fill: var(--color-teal-900);
+    --corner-swamp-fill: var(--color-teal-900);
 }

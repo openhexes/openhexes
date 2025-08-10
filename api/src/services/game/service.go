@@ -142,35 +142,62 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 	totalTiles := request.Msg.TotalRows * request.Msg.TotalColumns
 	var processedTileCount int
 
+	allRenderingTypes := []mapv1.Terrain_RenderingType{
+		mapv1.Terrain_RENDERING_TYPE_ABYSS,
+		mapv1.Terrain_RENDERING_TYPE_WATER,
+		mapv1.Terrain_RENDERING_TYPE_GRASS,
+		mapv1.Terrain_RENDERING_TYPE_HIGHLANDS,
+		mapv1.Terrain_RENDERING_TYPE_DIRT,
+		mapv1.Terrain_RENDERING_TYPE_ASH,
+		mapv1.Terrain_RENDERING_TYPE_SUBTERRANEAN,
+		mapv1.Terrain_RENDERING_TYPE_ROUGH,
+		mapv1.Terrain_RENDERING_TYPE_WASTELAND,
+		mapv1.Terrain_RENDERING_TYPE_SAND,
+		mapv1.Terrain_RENDERING_TYPE_SNOW,
+		mapv1.Terrain_RENDERING_TYPE_SWAMP,
+	}
+
 	islandCenters := map[string][]*mapv1.Tile_Coordinate{
-		"ash": {
-			{Row: 0, Column: 0},
-			{Row: 8, Column: 8},
-			{Row: 10, Column: 10},
-			{Row: 11, Column: 7},
-			{Row: 12, Column: 12},
-			{Row: 16, Column: 10},
-		},
-		"grass": {
-			{Row: 3, Column: 3},
-			{Row: 4, Column: 9},
-			{Row: 5, Column: 6},
-			{Row: 8, Column: 4},
-			{Row: 16, Column: 12},
-		},
+		"abyss":        {{Row: 1, Column: 3}},
+		"grass":        {{Row: 4, Column: 3}},
+		"highlands":    {{Row: 7, Column: 3}},
+		"dirt":         {{Row: 10, Column: 3}},
+		"ash":          {{Row: 13, Column: 3}},
+		"subterranean": {{Row: 1, Column: 7}},
+		"rough":        {{Row: 4, Column: 7}},
+		"wasteland":    {{Row: 7, Column: 7}},
+		"sand":         {{Row: 10, Column: 7}},
+		"snow":         {{Row: 13, Column: 7}},
+		"swamp":        {{Row: 16, Column: 7}},
 	}
 
 	islandSet := make(map[tiles.CoordinateKey]string)
-	for terrain, centers := range islandCenters {
+	for _, rt := range allRenderingTypes {
+		var t *mapv1.Terrain
+		for _, terrain := range config.TerrainRegistry {
+			if terrain.RenderingSpec.RenderingType == rt {
+				t = terrain
+				break
+			}
+		}
+		if t == nil {
+			return fmt.Errorf("no terrain for rendering type: %s", rt)
+		}
+
+		centers, ok := islandCenters[t.Id]
+		if !ok {
+			continue
+		}
+
 		for _, center := range centers {
 			ck := tiles.CoordinateToKey(center)
 
-			islandSet[ck] = terrain
+			islandSet[ck] = t.Id
 			for c := range tiles.IterNeighbours(ck) {
-				islandSet[c.CoordinateKey] = terrain
+				islandSet[c.CoordinateKey] = t.Id
 
 				for cc := range tiles.IterNeighbours(c.CoordinateKey) {
-					islandSet[cc.CoordinateKey] = terrain
+					islandSet[cc.CoordinateKey] = t.Id
 				}
 			}
 		}
