@@ -32,7 +32,7 @@ const buildWorld = async (
     })
 
     for await (const response of GameClient.getSampleWorld(request, { timeoutMs: 60000 })) {
-        console.info(response)
+        console.debug(response)
         if (response.progress) {
             setProgress(response.progress)
         }
@@ -74,6 +74,26 @@ const buildWorld = async (
     }
 
     await sleep(250)
+
+    const findTile = (row: number, col: number) => {
+        const grid = world.layers[0]
+        for (const segmentRow of grid.segmentRows) {
+            for (const segment of segmentRow.segments) {
+                for (const tile of segment.tiles) {
+                    if (tile.coordinate?.row === row && tile.coordinate?.column === col) {
+                        return tile
+                    }
+                }
+            }
+        }
+    }
+
+    // eslint-disable-next-line
+    const win = window as any
+    // eslint-disable-next-line
+    win.findTile = findTile
+
+    console.info("complete world", world)
 
     return world
 }

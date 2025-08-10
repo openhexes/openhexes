@@ -322,11 +322,11 @@ func (x *Tile_Edge) GetNeighbourTerrainId() string {
 }
 
 type Tile_Corner struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	Direction           CornerDirection        `protobuf:"varint,1,opt,name=direction,proto3,enum=map.v1.CornerDirection" json:"direction,omitempty"`
-	NeighbourTerrainIds []string               `protobuf:"bytes,2,rep,name=neighbour_terrain_ids,json=neighbourTerrainIds,proto3" json:"neighbour_terrain_ids,omitempty"` // order follows direction enum
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Direction     CornerDirection        `protobuf:"varint,1,opt,name=direction,proto3,enum=map.v1.CornerDirection" json:"direction,omitempty"`
+	Edge          *Tile_Edge             `protobuf:"bytes,2,opt,name=edge,proto3" json:"edge,omitempty"` // which edge (of two) to prolong to make consistent border
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Tile_Corner) Reset() {
@@ -366,9 +366,9 @@ func (x *Tile_Corner) GetDirection() CornerDirection {
 	return CornerDirection_CORNER_DIRECTION_UNSPECIFIED
 }
 
-func (x *Tile_Corner) GetNeighbourTerrainIds() []string {
+func (x *Tile_Corner) GetEdge() *Tile_Edge {
 	if x != nil {
-		return x.NeighbourTerrainIds
+		return x.Edge
 	}
 	return nil
 }
@@ -593,7 +593,7 @@ var File_map_v1_tile_proto protoreflect.FileDescriptor
 
 const file_map_v1_tile_proto_rawDesc = "" +
 	"\n" +
-	"\x11map/v1/tile.proto\x12\x06map.v1\x1a\x14map/v1/compass.proto\"\xde\x04\n" +
+	"\x11map/v1/tile.proto\x12\x06map.v1\x1a\x14map/v1/compass.proto\"\xd1\x04\n" +
 	"\x04Tile\x127\n" +
 	"\n" +
 	"coordinate\x18\x01 \x01(\v2\x17.map.v1.Tile.CoordinateR\n" +
@@ -608,10 +608,10 @@ const file_map_v1_tile_proto_rawDesc = "" +
 	"\x05depth\x18\x03 \x01(\rR\x05depth\x1am\n" +
 	"\x04Edge\x123\n" +
 	"\tdirection\x18\x01 \x01(\x0e2\x15.map.v1.EdgeDirectionR\tdirection\x120\n" +
-	"\x14neighbour_terrain_id\x18\x02 \x01(\tR\x12neighbourTerrainId\x1as\n" +
+	"\x14neighbour_terrain_id\x18\x02 \x01(\tR\x12neighbourTerrainId\x1af\n" +
 	"\x06Corner\x125\n" +
-	"\tdirection\x18\x01 \x01(\x0e2\x17.map.v1.CornerDirectionR\tdirection\x122\n" +
-	"\x15neighbour_terrain_ids\x18\x02 \x03(\tR\x13neighbourTerrainIds\x1a\x88\x01\n" +
+	"\tdirection\x18\x01 \x01(\x0e2\x17.map.v1.CornerDirectionR\tdirection\x12%\n" +
+	"\x04edge\x18\x02 \x01(\v2\x11.map.v1.Tile.EdgeR\x04edge\x1a\x88\x01\n" +
 	"\rRenderingSpec\x12'\n" +
 	"\x05edges\x18\x01 \x03(\v2\x11.map.v1.Tile.EdgeR\x05edges\x12-\n" +
 	"\acorners\x18\x02 \x03(\v2\x13.map.v1.Tile.CornerR\acorners\x12\x1f\n" +
@@ -677,14 +677,15 @@ var file_map_v1_tile_proto_depIdxs = []int32{
 	9,  // 5: map.v1.Grid.segment_rows:type_name -> map.v1.Segment.Row
 	10, // 6: map.v1.Tile.Edge.direction:type_name -> map.v1.EdgeDirection
 	11, // 7: map.v1.Tile.Corner.direction:type_name -> map.v1.CornerDirection
-	4,  // 8: map.v1.Tile.RenderingSpec.edges:type_name -> map.v1.Tile.Edge
-	5,  // 9: map.v1.Tile.RenderingSpec.corners:type_name -> map.v1.Tile.Corner
-	1,  // 10: map.v1.Segment.Row.segments:type_name -> map.v1.Segment
-	11, // [11:11] is the sub-list for method output_type
-	11, // [11:11] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	4,  // 8: map.v1.Tile.Corner.edge:type_name -> map.v1.Tile.Edge
+	4,  // 9: map.v1.Tile.RenderingSpec.edges:type_name -> map.v1.Tile.Edge
+	5,  // 10: map.v1.Tile.RenderingSpec.corners:type_name -> map.v1.Tile.Corner
+	1,  // 11: map.v1.Segment.Row.segments:type_name -> map.v1.Segment
+	12, // [12:12] is the sub-list for method output_type
+	12, // [12:12] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_map_v1_tile_proto_init() }

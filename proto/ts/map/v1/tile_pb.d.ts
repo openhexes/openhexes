@@ -94,11 +94,11 @@ export declare type Tile_Corner = Message<"map.v1.Tile.Corner"> & {
   direction: CornerDirection;
 
   /**
-   * order follows direction enum
+   * which edge (of two) to prolong to make consistent border
    *
-   * @generated from field: repeated string neighbour_terrain_ids = 2;
+   * @generated from field: map.v1.Tile.Edge edge = 2;
    */
-  neighbourTerrainIds: string[];
+  edge?: Tile_Edge;
 };
 
 /**

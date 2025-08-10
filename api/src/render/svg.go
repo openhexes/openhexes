@@ -228,13 +228,7 @@ const (
 	svgDefsHex = `<defs><path id="%s" d="%s"/><clipPath id="%s" clipPathUnits="userSpaceOnUse">%s</clipPath></defs>`
 )
 
-// GenerateSVGSegment returns an SVG string for all tiles in a segment.
-func GenerateSVGSegment(segment *mapv1.Segment) string {
-	return GenerateSVGSegmentWithIndex(segment, nil)
-}
-
-// GenerateSVGSegmentWithIndex renders a segment with access to neighboring tiles via index
-func GenerateSVGSegmentWithIndex(segment *mapv1.Segment, tileIndex map[tiles.CoordinateKey]*mapv1.Tile) string {
+func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index) string {
 	var builder strings.Builder
 
 	minX, minY, segW, segH := segmentWorldRect(segment.Bounds)
@@ -249,8 +243,8 @@ func GenerateSVGSegmentWithIndex(segment *mapv1.Segment, tileIndex map[tiles.Coo
 	clipID := key + "-clip"
 
 	var uses strings.Builder
-	for row := segment.Bounds.MinRow - 1; row <= segment.Bounds.MaxRow + 1; row++ {
-		for col := segment.Bounds.MinColumn - 1; col <= segment.Bounds.MaxColumn + 1; col++ {
+	for row := segment.Bounds.MinRow - 1; row <= segment.Bounds.MaxRow+1; row++ {
+		for col := segment.Bounds.MinColumn - 1; col <= segment.Bounds.MaxColumn+1; col++ {
 			ox, oy := tileOriginWorld(uint32(row), uint32(col))
 			fmt.Fprintf(&uses, `<use href="#%s" x="%s" y="%s"/>`, hexSymbolID, f64(ox), f64(oy))
 		}
@@ -268,8 +262,8 @@ func GenerateSVGSegmentWithIndex(segment *mapv1.Segment, tileIndex map[tiles.Coo
 
 	// Add neighboring tiles if we have an index and they would affect the rendering
 	if tileIndex != nil {
-		for row := segment.Bounds.MinRow - 1; row <= segment.Bounds.MaxRow + 1; row++ {
-			for col := segment.Bounds.MinColumn - 1; col <= segment.Bounds.MaxColumn + 1; col++ {
+		for row := segment.Bounds.MinRow - 1; row <= segment.Bounds.MaxRow+1; row++ {
+			for col := segment.Bounds.MinColumn - 1; col <= segment.Bounds.MaxColumn+1; col++ {
 				coordKey := tiles.CoordinateKey{Depth: 0, Row: uint32(row), Column: uint32(col)}
 				if tile, exists := tileIndex[coordKey]; exists {
 					// Check if this tile is not already in our primary list
@@ -301,7 +295,7 @@ func GenerateSVGSegmentWithIndex(segment *mapv1.Segment, tileIndex map[tiles.Coo
 
 		// 2. Edges
 		if len(tile.RenderingSpec.Edges) > 0 {
-			innerVertices := insetHexagonVertices(outerVertices, 0.9)
+			innerVertices := insetHexagonVertices(outerVertices, 0.8)
 			for _, edge := range tile.RenderingSpec.Edges {
 				segment := EdgeSegmentByDirection(edge.Direction) // helper mapping dir → vertex indexes
 				wedge := wedgePathData(outerVertices, innerVertices, segment[0], segment[1])
@@ -316,29 +310,25 @@ func GenerateSVGSegmentWithIndex(segment *mapv1.Segment, tileIndex map[tiles.Coo
 
 		// 3. Corners
 		if len(tile.RenderingSpec.Corners) > 0 {
-			innerVertices := insetHexagonVertices(outerVertices, 0.9)
+			innerVertices := insetHexagonVertices(outerVertices, 0.8)
 			for _, corner := range tile.RenderingSpec.Corners {
 				vertexIndex := CornerVertexIndex(corner.Direction) // helper mapping dir → vertex index
 				triangle1, triangle2 := cornerTrianglesPathData(outerVertices, innerVertices, vertexIndex)
 
 				// Neighbor 1
-				if len(corner.NeighbourTerrainIds) > 0 {
-					fmt.Fprintf(
-						&builder,
-						`<path d="%s" %s/>`,
-						triangle1,
-						cssVarFill(terrainVarName("corner", corner.NeighbourTerrainIds[0]), "#44403c"),
-					)
-				}
+				fmt.Fprintf(
+					&builder,
+					`<path d="%s" %s/>`,
+					triangle1,
+					cssVarFill(terrainVarName("corner", corner.Edge.NeighbourTerrainId), "#44403c"),
+				)
 				// Neighbor 2
-				if len(corner.NeighbourTerrainIds) > 1 {
-					fmt.Fprintf(
-						&builder,
-						`<path d="%s" %s/>`,
-						triangle2,
-						cssVarFill(terrainVarName("corner", corner.NeighbourTerrainIds[1]), "#44403c"),
-					)
-				}
+				fmt.Fprintf(
+					&builder,
+					`<path d="%s" %s/>`,
+					triangle2,
+					cssVarFill(terrainVarName("corner", corner.Edge.NeighbourTerrainId), "#44403c"),
+				)
 			}
 		}
 	}

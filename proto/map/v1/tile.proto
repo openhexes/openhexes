@@ -20,7 +20,7 @@ message Tile {
 
   message Corner {
     map.v1.CornerDirection direction = 1;
-    repeated string neighbour_terrain_ids = 2; // order follows direction enum
+    map.v1.Tile.Edge edge = 2; // which edge (of two) to prolong to make consistent border
   }
 
   message RenderingSpec {

@@ -16,6 +16,7 @@ import (
 	mapv1 "github.com/openhexes/proto/map/v1"
 	progressv1 "github.com/openhexes/proto/progress/v1"
 	worldv1 "github.com/openhexes/proto/world/v1"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
@@ -68,6 +69,10 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 		State: progressv1.Stage_STATE_WAITING,
 		Title: "Process edges",
 	}
+	stageCorners := &progressv1.Stage{
+		State: progressv1.Stage_STATE_WAITING,
+		Title: "Process corners",
+	}
 	stageRender := &progressv1.Stage{
 		State: progressv1.Stage_STATE_WAITING,
 		Title: "Render segments",
@@ -79,7 +84,7 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 				Progress: p,
 			})
 		},
-		stageGrid, stageTiles, stageEdges, stageRender,
+		stageGrid, stageTiles, stageEdges, stageCorners, stageRender,
 	)
 	defer reporter.Close()
 	reporter.Update()
@@ -148,8 +153,20 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 			Column: 8,
 		},
 		{
+			Row:    10,
+			Column: 10,
+		},
+		{
+			Row:    11,
+			Column: 7,
+		},
+		{
 			Row:    12,
 			Column: 12,
+		},
+		{
+			Row:    16,
+			Column: 10,
 		},
 	}
 
@@ -266,16 +283,93 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 	stageEdges.Subtitle = fmt.Sprintf("%d", totalTiles)
 	stageEdges.Duration = durationpb.New(time.Since(start))
 	stageEdges.State = progressv1.Stage_STATE_DONE
+
+	// calculate corners
+	stageCorners.State = progressv1.Stage_STATE_RUNNING
+	reporter.Update(0)
+
+	start = time.Now()
+	processedTileCount = 0
+
+	for k := range idx {
+		for _, cd := range tiles.AllCornerDirections {
+			cornerNeighbours := tiles.GetCornerNeighbours(k, cd)
+			if len(cornerNeighbours) != 2 {
+				continue
+			}
+
+			cnA := cornerNeighbours[0]
+			nA, ok := idx[cnA.CoordinateKey]
+			if !ok {
+				continue
+			}
+			matchedCornerA, matchedEdgeDirectionA := tiles.GetIntersectionOnCorner(cd, cnA.EdgeDirection)
+			var eA *mapv1.Tile_Edge
+			for _, edge := range nA.RenderingSpec.Edges {
+				if edge.Direction == matchedEdgeDirectionA {
+					eA = edge
+					break
+				}
+			}
+			if eA == nil {
+				// no edge there
+				continue
+			}
+
+			cnB := cornerNeighbours[1]
+			nB, ok := idx[cnB.CoordinateKey]
+			if !ok {
+				continue
+			}
+			matchedCornerB, matchedEdgeDirectionB := tiles.GetIntersectionOnCorner(cd, cnB.EdgeDirection)
+			var eB *mapv1.Tile_Edge
+			for _, edge := range nB.RenderingSpec.Edges {
+				if edge.Direction == matchedEdgeDirectionB {
+					eB = edge
+					break
+				}
+			}
+			if eB == nil {
+				// no edge there
+				continue
+			}
+
+			fmt.Printf("\n\n[CORNER FOUND] @ %d.%d %s\n", k.Row, k.Column, cd)
+			fmt.Printf("\t -> %d.%d %s (on %s)\n", nA.Coordinate.Row, nA.Coordinate.Column, eA.Direction, cnA.EdgeDirection)
+			fmt.Printf("\t\t -> FILL %s\n", matchedCornerA)
+			fmt.Printf("\t -> %d.%d %s (on %s)\n", nB.Coordinate.Row, nB.Coordinate.Column, eB.Direction, cnB.EdgeDirection)
+			fmt.Printf("\t\t -> FILL %s\n\n", matchedCornerB)
+
+			nA.RenderingSpec.Corners = append(nA.RenderingSpec.Corners, &mapv1.Tile_Corner{
+				Direction: matchedCornerA,
+				Edge:      eA,
+			})
+			nB.RenderingSpec.Corners = append(nB.RenderingSpec.Corners, &mapv1.Tile_Corner{
+				Direction: matchedCornerB,
+				Edge:      eB,
+			})
+		}
+
+		processedTileCount++
+		if processedTileCount%10_000 == 0 {
+			stageCorners.Subtitle = fmt.Sprintf("%d / %d", processedTileCount, totalTiles)
+			reporter.Update(float64(processedTileCount) / float64(totalTiles))
+		}
+	}
+
+	stageCorners.Subtitle = fmt.Sprintf("%d", totalTiles)
+	stageCorners.Duration = durationpb.New(time.Since(start))
+	stageCorners.State = progressv1.Stage_STATE_DONE
 	stageRender.State = progressv1.Stage_STATE_RUNNING
 	reporter.Update(0)
 
 	start = time.Now()
 	var processedSegmentCount int
-	
+
 	for _, row := range segmentRows {
 		for _, segment := range row.Segments {
 			segment.RenderingSpec = &mapv1.Segment_RenderingSpec{
-				Svg: render.GenerateSVGSegmentWithIndex(segment, idx),
+				Svg: render.GenerateSVGSegment(segment, idx),
 			}
 
 			processedSegmentCount++
@@ -376,3 +470,177 @@ func BoundsInclude(b *mapv1.Segment_Bounds, t *mapv1.Tile, modifier int32) bool 
 		column >= (b.GetMinColumn()-modifier) &&
 		column < (b.GetMaxColumn()+modifier)
 }
+
+// // shouldCreateCorner determines if a corner fill is needed at this vertex
+// // This happens when 3+ different terrains meet at a vertex but there are fewer than 3 edges
+// func shouldCreateCorner(tileKey tiles.CoordinateKey, cornerDir mapv1.CornerDirection, tileIndex tiles.Index) bool {
+// 	currentTile, exists := tileIndex[tileKey]
+// 	if !exists {
+// 		return false
+// 	}
+
+// 	// Get all terrains that meet at this vertex (including current tile)
+// 	terrainsAtVertex := getUniqueTerrainsAtVertex(tileKey, cornerDir, tileIndex)
+
+// 	// Count how many edges this tile has that touch this vertex
+// 	edgesAtVertex := countEdgesAtVertex(currentTile, cornerDir)
+
+// 	// Need corner fill if 3+ terrains meet but fewer than 3 edges exist
+// 	return len(terrainsAtVertex) >= 3 && edgesAtVertex < 3
+// }
+
+// // getCornerTerrains returns the terrain IDs for neighbors that need corner fills
+// func getCornerTerrains(tileKey tiles.CoordinateKey, cornerDir mapv1.CornerDirection, tileIndex tiles.Index) []string {
+// 	// Get the two neighbor tiles that share this vertex
+// 	neighbors := getVertexNeighbors(tileKey, cornerDir)
+
+// 	var terrains []string
+// 	for _, neighborKey := range neighbors {
+// 		if neighbor, exists := tileIndex[neighborKey]; exists {
+// 			terrains = append(terrains, neighbor.TerrainId)
+// 		}
+// 	}
+
+// 	return terrains
+// }
+
+// // getUniqueTerrainsAtVertex returns all unique terrain types that meet at a vertex
+// func getUniqueTerrainsAtVertex(tileKey tiles.CoordinateKey, cornerDir mapv1.CornerDirection, tileIndex tiles.Index) []string {
+// 	currentTile := tileIndex[tileKey]
+// 	terrainSet := make(map[string]bool)
+// 	terrainSet[currentTile.TerrainId] = true
+
+// 	// Add neighbor terrains
+// 	neighbors := getVertexNeighbors(tileKey, cornerDir)
+// 	for _, neighborKey := range neighbors {
+// 		if neighbor, exists := tileIndex[neighborKey]; exists {
+// 			terrainSet[neighbor.TerrainId] = true
+// 		}
+// 	}
+
+// 	var terrains []string
+// 	for terrain := range terrainSet {
+// 		terrains = append(terrains, terrain)
+// 	}
+// 	return terrains
+// }
+
+// // countEdgesAtVertex counts how many edges of the current tile touch the given vertex
+// func countEdgesAtVertex(tile *mapv1.Tile, cornerDir mapv1.CornerDirection) int {
+// 	// Get the two edge directions that meet at this vertex
+// 	edgeDirections := getVertexEdgeDirections(cornerDir)
+
+// 	count := 0
+// 	for _, edge := range tile.RenderingSpec.Edges {
+// 		for _, edgeDir := range edgeDirections {
+// 			if edge.Direction == edgeDir {
+// 				count++
+// 				break
+// 			}
+// 		}
+// 	}
+// 	return count
+// }
+
+// // getVertexEdgeDirections returns the two edge directions that meet at a given vertex
+// func getVertexEdgeDirections(cornerDir mapv1.CornerDirection) []mapv1.EdgeDirection {
+// 	switch cornerDir {
+// 	case mapv1.CornerDirection_CORNER_DIRECTION_NW:
+// 		return []mapv1.EdgeDirection{mapv1.EdgeDirection_EDGE_DIRECTION_W, mapv1.EdgeDirection_EDGE_DIRECTION_NW}
+// 	case mapv1.CornerDirection_CORNER_DIRECTION_N:
+// 		return []mapv1.EdgeDirection{mapv1.EdgeDirection_EDGE_DIRECTION_NW, mapv1.EdgeDirection_EDGE_DIRECTION_NE}
+// 	case mapv1.CornerDirection_CORNER_DIRECTION_NE:
+// 		return []mapv1.EdgeDirection{mapv1.EdgeDirection_EDGE_DIRECTION_NE, mapv1.EdgeDirection_EDGE_DIRECTION_E}
+// 	case mapv1.CornerDirection_CORNER_DIRECTION_SE:
+// 		return []mapv1.EdgeDirection{mapv1.EdgeDirection_EDGE_DIRECTION_E, mapv1.EdgeDirection_EDGE_DIRECTION_SE}
+// 	case mapv1.CornerDirection_CORNER_DIRECTION_S:
+// 		return []mapv1.EdgeDirection{mapv1.EdgeDirection_EDGE_DIRECTION_SE, mapv1.EdgeDirection_EDGE_DIRECTION_SW}
+// 	case mapv1.CornerDirection_CORNER_DIRECTION_SW:
+// 		return []mapv1.EdgeDirection{mapv1.EdgeDirection_EDGE_DIRECTION_SW, mapv1.EdgeDirection_EDGE_DIRECTION_W}
+// 	}
+// 	return []mapv1.EdgeDirection{}
+// }
+
+// // getVertexNeighbors returns the neighbor coordinates that share the given vertex
+// func getVertexNeighbors(coord tiles.CoordinateKey, cornerDir mapv1.CornerDirection) []tiles.CoordinateKey {
+// 	row := coord.Row
+// 	col := coord.Column
+// 	depth := coord.Depth
+// 	isEvenRow := row%2 == 0
+
+// 	switch cornerDir {
+// 	case mapv1.CornerDirection_CORNER_DIRECTION_NW:
+// 		if isEvenRow {
+// 			return []tiles.CoordinateKey{
+// 				{Depth: depth, Row: row, Column: col - 1},     // W neighbor
+// 				{Depth: depth, Row: row - 1, Column: col - 1}, // NW neighbor
+// 			}
+// 		} else {
+// 			return []tiles.CoordinateKey{
+// 				{Depth: depth, Row: row, Column: col - 1}, // W neighbor
+// 				{Depth: depth, Row: row - 1, Column: col}, // NW neighbor
+// 			}
+// 		}
+// 	case mapv1.CornerDirection_CORNER_DIRECTION_N:
+// 		if isEvenRow {
+// 			return []tiles.CoordinateKey{
+// 				{Depth: depth, Row: row - 1, Column: col - 1}, // NW neighbor
+// 				{Depth: depth, Row: row - 1, Column: col},     // NE neighbor
+// 			}
+// 		} else {
+// 			return []tiles.CoordinateKey{
+// 				{Depth: depth, Row: row - 1, Column: col},     // NW neighbor
+// 				{Depth: depth, Row: row - 1, Column: col + 1}, // NE neighbor
+// 			}
+// 		}
+// 	case mapv1.CornerDirection_CORNER_DIRECTION_NE:
+// 		if isEvenRow {
+// 			return []tiles.CoordinateKey{
+// 				{Depth: depth, Row: row - 1, Column: col}, // NE neighbor
+// 				{Depth: depth, Row: row, Column: col + 1}, // E neighbor
+// 			}
+// 		} else {
+// 			return []tiles.CoordinateKey{
+// 				{Depth: depth, Row: row - 1, Column: col + 1}, // NE neighbor
+// 				{Depth: depth, Row: row, Column: col + 1},     // E neighbor
+// 			}
+// 		}
+// 	case mapv1.CornerDirection_CORNER_DIRECTION_SE:
+// 		if isEvenRow {
+// 			return []tiles.CoordinateKey{
+// 				{Depth: depth, Row: row, Column: col + 1}, // E neighbor
+// 				{Depth: depth, Row: row + 1, Column: col}, // SE neighbor
+// 			}
+// 		} else {
+// 			return []tiles.CoordinateKey{
+// 				{Depth: depth, Row: row, Column: col + 1},     // E neighbor
+// 				{Depth: depth, Row: row + 1, Column: col + 1}, // SE neighbor
+// 			}
+// 		}
+// 	case mapv1.CornerDirection_CORNER_DIRECTION_S:
+// 		if isEvenRow {
+// 			return []tiles.CoordinateKey{
+// 				{Depth: depth, Row: row + 1, Column: col},     // SE neighbor
+// 				{Depth: depth, Row: row + 1, Column: col - 1}, // SW neighbor
+// 			}
+// 		} else {
+// 			return []tiles.CoordinateKey{
+// 				{Depth: depth, Row: row + 1, Column: col + 1}, // SE neighbor
+// 				{Depth: depth, Row: row + 1, Column: col},     // SW neighbor
+// 			}
+// 		}
+// 	case mapv1.CornerDirection_CORNER_DIRECTION_SW:
+// 		if isEvenRow {
+// 			return []tiles.CoordinateKey{
+// 				{Depth: depth, Row: row + 1, Column: col - 1}, // SW neighbor
+// 				{Depth: depth, Row: row, Column: col - 1},     // W neighbor
+// 			}
+// 		} else {
+// 			return []tiles.CoordinateKey{
+// 				{Depth: depth, Row: row + 1, Column: col}, // SW neighbor
+// 				{Depth: depth, Row: row, Column: col - 1}, // W neighbor
+// 			}
+// 		}
+// 	}
+// 	return []tiles.CoordinateKey{}
+// }
