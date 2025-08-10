@@ -35,6 +35,11 @@ type Neighbour struct {
 	CoordinateKey CoordinateKey
 }
 
+type CornerID struct {
+	CornerDirection mapv1.CornerDirection
+	EdgeDirection   mapv1.EdgeDirection
+}
+
 func CoordinateToKey(c *mapv1.Tile_Coordinate) CoordinateKey {
 	return CoordinateKey{Depth: c.Depth, Row: c.Row, Column: c.Column}
 }
@@ -425,7 +430,7 @@ var cornerEdgeToNeighbor = map[cornerEdgeKey]struct {
 
 	// Crossing the SE edge → neighbor’s NW edge (endpoints: SE↔NW, S↔N)
 	{mapv1.CornerDirection_CORNER_DIRECTION_SE, mapv1.EdgeDirection_EDGE_DIRECTION_SE}: {mapv1.CornerDirection_CORNER_DIRECTION_N, mapv1.EdgeDirection_EDGE_DIRECTION_NW},
-	{mapv1.CornerDirection_CORNER_DIRECTION_S, mapv1.EdgeDirection_EDGE_DIRECTION_SE}:  {mapv1.CornerDirection_CORNER_DIRECTION_N, mapv1.EdgeDirection_EDGE_DIRECTION_NW},
+	{mapv1.CornerDirection_CORNER_DIRECTION_S, mapv1.EdgeDirection_EDGE_DIRECTION_SE}:  {mapv1.CornerDirection_CORNER_DIRECTION_NW, mapv1.EdgeDirection_EDGE_DIRECTION_NW},
 
 	// Crossing the SW edge → neighbor’s NE edge (endpoints: S↔N, SW↔NE)
 	{mapv1.CornerDirection_CORNER_DIRECTION_S, mapv1.EdgeDirection_EDGE_DIRECTION_SW}:  {mapv1.CornerDirection_CORNER_DIRECTION_N, mapv1.EdgeDirection_EDGE_DIRECTION_NE},
