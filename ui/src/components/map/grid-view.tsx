@@ -45,6 +45,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
     const containerRef = React.useRef<HTMLDivElement>(null)
     const [lastPosition, setLastPosition] = React.useState<Position | null>(null)
     const [offset, setOffset] = React.useState<Position>({ x: 0, y: 0 })
+    const [isZoomedOut, setIsZoomedOut] = React.useState<boolean>(false)
 
     const [visibleSegments, setVisibleSegments] = React.useState<Segment[]>([])
     const [visibleTiles, setVisibleTiles] = React.useState<PTile[]>([])
@@ -52,6 +53,11 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
     const rowHeight = tileHeight * 0.75
     const mapWidth = Math.ceil(grid.totalColumns * tileWidth + tileWidth / 2) // extra half for shifted rows
     const mapHeight = Math.ceil((grid.totalRows - 1) * rowHeight + tileHeight) // = tileHeight*(0.75*rows + 0.25)
+    
+    // Calculate zoom level for fit-to-screen
+    const rect = containerRef.current?.getBoundingClientRect()
+    const fitZoom = rect ? Math.min(rect.width / mapWidth, rect.height / mapHeight) : 0.5
+    const zoom = isZoomedOut ? fitZoom : 1
 
     const _applyPan = React.useCallback(
         (dx: number, dy: number) => {
@@ -62,28 +68,37 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
 
             setOffset((prev) => {
                 const next = { x: prev.x, y: prev.y }
-                if (rect.width < mapWidth) {
-                    const maxX = mapWidth - rect.width
+
+                // Account for zoom when calculating pan bounds
+                const scaledMapWidth = mapWidth * zoom
+                const scaledMapHeight = mapHeight * zoom
+
+                if (rect.width < scaledMapWidth) {
+                    const maxX = scaledMapWidth - rect.width
                     next.x = Math.floor(Math.max(-maxX, Math.min(0, prev.x + dx)))
                 } else {
-                    next.x = 0
+                    // Center the map if it's smaller than viewport
+                    next.x = (rect.width - scaledMapWidth) / 2
                 }
 
-                if (rect.height < mapHeight) {
-                    const maxY = mapHeight - rect.height
+                if (rect.height < scaledMapHeight) {
+                    const maxY = scaledMapHeight - rect.height
                     next.y = Math.floor(Math.max(-maxY, Math.min(0, prev.y + dy)))
                 } else {
-                    next.y = 0
+                    // Center the map if it's smaller than viewport
+                    next.y = (rect.height - scaledMapHeight) / 2
                 }
 
                 return next
             })
 
-            // const maxVisibleRows = Math.ceil((rect.height - 2 * triangleHeight) / rowHeight)
-            const maxVisibleRows = Math.ceil(rect.height / rowHeight)
-            const maxVisibleColumns = Math.ceil(rect.width / tileWidth)
-            const skippedColumnCount = Math.ceil(-offset.x / tileWidth)
-            const skippedRowCount = Math.ceil(-offset.y / rowHeight)
+            // Account for zoom when calculating visibility (more tiles visible when zoomed out)
+            const effectiveRowHeight = rowHeight * zoom
+            const effectiveTileWidth = tileWidth * zoom
+            const maxVisibleRows = Math.ceil(rect.height / effectiveRowHeight)
+            const maxVisibleColumns = Math.ceil(rect.width / effectiveTileWidth)
+            const skippedColumnCount = Math.ceil(-offset.x / effectiveTileWidth)
+            const skippedRowCount = Math.ceil(-offset.y / effectiveRowHeight)
             const visibleBounds = create(Segment_BoundsSchema, {
                 minRow: skippedRowCount,
                 maxRow: skippedRowCount + maxVisibleRows,
@@ -144,6 +159,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
             offset.y,
             rowHeight,
             tileWidth,
+            zoom,
         ],
     )
 
@@ -208,6 +224,34 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
         setLastPosition(null)
     }
 
+    const handleClick = React.useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        if (e.shiftKey) {
+            e.preventDefault()
+            e.stopPropagation()
+            
+            const newZoomState = !isZoomedOut
+            setIsZoomedOut(newZoomState)
+            
+            // When zooming out to fit, center the map
+            if (newZoomState) {
+                const rect = containerRef.current?.getBoundingClientRect()
+                if (rect) {
+                    const fitZoom = Math.min(rect.width / mapWidth, rect.height / mapHeight)
+                    const scaledMapWidth = mapWidth * fitZoom
+                    const scaledMapHeight = mapHeight * fitZoom
+                    
+                    setOffset({
+                        x: (rect.width - scaledMapWidth) / 2,
+                        y: (rect.height - scaledMapHeight) / 2
+                    })
+                }
+            } else {
+                // Reset to normal position when zooming back in
+                setOffset({ x: 0, y: 0 })
+            }
+        }
+    }, [isZoomedOut, mapWidth, mapHeight])
+
     const handleTileSelect = (tile?: PTile) => {
         if (tile?.key === selectedTile?.key) {
             setSelectedTile(undefined)
@@ -226,6 +270,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
                 onMouseMoveCapture={handleMouseMove}
                 onTouchMoveCapture={handleTouchMove}
                 onTouchEndCapture={handleTouchEnd}
+                onClickCapture={handleClick}
                 onMouseLeave={() => handleTileSelect()}
             >
                 <div
@@ -234,7 +279,8 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
                     style={{
                         width: mapWidth,
                         height: mapHeight,
-                        transform: `translate(${offset.x}px, ${offset.y}px)`,
+                        transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+                        transformOrigin: "0 0",
                         willChange: "transform",
                     }}
                 >
@@ -247,8 +293,8 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
                         />
                     ))}
 
-                    {/* interactive tiles on top */}
-                    {visibleTiles.map((tile) => (
+                    {/* interactive tiles on top - only render when not zoomed out */}
+                    {!isZoomedOut && visibleTiles.map((tile) => (
                         <TileView
                             tile={tile}
                             key={tile.key}

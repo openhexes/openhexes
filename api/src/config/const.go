@@ -4,7 +4,7 @@ import "math"
 
 const (
 	// TileWidth and TileHeight are both in "world units" (same system used for SVG viewBox).
-	TileHeight = float64(60)
+	TileHeight = float64(50)
 )
 
 var (

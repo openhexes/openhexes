@@ -3,6 +3,8 @@ package game
 import (
 	"context"
 	"fmt"
+	"math"
+	"math/rand"
 	"time"
 
 	"connectrpc.com/connect"
@@ -25,6 +27,114 @@ type Service struct {
 
 	cfg  *config.Config
 	auth *auth.Controller
+}
+
+// Simple noise implementation for terrain generation
+func simpleNoise(x, y float64) float64 {
+	return math.Sin(x*0.1) * math.Cos(y*0.1) + 
+		   0.5*math.Sin(x*0.2) * math.Cos(y*0.2) + 
+		   0.25*math.Sin(x*0.4) * math.Cos(y*0.4)
+}
+
+// Generate realistic terrain based on heightmap and moisture
+func generateRealisticTerrain(totalRows, totalColumns uint32) map[tiles.CoordinateKey]string {
+	terrainMap := make(map[tiles.CoordinateKey]string)
+	
+	// Random seed for each generation - creates different maps each time
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	seedOffset := rng.Float64() * 10000 // Random offset for noise patterns
+	
+	for row := uint32(0); row < totalRows; row++ {
+		for column := uint32(0); column < totalColumns; column++ {
+			x, y := float64(column), float64(row)
+			
+			// Generate heightmap using multiple octaves of noise with random seed
+			height := 0.6*simpleNoise((x+seedOffset)*0.008, (y+seedOffset)*0.008) + 
+					 0.4*simpleNoise((x+seedOffset)*0.02, (y+seedOffset)*0.02) + 
+					 0.3*simpleNoise((x+seedOffset)*0.05, (y+seedOffset)*0.05) + 
+					 0.2*simpleNoise((x+seedOffset)*0.1, (y+seedOffset)*0.1)
+			
+			// Generate moisture map with different seed offset
+			moistureSeed := seedOffset + 1000
+			moisture := 0.5*simpleNoise((x+moistureSeed)*0.015, (y+moistureSeed)*0.015) + 
+					   0.3*simpleNoise((x+moistureSeed)*0.04, (y+moistureSeed)*0.04) +
+					   0.2*simpleNoise((x+moistureSeed)*0.08, (y+moistureSeed)*0.08)
+			
+			// Generate temperature (affected by latitude + noise)
+			tempSeed := seedOffset + 2000
+			temperature := 0.9 - 0.7*float64(row)/float64(totalRows) + 
+						  0.3*simpleNoise((x+tempSeed)*0.025, (y+tempSeed)*0.025) +
+						  0.2*simpleNoise((x+tempSeed)*0.06, (y+tempSeed)*0.06)
+			
+			// Add controlled randomness
+			randomFactor := (rng.Float64() - 0.5) * 0.3
+			height += randomFactor
+			
+			// Determine terrain type based on height, moisture, and temperature
+			ck := tiles.CoordinateKey{Depth: 0, Row: row, Column: column}
+			
+			switch {
+			case height < -0.7:
+				terrainMap[ck] = "abyss"
+			case height < -0.1:
+				terrainMap[ck] = "water"
+			case height < 0.2:
+				if moisture > 0.3 {
+					terrainMap[ck] = "swamp"
+				} else {
+					terrainMap[ck] = "water"
+				}
+			case height < 0.6:
+				if temperature < 0.2 {
+					terrainMap[ck] = "snow"
+				} else if moisture > 0.4 {
+					terrainMap[ck] = "swamp"
+				} else if moisture < -0.3 && temperature > 0.7 {
+					terrainMap[ck] = "sand"
+				} else if moisture < -0.1 {
+					terrainMap[ck] = "dirt"
+				} else {
+					terrainMap[ck] = "grass"
+				}
+			case height < 1.0:
+				if temperature < 0.3 {
+					terrainMap[ck] = "snow"
+				} else if moisture < -0.2 && temperature > 0.6 {
+					terrainMap[ck] = "sand"
+				} else if moisture < 0.0 {
+					if rng.Float64() < 0.3 {
+						terrainMap[ck] = "wasteland"
+					} else {
+						terrainMap[ck] = "dirt"
+					}
+				} else if rng.Float64() < 0.2 {
+					terrainMap[ck] = "rough"
+				} else {
+					terrainMap[ck] = "highlands"
+				}
+			case height < 1.4:
+				if temperature < 0.4 {
+					terrainMap[ck] = "snow"
+				} else if moisture < -0.1 {
+					terrainMap[ck] = "wasteland"
+				} else if rng.Float64() < 0.3 {
+					terrainMap[ck] = "ash"
+				} else {
+					terrainMap[ck] = "highlands"
+				}
+			default:
+				if temperature < 0.5 {
+					terrainMap[ck] = "snow"
+				} else if rng.Float64() < 0.5 {
+					terrainMap[ck] = "ash"
+				} else {
+					terrainMap[ck] = "subterranean"
+				}
+			}
+		}
+	}
+	
+	return terrainMap
 }
 
 func New(cfg *config.Config, auth *auth.Controller) *Service {
@@ -142,66 +252,8 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 	totalTiles := request.Msg.TotalRows * request.Msg.TotalColumns
 	var processedTileCount int
 
-	allRenderingTypes := []mapv1.Terrain_RenderingType{
-		mapv1.Terrain_RENDERING_TYPE_ABYSS,
-		mapv1.Terrain_RENDERING_TYPE_WATER,
-		mapv1.Terrain_RENDERING_TYPE_GRASS,
-		mapv1.Terrain_RENDERING_TYPE_HIGHLANDS,
-		mapv1.Terrain_RENDERING_TYPE_DIRT,
-		mapv1.Terrain_RENDERING_TYPE_ASH,
-		mapv1.Terrain_RENDERING_TYPE_SUBTERRANEAN,
-		mapv1.Terrain_RENDERING_TYPE_ROUGH,
-		mapv1.Terrain_RENDERING_TYPE_WASTELAND,
-		mapv1.Terrain_RENDERING_TYPE_SAND,
-		mapv1.Terrain_RENDERING_TYPE_SNOW,
-		mapv1.Terrain_RENDERING_TYPE_SWAMP,
-	}
-
-	islandCenters := map[string][]*mapv1.Tile_Coordinate{
-		"abyss":        {{Row: 1, Column: 3}},
-		"grass":        {{Row: 4, Column: 3}},
-		"highlands":    {{Row: 7, Column: 3}},
-		"dirt":         {{Row: 10, Column: 3}},
-		"ash":          {{Row: 13, Column: 3}},
-		"subterranean": {{Row: 1, Column: 7}},
-		"rough":        {{Row: 4, Column: 7}},
-		"wasteland":    {{Row: 7, Column: 7}},
-		"sand":         {{Row: 10, Column: 7}},
-		"snow":         {{Row: 13, Column: 7}},
-		"swamp":        {{Row: 16, Column: 7}},
-	}
-
-	islandSet := make(map[tiles.CoordinateKey]string)
-	for _, rt := range allRenderingTypes {
-		var t *mapv1.Terrain
-		for _, terrain := range config.TerrainRegistry {
-			if terrain.RenderingSpec.RenderingType == rt {
-				t = terrain
-				break
-			}
-		}
-		if t == nil {
-			return fmt.Errorf("no terrain for rendering type: %s", rt)
-		}
-
-		centers, ok := islandCenters[t.Id]
-		if !ok {
-			continue
-		}
-
-		for _, center := range centers {
-			ck := tiles.CoordinateToKey(center)
-
-			islandSet[ck] = t.Id
-			for c := range tiles.IterNeighbours(ck) {
-				islandSet[c.CoordinateKey] = t.Id
-
-				for cc := range tiles.IterNeighbours(c.CoordinateKey) {
-					islandSet[cc.CoordinateKey] = t.Id
-				}
-			}
-		}
-	}
+	// Generate realistic terrain using noise-based heightmap
+	terrainMap := generateRealisticTerrain(request.Msg.TotalRows, request.Msg.TotalColumns)
 
 	idx := make(tiles.Index, totalTiles)
 	for row := range request.Msg.TotalRows {
@@ -216,7 +268,7 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 			tile.Key = fmt.Sprintf("%03d.%03d.%03d", k.Depth, k.Row, k.Column)
 			idx[k] = tile
 
-			if terrain, ok := islandSet[k]; ok {
+			if terrain, ok := terrainMap[k]; ok {
 				tile.TerrainId = terrain
 			} else {
 				tile.TerrainId = "water"

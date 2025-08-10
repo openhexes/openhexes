@@ -24,7 +24,7 @@ export const StatusBar: React.FC = () => {
                     <LocateFixed size={12} />
                     {selectedTile.key}
                 </div>
-                <div className={pillClassName}>
+                <div className={cn(pillClassName, "min-w-[110px]")}>
                     <Footprints size={12} />
                     <span className="capitalize">{selectedTile.terrainId}</span>
                     {terrain.movementPenalty > 0 && (
