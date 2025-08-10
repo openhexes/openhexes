@@ -62,6 +62,10 @@ func (cfg *Config) SetUp(ctx context.Context) error {
 	log := GetLogger(ctx)
 	log.Info("setting up", zap.String("test.id", cfg.Test.ID))
 
+	if err := ValidateRegistries(); err != nil {
+		return fmt.Errorf("validating registries: %w", err)
+	}
+
 	if err := cfg.setUpPostgres(ctx); err != nil {
 		return fmt.Errorf("setting up postgres: %w", err)
 	}

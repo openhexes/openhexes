@@ -94,11 +94,9 @@ export declare type Tile_Corner = Message<"map.v1.Tile.Corner"> & {
   direction: CornerDirection;
 
   /**
-   * which edge (of two) to prolong to make consistent border
-   *
-   * @generated from field: map.v1.Tile.Edge edge = 2;
+   * @generated from field: map<int32, map.v1.Tile.Edge> edges = 2;
    */
-  edge?: Tile_Edge;
+  edges: { [key: number]: Tile_Edge };
 };
 
 /**
@@ -112,14 +110,14 @@ export declare const Tile_CornerSchema: GenMessage<Tile_Corner>;
  */
 export declare type Tile_RenderingSpec = Message<"map.v1.Tile.RenderingSpec"> & {
   /**
-   * @generated from field: repeated map.v1.Tile.Edge edges = 1;
+   * @generated from field: map<int32, map.v1.Tile.Edge> edges = 1;
    */
-  edges: Tile_Edge[];
+  edges: { [key: number]: Tile_Edge };
 
   /**
-   * @generated from field: repeated map.v1.Tile.Corner corners = 2;
+   * @generated from field: map<int32, map.v1.Tile.Corner> corners = 2;
    */
-  corners: Tile_Corner[];
+  corners: { [key: number]: Tile_Corner };
 
   /**
    * landscape features, e.g. trees, rocks, etc.

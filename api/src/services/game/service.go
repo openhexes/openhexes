@@ -142,43 +142,36 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 	totalTiles := request.Msg.TotalRows * request.Msg.TotalColumns
 	var processedTileCount int
 
-	islandCenters := []*mapv1.Tile_Coordinate{
-		{
-			Row:    0,
-			Column: 0,
+	islandCenters := map[string][]*mapv1.Tile_Coordinate{
+		"ash": {
+			{Row: 0, Column: 0},
+			{Row: 8, Column: 8},
+			{Row: 10, Column: 10},
+			{Row: 11, Column: 7},
+			{Row: 12, Column: 12},
+			{Row: 16, Column: 10},
 		},
-		{
-			Row:    8,
-			Column: 8,
-		},
-		{
-			Row:    10,
-			Column: 10,
-		},
-		{
-			Row:    11,
-			Column: 7,
-		},
-		{
-			Row:    12,
-			Column: 12,
-		},
-		{
-			Row:    16,
-			Column: 10,
+		"grass": {
+			{Row: 3, Column: 3},
+			{Row: 4, Column: 9},
+			{Row: 5, Column: 6},
+			{Row: 8, Column: 4},
+			{Row: 16, Column: 12},
 		},
 	}
 
-	islandSet := make(map[tiles.CoordinateKey]bool)
-	for _, center := range islandCenters {
-		ck := tiles.CoordinateToKey(center)
+	islandSet := make(map[tiles.CoordinateKey]string)
+	for terrain, centers := range islandCenters {
+		for _, center := range centers {
+			ck := tiles.CoordinateToKey(center)
 
-		islandSet[ck] = true
-		for c := range tiles.IterNeighbours(ck) {
-			islandSet[c.CoordinateKey] = true
+			islandSet[ck] = terrain
+			for c := range tiles.IterNeighbours(ck) {
+				islandSet[c.CoordinateKey] = terrain
 
-			for cc := range tiles.IterNeighbours(c.CoordinateKey) {
-				islandSet[cc.CoordinateKey] = true
+				for cc := range tiles.IterNeighbours(c.CoordinateKey) {
+					islandSet[cc.CoordinateKey] = terrain
+				}
 			}
 		}
 	}
@@ -195,8 +188,8 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 			k := tiles.CoordinateToKey(tile.Coordinate)
 			idx[k] = tile
 
-			if islandSet[k] {
-				tile.TerrainId = "ash"
+			if terrain, ok := islandSet[k]; ok {
+				tile.TerrainId = terrain
 			} else {
 				tile.TerrainId = "water"
 			}
@@ -241,8 +234,8 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 
 	for k, tile := range idx {
 		tile.RenderingSpec = &mapv1.Tile_RenderingSpec{
-			Edges:   make([]*mapv1.Tile_Edge, 0, 6),
-			Corners: make([]*mapv1.Tile_Corner, 0, 6),
+			Edges:   make(map[int32]*mapv1.Tile_Edge, 6),
+			Corners: make(map[int32]*mapv1.Tile_Corner, 6),
 		}
 		tileTerrain, ok := config.TerrainRegistry[tile.TerrainId]
 		if !ok {
@@ -266,10 +259,10 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 				continue
 			}
 
-			tile.RenderingSpec.Edges = append(tile.RenderingSpec.Edges, &mapv1.Tile_Edge{
+			tile.RenderingSpec.Edges[int32(c.Direction)] = &mapv1.Tile_Edge{
 				Direction:          c.Direction,
 				NeighbourTerrainId: neighbour.TerrainId,
-			})
+			}
 		}
 
 		processedTileCount++
@@ -292,80 +285,43 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 
 	for k := range idx {
 		for _, cd := range tiles.AllCornerDirections {
-			cornerNeighbours := tiles.GetCornerNeighbours(k, cd)
+			cns := tiles.GetCornerNeighbours(k, cd)
 
-			// Handle cases with 1 or 2 neighbors (was previously only handling exactly 2)
-			if len(cornerNeighbours) == 0 {
-				continue
-			}
-
-			var validNeighbors []struct {
-				cn            tiles.CornerNeighbour
-				n             *mapv1.Tile
-				matchedCorner mapv1.CornerDirection
-				matchedEdge   mapv1.EdgeDirection
-				edge          *mapv1.Tile_Edge
-			}
-
-			// Process each neighbor
-			for _, cn := range cornerNeighbours {
+			for _, cn := range cns {
 				n, ok := idx[cn.CoordinateKey]
 				if !ok {
+					// that's okay for tiles on the edge of the map
 					continue
 				}
 
-				matchedCorner, matchedEdge := tiles.GetIntersectionOnCorner(cd, cn.EdgeDirection)
-				var edge *mapv1.Tile_Edge
-				for _, e := range n.RenderingSpec.Edges {
-					if e.Direction == matchedEdge {
-						edge = e
-						break
-					}
-				}
-				if edge == nil {
+				opCD, opED := tiles.GetOppositeCorner(cd, cn.EdgeDirection)
+				opE, ok := n.RenderingSpec.Edges[int32(opED)]
+				if !ok {
+					// neighbour doesn't have a connecting edge
 					continue
 				}
 
-				validNeighbors = append(validNeighbors, struct {
-					cn            tiles.CornerNeighbour
-					n             *mapv1.Tile
-					matchedCorner mapv1.CornerDirection
-					matchedEdge   mapv1.EdgeDirection
-					edge          *mapv1.Tile_Edge
-				}{cn, n, matchedCorner, matchedEdge, edge})
-			}
-
-			// Create corner markers for all valid neighbors
-			if len(validNeighbors) > 0 {
-
-			Neighbour:
-				// Add corner markers to neighbor tiles
-				for _, vn := range validNeighbors {
-					for _, existing := range vn.n.RenderingSpec.Corners {
-						if existing.Direction == vn.matchedCorner && existing.Edge == vn.edge {
-							continue Neighbour
-						}
+				corner, ok := n.RenderingSpec.Corners[int32(opCD)]
+				if !ok {
+					corner = &mapv1.Tile_Corner{
+						Direction: opCD,
+						Edges:     make(map[int32]*mapv1.Tile_Edge, 2),
 					}
-
-					vn.n.RenderingSpec.Corners = append(vn.n.RenderingSpec.Corners, &mapv1.Tile_Corner{
-						Direction: vn.matchedCorner,
-						Edge:      vn.edge,
-					})
+					n.RenderingSpec.Corners[int32(opCD)] = corner
 				}
+				corner.Edges[int32(opED)] = opE
 			}
 		}
 
 		processedTileCount++
 		if processedTileCount%10_000 == 0 {
 			stageCorners.Subtitle = fmt.Sprintf("%d / %d", processedTileCount, totalTiles)
-			reporter.Update(float64(processedTileCount) / float64(totalTiles) / 2)
+			reporter.Update(float64(processedTileCount) / float64(totalTiles))
 		}
 	}
 
-	// remove extra corners between two existing edges
+	// remove extra corners between two existing edges of the same terrain
 	for k, tile := range idx {
-		toRemove := make(map[mapv1.CornerDirection]struct{}, 6)
-
 	CornerDirections:
 		for _, cd := range tiles.AllCornerDirections {
 			cornerNeighbours := tiles.GetCornerNeighbours(k, cd)
@@ -374,8 +330,14 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 			}
 
 			existingEdges := make(map[mapv1.EdgeDirection]struct{}, 2)
+			existingTerrains := make(map[string]struct{}, 2)
 			for _, e := range tile.RenderingSpec.Edges {
 				existingEdges[e.Direction] = struct{}{}
+				existingTerrains[e.NeighbourTerrainId] = struct{}{}
+			}
+
+			if len(existingTerrains) > 1 {
+				continue
 			}
 
 			for _, n := range cornerNeighbours {
@@ -385,16 +347,8 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 			}
 
 			// both edges are present, corner is not needed
-			toRemove[cd] = struct{}{}
+			delete(tile.RenderingSpec.Corners, int32(cd))
 		}
-
-		newCorners := make([]*mapv1.Tile_Corner, 0, len(tile.RenderingSpec.Corners)-len(toRemove))
-		for _, corner := range tile.RenderingSpec.Corners {
-			if _, ok := toRemove[corner.Direction]; !ok {
-				newCorners = append(newCorners, corner)
-			}
-		}
-		tile.RenderingSpec.Corners = newCorners
 	}
 
 	stageCorners.Subtitle = fmt.Sprintf("%d", totalTiles)

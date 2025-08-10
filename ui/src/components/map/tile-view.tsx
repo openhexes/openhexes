@@ -22,9 +22,9 @@ export const TileView: React.FC<TileProps> = ({ tile, height, width }) => {
     const className = cn(
         "tile",
         "select-none flex items-center justify-center absolute",
-        "text-xs text-transparent bg-transparent hover:bg-gray-100 hover:text-zinc-900 opacity-50",
-        { "bg-sky-400 text-zinc-900": selected === 2 },
-        { "bg-rose-400 text-zinc-900": selected === 1 },
+        "text-xs text-transparent bg-transparent hover:bg-gray-100 hover:text-zinc-900 opacity-30",
+        { "bg-rose-400 text-zinc-900": selected === 2 },
+        { "bg-yellow-400 text-zinc-900": selected === 1 },
     )
 
     const handleClick = (e: React.MouseEvent) => {

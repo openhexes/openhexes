@@ -324,7 +324,7 @@ func (x *Tile_Edge) GetNeighbourTerrainId() string {
 type Tile_Corner struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Direction     CornerDirection        `protobuf:"varint,1,opt,name=direction,proto3,enum=map.v1.CornerDirection" json:"direction,omitempty"`
-	Edge          *Tile_Edge             `protobuf:"bytes,2,opt,name=edge,proto3" json:"edge,omitempty"` // which edge (of two) to prolong to make consistent border
+	Edges         map[int32]*Tile_Edge   `protobuf:"bytes,2,rep,name=edges,proto3" json:"edges,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -366,17 +366,17 @@ func (x *Tile_Corner) GetDirection() CornerDirection {
 	return CornerDirection_CORNER_DIRECTION_UNSPECIFIED
 }
 
-func (x *Tile_Corner) GetEdge() *Tile_Edge {
+func (x *Tile_Corner) GetEdges() map[int32]*Tile_Edge {
 	if x != nil {
-		return x.Edge
+		return x.Edges
 	}
 	return nil
 }
 
 type Tile_RenderingSpec struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Edges         []*Tile_Edge           `protobuf:"bytes,1,rep,name=edges,proto3" json:"edges,omitempty"`
-	Corners       []*Tile_Corner         `protobuf:"bytes,2,rep,name=corners,proto3" json:"corners,omitempty"`
+	Edges         map[int32]*Tile_Edge   `protobuf:"bytes,1,rep,name=edges,proto3" json:"edges,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Corners       map[int32]*Tile_Corner `protobuf:"bytes,2,rep,name=corners,proto3" json:"corners,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	FeatureIds    []string               `protobuf:"bytes,3,rep,name=feature_ids,json=featureIds,proto3" json:"feature_ids,omitempty"` // landscape features, e.g. trees, rocks, etc.
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -412,14 +412,14 @@ func (*Tile_RenderingSpec) Descriptor() ([]byte, []int) {
 	return file_map_v1_tile_proto_rawDescGZIP(), []int{0, 3}
 }
 
-func (x *Tile_RenderingSpec) GetEdges() []*Tile_Edge {
+func (x *Tile_RenderingSpec) GetEdges() map[int32]*Tile_Edge {
 	if x != nil {
 		return x.Edges
 	}
 	return nil
 }
 
-func (x *Tile_RenderingSpec) GetCorners() []*Tile_Corner {
+func (x *Tile_RenderingSpec) GetCorners() map[int32]*Tile_Corner {
 	if x != nil {
 		return x.Corners
 	}
@@ -445,7 +445,7 @@ type Segment_Bounds struct {
 
 func (x *Segment_Bounds) Reset() {
 	*x = Segment_Bounds{}
-	mi := &file_map_v1_tile_proto_msgTypes[7]
+	mi := &file_map_v1_tile_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -457,7 +457,7 @@ func (x *Segment_Bounds) String() string {
 func (*Segment_Bounds) ProtoMessage() {}
 
 func (x *Segment_Bounds) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_tile_proto_msgTypes[7]
+	mi := &file_map_v1_tile_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -510,7 +510,7 @@ type Segment_RenderingSpec struct {
 
 func (x *Segment_RenderingSpec) Reset() {
 	*x = Segment_RenderingSpec{}
-	mi := &file_map_v1_tile_proto_msgTypes[8]
+	mi := &file_map_v1_tile_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -522,7 +522,7 @@ func (x *Segment_RenderingSpec) String() string {
 func (*Segment_RenderingSpec) ProtoMessage() {}
 
 func (x *Segment_RenderingSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_tile_proto_msgTypes[8]
+	mi := &file_map_v1_tile_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -554,7 +554,7 @@ type Segment_Row struct {
 
 func (x *Segment_Row) Reset() {
 	*x = Segment_Row{}
-	mi := &file_map_v1_tile_proto_msgTypes[9]
+	mi := &file_map_v1_tile_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -566,7 +566,7 @@ func (x *Segment_Row) String() string {
 func (*Segment_Row) ProtoMessage() {}
 
 func (x *Segment_Row) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_tile_proto_msgTypes[9]
+	mi := &file_map_v1_tile_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -593,7 +593,7 @@ var File_map_v1_tile_proto protoreflect.FileDescriptor
 
 const file_map_v1_tile_proto_rawDesc = "" +
 	"\n" +
-	"\x11map/v1/tile.proto\x12\x06map.v1\x1a\x14map/v1/compass.proto\"\xd1\x04\n" +
+	"\x11map/v1/tile.proto\x12\x06map.v1\x1a\x14map/v1/compass.proto\"\xf4\x06\n" +
 	"\x04Tile\x127\n" +
 	"\n" +
 	"coordinate\x18\x01 \x01(\v2\x17.map.v1.Tile.CoordinateR\n" +
@@ -608,15 +608,26 @@ const file_map_v1_tile_proto_rawDesc = "" +
 	"\x05depth\x18\x03 \x01(\rR\x05depth\x1am\n" +
 	"\x04Edge\x123\n" +
 	"\tdirection\x18\x01 \x01(\x0e2\x15.map.v1.EdgeDirectionR\tdirection\x120\n" +
-	"\x14neighbour_terrain_id\x18\x02 \x01(\tR\x12neighbourTerrainId\x1af\n" +
+	"\x14neighbour_terrain_id\x18\x02 \x01(\tR\x12neighbourTerrainId\x1a\xc2\x01\n" +
 	"\x06Corner\x125\n" +
-	"\tdirection\x18\x01 \x01(\x0e2\x17.map.v1.CornerDirectionR\tdirection\x12%\n" +
-	"\x04edge\x18\x02 \x01(\v2\x11.map.v1.Tile.EdgeR\x04edge\x1a\x88\x01\n" +
-	"\rRenderingSpec\x12'\n" +
-	"\x05edges\x18\x01 \x03(\v2\x11.map.v1.Tile.EdgeR\x05edges\x12-\n" +
-	"\acorners\x18\x02 \x03(\v2\x13.map.v1.Tile.CornerR\acorners\x12\x1f\n" +
+	"\tdirection\x18\x01 \x01(\x0e2\x17.map.v1.CornerDirectionR\tdirection\x124\n" +
+	"\x05edges\x18\x02 \x03(\v2\x1e.map.v1.Tile.Corner.EdgesEntryR\x05edges\x1aK\n" +
+	"\n" +
+	"EdgesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\x05R\x03key\x12'\n" +
+	"\x05value\x18\x02 \x01(\v2\x11.map.v1.Tile.EdgeR\x05value:\x028\x01\x1a\xce\x02\n" +
+	"\rRenderingSpec\x12;\n" +
+	"\x05edges\x18\x01 \x03(\v2%.map.v1.Tile.RenderingSpec.EdgesEntryR\x05edges\x12A\n" +
+	"\acorners\x18\x02 \x03(\v2'.map.v1.Tile.RenderingSpec.CornersEntryR\acorners\x12\x1f\n" +
 	"\vfeature_ids\x18\x03 \x03(\tR\n" +
-	"featureIds\"\xf4\x02\n" +
+	"featureIds\x1aK\n" +
+	"\n" +
+	"EdgesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\x05R\x03key\x12'\n" +
+	"\x05value\x18\x02 \x01(\v2\x11.map.v1.Tile.EdgeR\x05value:\x028\x01\x1aO\n" +
+	"\fCornersEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\x05R\x03key\x12)\n" +
+	"\x05value\x18\x02 \x01(\v2\x13.map.v1.Tile.CornerR\x05value:\x028\x01\"\xf4\x02\n" +
 	"\aSegment\x12.\n" +
 	"\x06bounds\x18\x01 \x01(\v2\x16.map.v1.Segment.BoundsR\x06bounds\x12\"\n" +
 	"\x05tiles\x18\x02 \x03(\v2\f.map.v1.TileR\x05tiles\x12D\n" +
@@ -653,7 +664,7 @@ func file_map_v1_tile_proto_rawDescGZIP() []byte {
 	return file_map_v1_tile_proto_rawDescData
 }
 
-var file_map_v1_tile_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_map_v1_tile_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_map_v1_tile_proto_goTypes = []any{
 	(*Tile)(nil),                  // 0: map.v1.Tile
 	(*Segment)(nil),               // 1: map.v1.Segment
@@ -662,30 +673,36 @@ var file_map_v1_tile_proto_goTypes = []any{
 	(*Tile_Edge)(nil),             // 4: map.v1.Tile.Edge
 	(*Tile_Corner)(nil),           // 5: map.v1.Tile.Corner
 	(*Tile_RenderingSpec)(nil),    // 6: map.v1.Tile.RenderingSpec
-	(*Segment_Bounds)(nil),        // 7: map.v1.Segment.Bounds
-	(*Segment_RenderingSpec)(nil), // 8: map.v1.Segment.RenderingSpec
-	(*Segment_Row)(nil),           // 9: map.v1.Segment.Row
-	(EdgeDirection)(0),            // 10: map.v1.EdgeDirection
-	(CornerDirection)(0),          // 11: map.v1.CornerDirection
+	nil,                           // 7: map.v1.Tile.Corner.EdgesEntry
+	nil,                           // 8: map.v1.Tile.RenderingSpec.EdgesEntry
+	nil,                           // 9: map.v1.Tile.RenderingSpec.CornersEntry
+	(*Segment_Bounds)(nil),        // 10: map.v1.Segment.Bounds
+	(*Segment_RenderingSpec)(nil), // 11: map.v1.Segment.RenderingSpec
+	(*Segment_Row)(nil),           // 12: map.v1.Segment.Row
+	(EdgeDirection)(0),            // 13: map.v1.EdgeDirection
+	(CornerDirection)(0),          // 14: map.v1.CornerDirection
 }
 var file_map_v1_tile_proto_depIdxs = []int32{
 	3,  // 0: map.v1.Tile.coordinate:type_name -> map.v1.Tile.Coordinate
 	6,  // 1: map.v1.Tile.rendering_spec:type_name -> map.v1.Tile.RenderingSpec
-	7,  // 2: map.v1.Segment.bounds:type_name -> map.v1.Segment.Bounds
+	10, // 2: map.v1.Segment.bounds:type_name -> map.v1.Segment.Bounds
 	0,  // 3: map.v1.Segment.tiles:type_name -> map.v1.Tile
-	8,  // 4: map.v1.Segment.rendering_spec:type_name -> map.v1.Segment.RenderingSpec
-	9,  // 5: map.v1.Grid.segment_rows:type_name -> map.v1.Segment.Row
-	10, // 6: map.v1.Tile.Edge.direction:type_name -> map.v1.EdgeDirection
-	11, // 7: map.v1.Tile.Corner.direction:type_name -> map.v1.CornerDirection
-	4,  // 8: map.v1.Tile.Corner.edge:type_name -> map.v1.Tile.Edge
-	4,  // 9: map.v1.Tile.RenderingSpec.edges:type_name -> map.v1.Tile.Edge
-	5,  // 10: map.v1.Tile.RenderingSpec.corners:type_name -> map.v1.Tile.Corner
-	1,  // 11: map.v1.Segment.Row.segments:type_name -> map.v1.Segment
-	12, // [12:12] is the sub-list for method output_type
-	12, // [12:12] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	11, // 4: map.v1.Segment.rendering_spec:type_name -> map.v1.Segment.RenderingSpec
+	12, // 5: map.v1.Grid.segment_rows:type_name -> map.v1.Segment.Row
+	13, // 6: map.v1.Tile.Edge.direction:type_name -> map.v1.EdgeDirection
+	14, // 7: map.v1.Tile.Corner.direction:type_name -> map.v1.CornerDirection
+	7,  // 8: map.v1.Tile.Corner.edges:type_name -> map.v1.Tile.Corner.EdgesEntry
+	8,  // 9: map.v1.Tile.RenderingSpec.edges:type_name -> map.v1.Tile.RenderingSpec.EdgesEntry
+	9,  // 10: map.v1.Tile.RenderingSpec.corners:type_name -> map.v1.Tile.RenderingSpec.CornersEntry
+	4,  // 11: map.v1.Tile.Corner.EdgesEntry.value:type_name -> map.v1.Tile.Edge
+	4,  // 12: map.v1.Tile.RenderingSpec.EdgesEntry.value:type_name -> map.v1.Tile.Edge
+	5,  // 13: map.v1.Tile.RenderingSpec.CornersEntry.value:type_name -> map.v1.Tile.Corner
+	1,  // 14: map.v1.Segment.Row.segments:type_name -> map.v1.Segment
+	15, // [15:15] is the sub-list for method output_type
+	15, // [15:15] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_map_v1_tile_proto_init() }
@@ -700,7 +717,7 @@ func file_map_v1_tile_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_map_v1_tile_proto_rawDesc), len(file_map_v1_tile_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

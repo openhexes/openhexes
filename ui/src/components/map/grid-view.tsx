@@ -1,7 +1,6 @@
 import * as segmentUtil from "@/lib/segments"
 import * as tileUtil from "@/lib/tiles"
 import { create } from "@bufbuild/protobuf"
-import { useWindowSize } from "@uidotdev/usehooks"
 import {
     type Grid,
     type Tile as PTile,
@@ -15,6 +14,8 @@ import { PatternLayer } from "./pattern-layer"
 import { TileView } from "./tile-view"
 
 interface MapProps {
+    height: number
+    width: number
     world: World
     grid: Grid
 }
@@ -24,8 +25,7 @@ interface Position {
     y: number
 }
 
-export const GridView: React.FC<MapProps> = ({ world, grid }) => {
-    const windowSize = useWindowSize()
+export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => {
     const { tileHeight = 0, tileWidth = 0 } = world.renderingSpec || {}
 
     const rafRef = React.useRef<number | null>(null)
@@ -47,113 +47,126 @@ export const GridView: React.FC<MapProps> = ({ world, grid }) => {
     const [visibleSegments, setVisibleSegments] = React.useState<Segment[]>([])
     const [visibleTiles, setVisibleTiles] = React.useState<PTile[]>([])
 
-    // const mapHeight = Math.ceil((((grid.totalRows + 0.4) * tileHeight) / 2) * 1.5)
-    // const mapWidth = (grid.totalColumns + 1) * tileWidth
-
     const rowHeight = tileHeight * 0.75
     const mapWidth = Math.ceil(grid.totalColumns * tileWidth + tileWidth / 2) // extra half for shifted rows
     const mapHeight = Math.ceil((grid.totalRows - 1) * rowHeight + tileHeight) // = tileHeight*(0.75*rows + 0.25)
 
-    React.useEffect(() => handlePan(0, 0), [windowSize.height, windowSize.width]) // todo
+    const _applyPan = React.useCallback(
+        (dx: number, dy: number) => {
+            const rect = containerRef.current?.getBoundingClientRect() ?? {
+                height: window.innerHeight,
+                width: window.innerWidth,
+            }
 
-    const flushPan = () => {
+            setOffset((prev) => {
+                const next = { x: prev.x, y: prev.y }
+                if (rect.width < mapWidth) {
+                    const maxX = mapWidth - rect.width
+                    next.x = Math.floor(Math.max(-maxX, Math.min(0, prev.x + dx)))
+                } else {
+                    next.x = 0
+                }
+
+                if (rect.height < mapHeight) {
+                    const maxY = mapHeight - rect.height
+                    next.y = Math.floor(Math.max(-maxY, Math.min(0, prev.y + dy)))
+                } else {
+                    next.y = 0
+                }
+
+                return next
+            })
+
+            // const maxVisibleRows = Math.ceil((rect.height - 2 * triangleHeight) / rowHeight)
+            const maxVisibleRows = Math.ceil(rect.height / rowHeight)
+            const maxVisibleColumns = Math.ceil(rect.width / tileWidth)
+            const skippedColumnCount = Math.ceil(-offset.x / tileWidth)
+            const skippedRowCount = Math.ceil(-offset.y / rowHeight)
+            const visibleBounds = create(Segment_BoundsSchema, {
+                minRow: skippedRowCount,
+                maxRow: skippedRowCount + maxVisibleRows,
+                minColumn: skippedColumnCount,
+                maxColumn: skippedColumnCount + maxVisibleColumns,
+            })
+
+            const rowStartingIndex =
+                Math.floor((skippedRowCount / grid.totalRows) * grid.segmentRows.length) - 1
+
+            const visibleSegments: Segment[] = []
+            const visibleTiles: PTile[] = []
+            for (let i = rowStartingIndex; i < grid.segmentRows.length; i++) {
+                const row = grid.segmentRows[i]
+                if (row === undefined) {
+                    continue
+                }
+
+                let segmentsFound = false
+                const columnStartingIndex =
+                    Math.floor((skippedColumnCount / grid.totalColumns) * row.segments.length) - 1
+
+                for (let j = columnStartingIndex; j < row.segments.length; j++) {
+                    const segment = row.segments[j]
+                    if (segment === undefined) {
+                        continue
+                    }
+
+                    if (tileUtil.boundsIntersect(segment.bounds, visibleBounds)) {
+                        visibleSegments.push(segment)
+                        visibleTiles.push(
+                            ...segment.tiles.filter((tile) =>
+                                tileUtil.boundsInclude(tile, visibleBounds, 2),
+                            ),
+                        )
+                        segmentsFound = true
+                    } else {
+                        if (segmentsFound) {
+                            break
+                        }
+                    }
+                }
+
+                if (!segmentsFound && visibleTiles.length > 0) {
+                    break
+                }
+            }
+            setVisibleSegments(visibleSegments)
+            setVisibleTiles(visibleTiles)
+        },
+        [
+            grid.segmentRows,
+            grid.totalColumns,
+            grid.totalRows,
+            mapHeight,
+            mapWidth,
+            offset.x,
+            offset.y,
+            rowHeight,
+            tileWidth,
+        ],
+    )
+
+    const flushPan = React.useCallback(() => {
         if (!pending.current) return
         const { dx, dy } = pending.current
         pending.current = null
         _applyPan(dx, dy)
         rafRef.current = null
-    }
+    }, [_applyPan])
 
-    const handlePan = (dx: number, dy: number) => {
-        pending.current = {
-            dx: (pending.current?.dx ?? 0) + dx,
-            dy: (pending.current?.dy ?? 0) + dy,
-        }
-        if (rafRef.current == null) {
-            rafRef.current = requestAnimationFrame(flushPan)
-        }
-    }
-
-    const _applyPan = (dx: number, dy: number) => {
-        const rect = containerRef.current?.getBoundingClientRect() ?? {
-            height: window.innerHeight,
-            width: window.innerWidth,
-        }
-
-        setOffset((prev) => {
-            const next = { x: prev.x, y: prev.y }
-            if (rect.width < mapWidth) {
-                const maxX = mapWidth - rect.width
-                next.x = Math.floor(Math.max(-maxX, Math.min(0, prev.x + dx)))
-            } else {
-                next.x = 0
+    const handlePan = React.useCallback(
+        (dx: number, dy: number) => {
+            pending.current = {
+                dx: (pending.current?.dx ?? 0) + dx,
+                dy: (pending.current?.dy ?? 0) + dy,
             }
-
-            if (rect.height < mapHeight) {
-                const maxY = mapHeight - rect.height
-                next.y = Math.floor(Math.max(-maxY, Math.min(0, prev.y + dy)))
-            } else {
-                next.y = 0
+            if (rafRef.current == null) {
+                rafRef.current = requestAnimationFrame(flushPan)
             }
+        },
+        [flushPan],
+    )
 
-            return next
-        })
-
-        // const maxVisibleRows = Math.ceil((rect.height - 2 * triangleHeight) / rowHeight)
-        const maxVisibleRows = Math.ceil(rect.height / rowHeight)
-        const maxVisibleColumns = Math.ceil(rect.width / tileWidth)
-        const skippedColumnCount = Math.ceil(-offset.x / tileWidth)
-        const skippedRowCount = Math.ceil(-offset.y / rowHeight)
-        const visibleBounds = create(Segment_BoundsSchema, {
-            minRow: skippedRowCount,
-            maxRow: skippedRowCount + maxVisibleRows,
-            minColumn: skippedColumnCount,
-            maxColumn: skippedColumnCount + maxVisibleColumns,
-        })
-
-        const rowStartingIndex =
-            Math.floor((skippedRowCount / grid.totalRows) * grid.segmentRows.length) - 1
-
-        const visibleSegments: Segment[] = []
-        const visibleTiles: PTile[] = []
-        for (let i = rowStartingIndex; i < grid.segmentRows.length; i++) {
-            const row = grid.segmentRows[i]
-            if (row === undefined) {
-                continue
-            }
-
-            let segmentsFound = false
-            const columnStartingIndex =
-                Math.floor((skippedColumnCount / grid.totalColumns) * row.segments.length) - 1
-
-            for (let j = columnStartingIndex; j < row.segments.length; j++) {
-                const segment = row.segments[j]
-                if (segment === undefined) {
-                    continue
-                }
-
-                if (tileUtil.boundsIntersect(segment.bounds, visibleBounds)) {
-                    visibleSegments.push(segment)
-                    visibleTiles.push(
-                        ...segment.tiles.filter((tile) =>
-                            tileUtil.boundsInclude(tile, visibleBounds, 2),
-                        ),
-                    )
-                    segmentsFound = true
-                } else {
-                    if (segmentsFound) {
-                        break
-                    }
-                }
-            }
-
-            if (!segmentsFound && visibleTiles.length > 0) {
-                break
-            }
-        }
-        setVisibleSegments(visibleSegments)
-        setVisibleTiles(visibleTiles)
-    }
+    React.useEffect(() => handlePan(0, 0), [height, width, handlePan])
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         e.preventDefault()
@@ -200,7 +213,8 @@ export const GridView: React.FC<MapProps> = ({ world, grid }) => {
         <div
             ref={containerRef}
             data-testid="map-container"
-            className="overflow-hidden h-screen w-screen"
+            className="overflow-hidden"
+            style={{ height, width }}
             onMouseMoveCapture={handleMouseMove}
             onWheelCapture={handleWheel}
             onTouchMoveCapture={handleTouchMove}

@@ -20,12 +20,12 @@ message Tile {
 
   message Corner {
     map.v1.CornerDirection direction = 1;
-    map.v1.Tile.Edge edge = 2; // which edge (of two) to prolong to make consistent border
+    map<int32, map.v1.Tile.Edge> edges = 2;
   }
 
   message RenderingSpec {
-    repeated map.v1.Tile.Edge edges = 1;
-    repeated map.v1.Tile.Corner corners = 2;
+    map<int32, map.v1.Tile.Edge> edges = 1;
+    map<int32, map.v1.Tile.Corner> corners = 2;
     repeated string feature_ids = 3; // landscape features, e.g. trees, rocks, etc.
   }
 

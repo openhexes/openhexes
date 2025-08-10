@@ -23,6 +23,7 @@ var (
 			},
 		},
 		"water": {
+			Id: "water",
 			CanPassWith: []mapv1.Terrain_MovementType{
 				mapv1.Terrain_MOVEMENT_TYPE_SWIMMING,
 				mapv1.Terrain_MOVEMENT_TYPE_FLYING,
@@ -36,11 +37,27 @@ var (
 			},
 		},
 		"ash": {
+			Id:          "ash",
 			CanPassWith: defaultCanPassWith,
 			CanStopWith: defaultCanStopWith,
 			RenderingSpec: &mapv1.Terrain_RenderingSpec{
 				RenderingType: mapv1.Terrain_RENDERING_TYPE_ASH,
 			},
 		},
+		"grass": {
+			Id:          "grass",
+			CanPassWith: defaultCanPassWith,
+			CanStopWith: defaultCanStopWith,
+			RenderingSpec: &mapv1.Terrain_RenderingSpec{
+				RenderingType: mapv1.Terrain_RENDERING_TYPE_GRASS,
+			},
+		},
 	}
 )
+
+func ValidateRegistries() error {
+	for id, v := range TerrainRegistry {
+		v.Id = id
+	}
+	return nil
+}

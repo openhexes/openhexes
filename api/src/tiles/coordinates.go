@@ -441,10 +441,10 @@ var cornerEdgeToNeighbor = map[cornerEdgeKey]struct {
 	{mapv1.CornerDirection_CORNER_DIRECTION_NW, mapv1.EdgeDirection_EDGE_DIRECTION_W}: {mapv1.CornerDirection_CORNER_DIRECTION_NE, mapv1.EdgeDirection_EDGE_DIRECTION_E},
 }
 
-func GetIntersectionOnCorner(
+func GetOppositeCorner(
 	corner mapv1.CornerDirection,
 	edge mapv1.EdgeDirection,
-) (otherCorner mapv1.CornerDirection, otherEdge mapv1.EdgeDirection) {
+) (oppositeCorner mapv1.CornerDirection, oppositeEdge mapv1.EdgeDirection) {
 	if m, ok := cornerEdgeToNeighbor[cornerEdgeKey{corner, edge}]; ok {
 		return m.otherCorner, m.otherEdge
 	}

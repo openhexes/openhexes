@@ -29,24 +29,24 @@ export enum EdgeDirection {
   NW = 2,
 
   /**
-   * @generated from enum value: EDGE_DIRECTION_NE = 4;
+   * @generated from enum value: EDGE_DIRECTION_NE = 3;
    */
-  NE = 4,
+  NE = 3,
 
   /**
-   * @generated from enum value: EDGE_DIRECTION_E = 5;
+   * @generated from enum value: EDGE_DIRECTION_E = 4;
    */
-  E = 5,
+  E = 4,
 
   /**
-   * @generated from enum value: EDGE_DIRECTION_SE = 6;
+   * @generated from enum value: EDGE_DIRECTION_SE = 5;
    */
-  SE = 6,
+  SE = 5,
 
   /**
-   * @generated from enum value: EDGE_DIRECTION_SW = 7;
+   * @generated from enum value: EDGE_DIRECTION_SW = 6;
    */
-  SW = 7,
+  SW = 6,
 }
 
 /**

@@ -11,7 +11,8 @@ import (
 	mapv1 "github.com/openhexes/proto/map/v1"
 )
 
-const snapScale = 1000.0 // 1/1000 px grid; bump to 2000 if needed
+const snapScale = 2000.0 // 1/2000 px grid
+const wedgeRatio = 0.85
 
 func snap(v float64) float64 {
 	return math.Round(v*snapScale) / snapScale
@@ -75,9 +76,9 @@ func insetHexagonVertices(outerVertices [6][2]float64, scaleFactor float64) [6][
 	return innerVertices
 }
 
-// wedgePathData returns an SVG path "d" string for a wedge-shaped quad
+// wedgePath returns an SVG path "d" string for a wedge-shaped quad
 // between the outer and inner hexagon along edge from vertex i to vertex j.
-func wedgePathData(outerVertices, innerVertices [6][2]float64, indexA, indexB int) string {
+func wedgePath(outerVertices, innerVertices [6][2]float64, indexA, indexB int) string {
 	outerA := outerVertices[indexA]
 	outerB := outerVertices[indexB]
 	innerA := innerVertices[indexA]
@@ -112,9 +113,9 @@ func equilateralThirdVertex(outerVertex, innerVertex [2]float64) (cx1, cy1, cx2,
 	return
 }
 
-// cornerTrianglesPathData returns two SVG path "d" strings for the two triangles
+// cornerPath returns two SVG path "d" strings for the two triangles
 // that form the corner wedge at vertex vertexIndex, using outer and inner hex vertices.
-func cornerTrianglesPathData(outerVertices, innerVertices [6][2]float64, vertexIndex int) string {
+func cornerPath(outerVertices, innerVertices [6][2]float64, vertexIndex int) string {
 	outerVertex := outerVertices[vertexIndex]
 	innerVertex := innerVertices[vertexIndex]
 
@@ -126,22 +127,6 @@ func cornerTrianglesPathData(outerVertices, innerVertices [6][2]float64, vertexI
 		innerVertex[0], innerVertex[1],
 		cx2, cy2,
 	)
-
-	// pathData1 := fmt.Sprintf(
-	// 	"M%g,%g L%g,%g L%g,%g Z",
-	// 	outerVertex[0], outerVertex[1],
-	// 	innerVertex[0], innerVertex[1],
-	// 	cx1, cy1,
-	// )
-
-	// pathData2 := fmt.Sprintf(
-	// 	"M%g,%g L%g,%g L%g,%g Z",
-	// 	outerVertex[0], outerVertex[1],
-	// 	innerVertex[0], innerVertex[1],
-	// 	cx2, cy2,
-	// )
-
-	// return pathData1, pathData2
 }
 
 // polygonPathData converts vertices into an SVG "d" path string.
@@ -317,14 +302,13 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index) string {
 
 		// 2. Edges
 		if len(tile.RenderingSpec.Edges) > 0 {
-			innerVertices := insetHexagonVertices(outerVertices, 0.8)
+			innerVertices := insetHexagonVertices(outerVertices, wedgeRatio)
 			for _, edge := range tile.RenderingSpec.Edges {
 				segment := EdgeSegmentByDirection(edge.Direction) // helper mapping dir → vertex indexes
-				wedge := wedgePathData(outerVertices, innerVertices, segment[0], segment[1])
 				fmt.Fprintf(
 					&builder,
 					`<path d="%s" %s/>`,
-					wedge,
+					wedgePath(outerVertices, innerVertices, segment[0], segment[1]),
 					cssVarFill(terrainVarName("edge", edge.NeighbourTerrainId), "#44403c"),
 				)
 			}
@@ -332,15 +316,29 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index) string {
 
 		// 3. Corners
 		if len(tile.RenderingSpec.Corners) > 0 {
-			innerVertices := insetHexagonVertices(outerVertices, 0.8)
+			innerVertices := insetHexagonVertices(outerVertices, wedgeRatio)
 			for _, corner := range tile.RenderingSpec.Corners {
+				var terrain *mapv1.Terrain
+				for _, edge := range corner.Edges {
+					t, ok := config.TerrainRegistry[edge.NeighbourTerrainId]
+					if !ok {
+						continue
+					}
+					if terrain == nil || t.RenderingSpec.RenderingType.Number() > terrain.RenderingSpec.RenderingType.Number() {
+						terrain = t
+					}
+				}
+				if terrain == nil {
+					// todo
+					continue
+				}
+
 				vertexIndex := CornerVertexIndex(corner.Direction) // helper mapping dir → vertex index
-				cornerPath := cornerTrianglesPathData(outerVertices, innerVertices, vertexIndex)
 				fmt.Fprintf(
 					&builder,
 					`<path d="%s" %s/>`,
-					cornerPath,
-					cssVarFill(terrainVarName("corner", corner.Edge.NeighbourTerrainId), "#44403c"),
+					cornerPath(outerVertices, innerVertices, vertexIndex),
+					cssVarFill(terrainVarName("corner", terrain.Id), "#44403c"),
 				)
 			}
 		}

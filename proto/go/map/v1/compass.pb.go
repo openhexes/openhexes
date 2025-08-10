@@ -27,10 +27,10 @@ const (
 	EdgeDirection_EDGE_DIRECTION_UNSPECIFIED EdgeDirection = 0
 	EdgeDirection_EDGE_DIRECTION_W           EdgeDirection = 1
 	EdgeDirection_EDGE_DIRECTION_NW          EdgeDirection = 2
-	EdgeDirection_EDGE_DIRECTION_NE          EdgeDirection = 4
-	EdgeDirection_EDGE_DIRECTION_E           EdgeDirection = 5
-	EdgeDirection_EDGE_DIRECTION_SE          EdgeDirection = 6
-	EdgeDirection_EDGE_DIRECTION_SW          EdgeDirection = 7
+	EdgeDirection_EDGE_DIRECTION_NE          EdgeDirection = 3
+	EdgeDirection_EDGE_DIRECTION_E           EdgeDirection = 4
+	EdgeDirection_EDGE_DIRECTION_SE          EdgeDirection = 5
+	EdgeDirection_EDGE_DIRECTION_SW          EdgeDirection = 6
 )
 
 // Enum value maps for EdgeDirection.
@@ -39,19 +39,19 @@ var (
 		0: "EDGE_DIRECTION_UNSPECIFIED",
 		1: "EDGE_DIRECTION_W",
 		2: "EDGE_DIRECTION_NW",
-		4: "EDGE_DIRECTION_NE",
-		5: "EDGE_DIRECTION_E",
-		6: "EDGE_DIRECTION_SE",
-		7: "EDGE_DIRECTION_SW",
+		3: "EDGE_DIRECTION_NE",
+		4: "EDGE_DIRECTION_E",
+		5: "EDGE_DIRECTION_SE",
+		6: "EDGE_DIRECTION_SW",
 	}
 	EdgeDirection_value = map[string]int32{
 		"EDGE_DIRECTION_UNSPECIFIED": 0,
 		"EDGE_DIRECTION_W":           1,
 		"EDGE_DIRECTION_NW":          2,
-		"EDGE_DIRECTION_NE":          4,
-		"EDGE_DIRECTION_E":           5,
-		"EDGE_DIRECTION_SE":          6,
-		"EDGE_DIRECTION_SW":          7,
+		"EDGE_DIRECTION_NE":          3,
+		"EDGE_DIRECTION_E":           4,
+		"EDGE_DIRECTION_SE":          5,
+		"EDGE_DIRECTION_SW":          6,
 	}
 )
 
@@ -152,10 +152,10 @@ const file_map_v1_compass_proto_rawDesc = "" +
 	"\x1aEDGE_DIRECTION_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10EDGE_DIRECTION_W\x10\x01\x12\x15\n" +
 	"\x11EDGE_DIRECTION_NW\x10\x02\x12\x15\n" +
-	"\x11EDGE_DIRECTION_NE\x10\x04\x12\x14\n" +
-	"\x10EDGE_DIRECTION_E\x10\x05\x12\x15\n" +
-	"\x11EDGE_DIRECTION_SE\x10\x06\x12\x15\n" +
-	"\x11EDGE_DIRECTION_SW\x10\a*\xc7\x01\n" +
+	"\x11EDGE_DIRECTION_NE\x10\x03\x12\x14\n" +
+	"\x10EDGE_DIRECTION_E\x10\x04\x12\x15\n" +
+	"\x11EDGE_DIRECTION_SE\x10\x05\x12\x15\n" +
+	"\x11EDGE_DIRECTION_SW\x10\x06*\xc7\x01\n" +
 	"\x0fCornerDirection\x12 \n" +
 	"\x1cCORNER_DIRECTION_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13CORNER_DIRECTION_NW\x10\x01\x12\x16\n" +
