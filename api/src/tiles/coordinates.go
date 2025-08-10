@@ -261,7 +261,15 @@ func GetCornerNeighbours(target CoordinateKey, cornerDirection mapv1.CornerDirec
 			}
 		case mapv1.CornerDirection_CORNER_DIRECTION_NW:
 			if target.Column <= 0 {
-				return nil
+				if target.Row <= 0 {
+					return nil
+				}
+				return []CornerNeighbour{
+					{
+						CoordinateKey: CoordinateKey{Depth: target.Depth, Row: target.Row - 1, Column: target.Column},
+						EdgeDirection: mapv1.EdgeDirection_EDGE_DIRECTION_NW,
+					},
+				}
 			}
 			if target.Row <= 0 {
 				return []CornerNeighbour{

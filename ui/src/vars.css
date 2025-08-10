@@ -5,11 +5,12 @@
 :root {
     --terrain-water-fill: var(--color-sky-900);
     --terrain-ash-fill: var(--color-stone-800);
+    --edge-ash-fill: var(--color-stone-900);
+    --corner-ash-fill: var(--color-stone-900);
     --terrain-snow-fill: #e0e0e0;
 
     --edge-water-fill: #3abff0;
     --edge-grass-fill: #2d682d;
-    --edge-ash-fill: var(--color-stone-900);
     --corner-water-fill: #3abff0;
     --corner-snow-fill: #e0e0e0;
 }

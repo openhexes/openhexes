@@ -16,7 +16,6 @@ import (
 	mapv1 "github.com/openhexes/proto/map/v1"
 	progressv1 "github.com/openhexes/proto/progress/v1"
 	worldv1 "github.com/openhexes/proto/world/v1"
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
@@ -294,60 +293,63 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 	for k := range idx {
 		for _, cd := range tiles.AllCornerDirections {
 			cornerNeighbours := tiles.GetCornerNeighbours(k, cd)
-			if len(cornerNeighbours) != 2 {
+			
+			// Handle cases with 1 or 2 neighbors (was previously only handling exactly 2)
+			if len(cornerNeighbours) == 0 {
 				continue
 			}
 
-			cnA := cornerNeighbours[0]
-			nA, ok := idx[cnA.CoordinateKey]
-			if !ok {
-				continue
+			var validNeighbors []struct {
+				cn tiles.CornerNeighbour
+				n  *mapv1.Tile
+				matchedCorner mapv1.CornerDirection
+				matchedEdge   mapv1.EdgeDirection
+				edge          *mapv1.Tile_Edge
 			}
-			matchedCornerA, matchedEdgeDirectionA := tiles.GetIntersectionOnCorner(cd, cnA.EdgeDirection)
-			var eA *mapv1.Tile_Edge
-			for _, edge := range nA.RenderingSpec.Edges {
-				if edge.Direction == matchedEdgeDirectionA {
-					eA = edge
-					break
+
+			// Process each neighbor
+			for _, cn := range cornerNeighbours {
+				n, ok := idx[cn.CoordinateKey]
+				if !ok {
+					continue
+				}
+				
+				matchedCorner, matchedEdge := tiles.GetIntersectionOnCorner(cd, cn.EdgeDirection)
+				var edge *mapv1.Tile_Edge
+				for _, e := range n.RenderingSpec.Edges {
+					if e.Direction == matchedEdge {
+						edge = e
+						break
+					}
+				}
+				if edge == nil {
+					continue
+				}
+
+				validNeighbors = append(validNeighbors, struct {
+					cn tiles.CornerNeighbour
+					n  *mapv1.Tile
+					matchedCorner mapv1.CornerDirection
+					matchedEdge   mapv1.EdgeDirection
+					edge          *mapv1.Tile_Edge
+				}{cn, n, matchedCorner, matchedEdge, edge})
+			}
+
+			// Create corner markers for all valid neighbors
+			if len(validNeighbors) > 0 {
+				fmt.Printf("\n\n[CORNER FOUND] @ %d.%d %s (%d neighbors)\n", k.Row, k.Column, cd, len(validNeighbors))
+				
+				// Add corner markers to neighbor tiles
+				for _, vn := range validNeighbors {
+					fmt.Printf("\t -> %d.%d %s (on %s)\n", vn.n.Coordinate.Row, vn.n.Coordinate.Column, vn.edge.Direction, vn.cn.EdgeDirection)
+					fmt.Printf("\t\t -> FILL %s\n", vn.matchedCorner)
+
+					vn.n.RenderingSpec.Corners = append(vn.n.RenderingSpec.Corners, &mapv1.Tile_Corner{
+						Direction: vn.matchedCorner,
+						Edge:      vn.edge,
+					})
 				}
 			}
-			if eA == nil {
-				// no edge there
-				continue
-			}
-
-			cnB := cornerNeighbours[1]
-			nB, ok := idx[cnB.CoordinateKey]
-			if !ok {
-				continue
-			}
-			matchedCornerB, matchedEdgeDirectionB := tiles.GetIntersectionOnCorner(cd, cnB.EdgeDirection)
-			var eB *mapv1.Tile_Edge
-			for _, edge := range nB.RenderingSpec.Edges {
-				if edge.Direction == matchedEdgeDirectionB {
-					eB = edge
-					break
-				}
-			}
-			if eB == nil {
-				// no edge there
-				continue
-			}
-
-			fmt.Printf("\n\n[CORNER FOUND] @ %d.%d %s\n", k.Row, k.Column, cd)
-			fmt.Printf("\t -> %d.%d %s (on %s)\n", nA.Coordinate.Row, nA.Coordinate.Column, eA.Direction, cnA.EdgeDirection)
-			fmt.Printf("\t\t -> FILL %s\n", matchedCornerA)
-			fmt.Printf("\t -> %d.%d %s (on %s)\n", nB.Coordinate.Row, nB.Coordinate.Column, eB.Direction, cnB.EdgeDirection)
-			fmt.Printf("\t\t -> FILL %s\n\n", matchedCornerB)
-
-			nA.RenderingSpec.Corners = append(nA.RenderingSpec.Corners, &mapv1.Tile_Corner{
-				Direction: matchedCornerA,
-				Edge:      eA,
-			})
-			nB.RenderingSpec.Corners = append(nB.RenderingSpec.Corners, &mapv1.Tile_Corner{
-				Direction: matchedCornerB,
-				Edge:      eB,
-			})
 		}
 
 		processedTileCount++

@@ -92,34 +92,56 @@ func wedgePathData(outerVertices, innerVertices [6][2]float64, indexA, indexB in
 	)
 }
 
+func equilateralThirdVertex(outerVertex, innerVertex [2]float64) (cx1, cy1, cx2, cy2 float64) {
+	ax, ay := outerVertex[0], outerVertex[1] // A
+	bx, by := innerVertex[0], innerVertex[1] // B
+
+	dx, dy := bx-ax, by-ay
+
+	cos60 := 0.5
+	sin60 := math.Sqrt(3) / 2
+
+	// Rotate +60° around A
+	cx1 = ax + dx*cos60 - dy*sin60
+	cy1 = ay + dx*sin60 + dy*cos60
+
+	// Rotate -60° around A
+	cx2 = ax + dx*cos60 + dy*sin60
+	cy2 = ay - dx*sin60 + dy*cos60
+
+	return
+}
+
 // cornerTrianglesPathData returns two SVG path "d" strings for the two triangles
 // that form the corner wedge at vertex vertexIndex, using outer and inner hex vertices.
-func cornerTrianglesPathData(outerVertices, innerVertices [6][2]float64, vertexIndex int) (string, string) {
-	previousIndex := (vertexIndex + 5) % 6
-	nextIndex := (vertexIndex + 1) % 6
-
+func cornerTrianglesPathData(outerVertices, innerVertices [6][2]float64, vertexIndex int) string {
 	outerVertex := outerVertices[vertexIndex]
 	innerVertex := innerVertices[vertexIndex]
-	innerPrev := innerVertices[previousIndex]
-	innerNext := innerVertices[nextIndex]
 
-	// Triangle 1: outer vertex → inner vertex → inner previous vertex
-	pathData1 := fmt.Sprintf(
-		"M%g,%g L%g,%g L%g,%g Z",
+	cx1, cy1, cx2, cy2 := equilateralThirdVertex(outerVertex, innerVertex)
+	return fmt.Sprintf(
+		"M%g,%g L%g,%g L%g,%g L%g,%g Z",
 		outerVertex[0], outerVertex[1],
+		cx1, cy1,
 		innerVertex[0], innerVertex[1],
-		innerPrev[0], innerPrev[1],
+		cx2, cy2,
 	)
 
-	// Triangle 2: outer vertex → inner vertex → inner next vertex
-	pathData2 := fmt.Sprintf(
-		"M%g,%g L%g,%g L%g,%g Z",
-		outerVertex[0], outerVertex[1],
-		innerVertex[0], innerVertex[1],
-		innerNext[0], innerNext[1],
-	)
+	// pathData1 := fmt.Sprintf(
+	// 	"M%g,%g L%g,%g L%g,%g Z",
+	// 	outerVertex[0], outerVertex[1],
+	// 	innerVertex[0], innerVertex[1],
+	// 	cx1, cy1,
+	// )
 
-	return pathData1, pathData2
+	// pathData2 := fmt.Sprintf(
+	// 	"M%g,%g L%g,%g L%g,%g Z",
+	// 	outerVertex[0], outerVertex[1],
+	// 	innerVertex[0], innerVertex[1],
+	// 	cx2, cy2,
+	// )
+
+	// return pathData1, pathData2
 }
 
 // polygonPathData converts vertices into an SVG "d" path string.
@@ -313,20 +335,11 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index) string {
 			innerVertices := insetHexagonVertices(outerVertices, 0.8)
 			for _, corner := range tile.RenderingSpec.Corners {
 				vertexIndex := CornerVertexIndex(corner.Direction) // helper mapping dir → vertex index
-				triangle1, triangle2 := cornerTrianglesPathData(outerVertices, innerVertices, vertexIndex)
-
-				// Neighbor 1
+				cornerPath := cornerTrianglesPathData(outerVertices, innerVertices, vertexIndex)
 				fmt.Fprintf(
 					&builder,
 					`<path d="%s" %s/>`,
-					triangle1,
-					cssVarFill(terrainVarName("corner", corner.Edge.NeighbourTerrainId), "#44403c"),
-				)
-				// Neighbor 2
-				fmt.Fprintf(
-					&builder,
-					`<path d="%s" %s/>`,
-					triangle2,
+					cornerPath,
 					cssVarFill(terrainVarName("corner", corner.Edge.NeighbourTerrainId), "#44403c"),
 				)
 			}
