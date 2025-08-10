@@ -235,6 +235,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
                         width: mapWidth,
                         height: mapHeight,
                         transform: `translate(${offset.x}px, ${offset.y}px)`,
+                        willChange: "transform",
                     }}
                 >
                     {visibleSegments.map((segment) => (
