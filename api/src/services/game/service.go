@@ -358,8 +358,43 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 		processedTileCount++
 		if processedTileCount%10_000 == 0 {
 			stageCorners.Subtitle = fmt.Sprintf("%d / %d", processedTileCount, totalTiles)
-			reporter.Update(float64(processedTileCount) / float64(totalTiles))
+			reporter.Update(float64(processedTileCount) / float64(totalTiles) / 2)
 		}
+	}
+
+	// remove extra corners between two existing edges
+	for k, tile := range idx {
+		toRemove := make(map[mapv1.CornerDirection]struct{}, 6)
+
+	CornerDirections:
+		for _, cd := range tiles.AllCornerDirections {
+			cornerNeighbours := tiles.GetCornerNeighbours(k, cd)
+			if len(cornerNeighbours) != 2 {
+				continue
+			}
+
+			existingEdges := make(map[mapv1.EdgeDirection]struct{}, 2)
+			for _, e := range tile.RenderingSpec.Edges {
+				existingEdges[e.Direction] = struct{}{}
+			}
+
+			for _, n := range cornerNeighbours {
+				if _, ok := existingEdges[n.EdgeDirection]; !ok {
+					continue CornerDirections
+				}
+			}
+
+			// both edges are present, corner is not needed
+			toRemove[cd] = struct{}{}
+		}
+
+		newCorners := make([]*mapv1.Tile_Corner, 0, len(tile.RenderingSpec.Corners)-len(toRemove))
+		for _, corner := range tile.RenderingSpec.Corners {
+			if _, ok := toRemove[corner.Direction]; !ok {
+				newCorners = append(newCorners, corner)
+			}
+		}
+		tile.RenderingSpec.Corners = newCorners
 	}
 
 	stageCorners.Subtitle = fmt.Sprintf("%d", totalTiles)
