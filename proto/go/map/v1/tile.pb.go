@@ -23,9 +23,10 @@ const (
 
 type Tile struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Coordinate    *Tile_Coordinate       `protobuf:"bytes,1,opt,name=coordinate,proto3" json:"coordinate,omitempty"`
-	TerrainId     string                 `protobuf:"bytes,2,opt,name=terrain_id,json=terrainId,proto3" json:"terrain_id,omitempty"`
-	RenderingSpec *Tile_RenderingSpec    `protobuf:"bytes,3,opt,name=rendering_spec,json=renderingSpec,proto3" json:"rendering_spec,omitempty"`
+	Key           string                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Coordinate    *Tile_Coordinate       `protobuf:"bytes,2,opt,name=coordinate,proto3" json:"coordinate,omitempty"`
+	TerrainId     string                 `protobuf:"bytes,3,opt,name=terrain_id,json=terrainId,proto3" json:"terrain_id,omitempty"`
+	RenderingSpec *Tile_RenderingSpec    `protobuf:"bytes,4,opt,name=rendering_spec,json=renderingSpec,proto3" json:"rendering_spec,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -58,6 +59,13 @@ func (x *Tile) ProtoReflect() protoreflect.Message {
 // Deprecated: Use Tile.ProtoReflect.Descriptor instead.
 func (*Tile) Descriptor() ([]byte, []int) {
 	return file_map_v1_tile_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *Tile) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
 }
 
 func (x *Tile) GetCoordinate() *Tile_Coordinate {
@@ -593,14 +601,15 @@ var File_map_v1_tile_proto protoreflect.FileDescriptor
 
 const file_map_v1_tile_proto_rawDesc = "" +
 	"\n" +
-	"\x11map/v1/tile.proto\x12\x06map.v1\x1a\x14map/v1/compass.proto\"\xf4\x06\n" +
-	"\x04Tile\x127\n" +
+	"\x11map/v1/tile.proto\x12\x06map.v1\x1a\x14map/v1/compass.proto\"\x86\a\n" +
+	"\x04Tile\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x127\n" +
 	"\n" +
-	"coordinate\x18\x01 \x01(\v2\x17.map.v1.Tile.CoordinateR\n" +
+	"coordinate\x18\x02 \x01(\v2\x17.map.v1.Tile.CoordinateR\n" +
 	"coordinate\x12\x1d\n" +
 	"\n" +
-	"terrain_id\x18\x02 \x01(\tR\tterrainId\x12A\n" +
-	"\x0erendering_spec\x18\x03 \x01(\v2\x1a.map.v1.Tile.RenderingSpecR\rrenderingSpec\x1aL\n" +
+	"terrain_id\x18\x03 \x01(\tR\tterrainId\x12A\n" +
+	"\x0erendering_spec\x18\x04 \x01(\v2\x1a.map.v1.Tile.RenderingSpecR\rrenderingSpec\x1aL\n" +
 	"\n" +
 	"Coordinate\x12\x10\n" +
 	"\x03row\x18\x01 \x01(\rR\x03row\x12\x16\n" +

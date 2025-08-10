@@ -16,17 +16,22 @@ export declare const file_map_v1_tile: GenFile;
  */
 export declare type Tile = Message<"map.v1.Tile"> & {
   /**
-   * @generated from field: map.v1.Tile.Coordinate coordinate = 1;
+   * @generated from field: string key = 1;
+   */
+  key: string;
+
+  /**
+   * @generated from field: map.v1.Tile.Coordinate coordinate = 2;
    */
   coordinate?: Tile_Coordinate;
 
   /**
-   * @generated from field: string terrain_id = 2;
+   * @generated from field: string terrain_id = 3;
    */
   terrainId: string;
 
   /**
-   * @generated from field: map.v1.Tile.RenderingSpec rendering_spec = 3;
+   * @generated from field: map.v1.Tile.RenderingSpec rendering_spec = 4;
    */
   renderingSpec?: Tile_RenderingSpec;
 };

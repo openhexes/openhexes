@@ -1,3 +1,4 @@
+import { WorldContext } from "@/hooks/use-world"
 import * as segmentUtil from "@/lib/segments"
 import * as tileUtil from "@/lib/tiles"
 import { create } from "@bufbuild/protobuf"
@@ -11,6 +12,7 @@ import type { World } from "proto/ts/world/v1/world_pb"
 import React from "react"
 
 import { PatternLayer } from "./pattern-layer"
+import { StatusBar } from "./status-bar"
 import { TileView } from "./tile-view"
 
 interface MapProps {
@@ -168,11 +170,13 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
 
     React.useEffect(() => handlePan(0, 0), [height, width, handlePan])
 
+    const [selectedTile, setSelectedTile] = React.useState<PTile | undefined>(undefined)
+
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         e.preventDefault()
         e.stopPropagation()
 
-        if (!e.ctrlKey) {
+        if (!e.metaKey) {
             setLastPosition(null)
             return
         }
@@ -185,11 +189,6 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
             handlePan(dx, dy)
         }
         setLastPosition({ x, y })
-    }
-
-    const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-        e.stopPropagation()
-        handlePan(-e.deltaX, -e.deltaY)
     }
 
     const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -209,46 +208,58 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
         setLastPosition(null)
     }
 
-    return (
-        <div
-            ref={containerRef}
-            data-testid="map-container"
-            className="overflow-hidden"
-            style={{ height, width }}
-            onMouseMoveCapture={handleMouseMove}
-            onWheelCapture={handleWheel}
-            onTouchMoveCapture={handleTouchMove}
-            onTouchEndCapture={handleTouchEnd}
-        >
-            <div
-                data-testid="map"
-                className="relative select-none cursor-pointer"
-                style={{
-                    width: mapWidth,
-                    height: mapHeight,
-                    transform: `translate(${offset.x}px, ${offset.y}px)`,
-                }}
-            >
-                {visibleSegments.map((segment) => (
-                    <PatternLayer
-                        key={segmentUtil.getKey(segment)}
-                        segment={segment}
-                        tileHeight={tileHeight}
-                        tileWidth={tileWidth}
-                    />
-                ))}
+    const handleTileSelect = (tile?: PTile) => {
+        if (tile?.key === selectedTile?.key) {
+            setSelectedTile(undefined)
+        } else {
+            setSelectedTile(tile)
+        }
+    }
 
-                {/* interactive tiles on top */}
-                {visibleTiles.map((tile) => (
-                    <TileView
-                        tile={tile}
-                        key={tileUtil.getKey(tile)}
-                        height={tileHeight}
-                        width={tileWidth}
-                    />
-                ))}
+    return (
+        <WorldContext value={{ world: world, selectedTile, selectTile: handleTileSelect }}>
+            <div
+                ref={containerRef}
+                data-testid="map-container"
+                className="overflow-hidden"
+                style={{ height, width }}
+                onMouseMoveCapture={handleMouseMove}
+                onTouchMoveCapture={handleTouchMove}
+                onTouchEndCapture={handleTouchEnd}
+                onMouseLeave={() => handleTileSelect()}
+            >
+                <div
+                    data-testid="map"
+                    className="relative select-none cursor-pointer"
+                    style={{
+                        width: mapWidth,
+                        height: mapHeight,
+                        transform: `translate(${offset.x}px, ${offset.y}px)`,
+                    }}
+                >
+                    {visibleSegments.map((segment) => (
+                        <PatternLayer
+                            key={segmentUtil.getKey(segment)}
+                            segment={segment}
+                            tileHeight={tileHeight}
+                            tileWidth={tileWidth}
+                        />
+                    ))}
+
+                    {/* interactive tiles on top */}
+                    {visibleTiles.map((tile) => (
+                        <TileView
+                            tile={tile}
+                            key={tile.key}
+                            height={tileHeight}
+                            width={tileWidth}
+                        />
+                    ))}
+                </div>
+
+                <StatusBar />
             </div>
-        </div>
+        </WorldContext>
     )
 }
 

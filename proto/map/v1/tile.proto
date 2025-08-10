@@ -29,9 +29,10 @@ message Tile {
     repeated string feature_ids = 3; // landscape features, e.g. trees, rocks, etc.
   }
 
-  map.v1.Tile.Coordinate coordinate = 1;
-  string terrain_id = 2;
-  map.v1.Tile.RenderingSpec rendering_spec = 3;
+  string key = 1;
+  map.v1.Tile.Coordinate coordinate = 2;
+  string terrain_id = 3;
+  map.v1.Tile.RenderingSpec rendering_spec = 4;
 }
 
 message Segment {

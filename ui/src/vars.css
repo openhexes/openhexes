@@ -4,50 +4,62 @@
 
 :root {
     --terrain-abyss-fill: var(--color-black);
-    --corner-abyss-fill: var(--color-black);
     --edge-abyss-fill: var(--color-black);
+    --corner-abyss-fill: var(--color-black);
+    --terrain-abyss-pattern: var(--color-black);
 
-    --terrain-water-fill: var(--color-sky-950);
-    --corner-water-fill: var(--color-sky-900);
-    --edge-water-fill: var(--color-sky-900);
+    --terrain-water-fill: #2e4255;
+    --edge-water-fill: #324a62;
+    --corner-water-fill: var(--edge-water-fill);
+    --terrain-water-pattern: var(--edge-water-fill);
 
-    --terrain-grass-fill: var(--color-green-950);
-    --edge-grass-fill: var(--color-green-900);
-    --corner-grass-fill: var(--color-green-900);
+    --terrain-grass-fill: #4f7253;
+    --edge-grass-fill: #3f6543;
+    --corner-grass-fill: var(--edge-grass-fill);
+    --terrain-grass-pattern: var(--edge-grass-fill);
 
-    --terrain-highlands-fill: var(--color-lime-950);
-    --edge-highlands-fill: var(--color-lime-900);
-    --corner-highlands-fill: var(--color-lime-900);
+    --terrain-highlands-fill: #507747;
+    --edge-highlands-fill: rgb(71, 104, 75);
+    --corner-highlands-fill: var(--edge-highlands-fill);
+    --terrain-highlands-pattern: var(--edge-highlands-fill);
 
-    --terrain-dirt-fill: var(--color-stone-800);
-    --edge-dirt-fill: var(--color-stone-700);
-    --corner-dirt-fill: var(--color-stone-700);
+    --terrain-dirt-fill: #605a42;
+    --edge-dirt-fill: #55503c;
+    --corner-dirt-fill: var(--edge-dirt-fill);
+    --terrain-dirt-pattern: var(--edge-dirt-fill);
 
-    --terrain-ash-fill: var(--color-stone-950);
-    --edge-ash-fill: var(--color-stone-900);
-    --corner-ash-fill: var(--color-stone-900);
+    --terrain-ash-fill: #2e2e2e;
+    --edge-ash-fill: #272727;
+    --corner-ash-fill: var(--edge-ash-fill);
+    --terrain-ash-pattern: var(--edge-ash-fill);
 
     --terrain-subterranean-fill: var(--color-neutral-950);
     --edge-subterranean-fill: var(--color-neutral-900);
-    --corner-subterranean-fill: var(--color-neutral-900);
+    --corner-subterranean-fill: var(--edge-subterranean-fill);
+    --terrain-subterranean-pattern: var(--edge-subterranean-fill);
 
-    --terrain-rough-fill: var(--color-stone-700);
-    --edge-rough-fill: var(--color-stone-600);
-    --corner-rough-fill: var(--color-stone-600);
+    --terrain-rough-fill: #3d3333;
+    --edge-rough-fill: #2d2727;
+    --corner-rough-fill: var(--edge-rough-fill);
+    --terrain-rough-pattern: var(--edge-rough-fill);
 
-    --terrain-wasteland-fill: var(--color-yellow-950);
-    --edge-wasteland-fill: var(--color-yellow-900);
-    --corner-wasteland-fill: var(--color-yellow-900);
+    --terrain-wasteland-fill: #a78d45;
+    --edge-wasteland-fill: #9e8644;
+    --corner-wasteland-fill: var(--edge-wasteland-fill);
+    --terrain-wasteland-pattern: var(--edge-wasteland-fill);
 
-    --terrain-sand-fill: var(--color-amber-300);
-    --edge-sand-fill: var(--color-amber-400);
-    --corner-sand-fill: var(--color-amber-400);
+    --terrain-sand-fill: #c9ae73;
+    --edge-sand-fill: #bca36d;
+    --corner-sand-fill: var(--edge-sand-fill);
+    --terrain-sand-pattern: var(--edge-sand-fill);
 
-    --terrain-snow-fill: var(--color-stone-300);
-    --edge-snow-fill: var(--color-stone-400);
-    --corner-snow-fill: var(--color-stone-400);
+    --terrain-snow-fill: #c6d2d4;
+    --edge-snow-fill: #bec8ca;
+    --corner-snow-fill: var(--edge-snow-fill);
+    --terrain-snow-pattern: var(--edge-snow-fill);
 
-    --terrain-swamp-fill: var(--color-teal-950);
-    --edge-swamp-fill: var(--color-teal-900);
-    --corner-swamp-fill: var(--color-teal-900);
+    --terrain-swamp-fill: #468e6e;
+    --edge-swamp-fill: #5d9f81;
+    --corner-swamp-fill: var(--edge-swamp-fill);
+    --terrain-swamp-pattern: var(--edge-swamp-fill);
 }

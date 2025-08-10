@@ -1,3 +1,4 @@
+import { useWorld } from "@/hooks/use-world"
 import * as lib from "@/lib/tiles"
 import { cn } from "@/lib/utils"
 import type { Tile } from "proto/ts/map/v1/tile_pb"
@@ -12,33 +13,20 @@ export interface TileProps {
 }
 
 export const TileView: React.FC<TileProps> = ({ tile, height, width }) => {
-    const [selected, setSelected] = React.useState<number>(0)
+    const { selectedTile, selectTile } = useWorld()
 
     const { row, column } = lib.getCoordinates(tile)
     const even = row % 2 === 0
     const top = row * height * 0.75
     const left = column * width + (even ? 0 : width / 2)
 
+    const selected = selectedTile?.key === tile.key
+
     const className = cn(
         "tile",
         "select-none flex items-center justify-center absolute",
-        "text-s text-transparent bg-transparent hover:bg-gray-100 hover:text-black opacity-70",
-        { "bg-rose-400 text-black": selected === 2 },
-        { "bg-yellow-400 text-black": selected === 1 },
+        "text-s text-transparent bg-transparent hover:text-black opacity-20",
     )
-
-    const handleClick = (e: React.MouseEvent) => {
-        if (selected) {
-            setSelected(0)
-            return
-        }
-
-        if (e.shiftKey) {
-            setSelected(2)
-        } else {
-            setSelected(1)
-        }
-    }
 
     const style: React.CSSProperties = {
         top,
@@ -49,11 +37,12 @@ export const TileView: React.FC<TileProps> = ({ tile, height, width }) => {
     } as React.CSSProperties
 
     return (
-        <div className={cn(className)} style={style} onClick={handleClick}>
-            <div>
-                {tile.coordinate?.row}, {tile.coordinate?.column}
-            </div>
-        </div>
+        <div
+            className={cn(className, { "bg-gray-100": selected })}
+            onMouseEnter={() => selectTile(tile)}
+            onClick={() => selectTile(tile)}
+            style={style}
+        />
     )
 }
 

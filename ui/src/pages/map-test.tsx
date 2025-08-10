@@ -1,6 +1,6 @@
 import { ErrorView } from "@/components/utils/error"
 import { ProgressView } from "@/components/utils/progress-view"
-import { useWorld } from "@/hooks/use-tiles"
+import { useFetchedWorld } from "@/hooks/use-world"
 import { useWindowSize } from "@uidotdev/usehooks"
 import React from "react"
 
@@ -11,7 +11,7 @@ const columnCount = 100
 
 export const MapTest = () => {
     const { height, width } = useWindowSize()
-    const { world, isLoading, progress, error } = useWorld(rowCount, columnCount, 16, 20)
+    const { world, isLoading, progress, error } = useFetchedWorld(rowCount, columnCount, 16, 20)
 
     if (isLoading) {
         return <ProgressView progress={progress} />

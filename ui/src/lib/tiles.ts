@@ -24,11 +24,6 @@ export const getCoordinates = (p: Tile) => {
     return { row, column, depth }
 }
 
-export const getKey = (p: Tile) => {
-    const { row, column, depth } = getCoordinates(p)
-    return `${row},${column},${depth}`
-}
-
 export const boundsInclude = (
     tile: Tile,
     policy: Segment_Bounds = emptyBounds,

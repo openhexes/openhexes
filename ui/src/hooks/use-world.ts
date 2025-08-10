@@ -1,6 +1,6 @@
 import { create } from "@bufbuild/protobuf"
 import { GetSampleWorldRequestSchema } from "proto/ts/game/v1/game_pb"
-import { GridSchema } from "proto/ts/map/v1/tile_pb"
+import { GridSchema, type Tile } from "proto/ts/map/v1/tile_pb"
 import type { Progress } from "proto/ts/progress/v1/progress_pb"
 import { type World, WorldSchema } from "proto/ts/world/v1/world_pb"
 import React from "react"
@@ -9,6 +9,23 @@ import { GameClient } from "./fetch"
 
 const sleep = async (ms: number) => {
     return await new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+type S = {
+    world: World
+    selectedTile?: Tile
+    selectTile: (tile: Tile) => void
+}
+
+export const WorldContext = React.createContext<S>({
+    world: create(WorldSchema),
+    selectTile: () => null,
+})
+
+export const useWorld = () => {
+    const context = React.useContext(WorldContext)
+    if (context === undefined) throw new Error("useWorld must be used within a GridView")
+    return context
 }
 
 const buildWorld = async (
@@ -75,30 +92,12 @@ const buildWorld = async (
 
     await sleep(250)
 
-    const findTile = (row: number, col: number) => {
-        const grid = world.layers[0]
-        for (const segmentRow of grid.segmentRows) {
-            for (const segment of segmentRow.segments) {
-                for (const tile of segment.tiles) {
-                    if (tile.coordinate?.row === row && tile.coordinate?.column === col) {
-                        return tile
-                    }
-                }
-            }
-        }
-    }
-
-    // eslint-disable-next-line
-    const win = window as any
-    // eslint-disable-next-line
-    win.findTile = findTile
-
     console.info("complete world", world)
 
     return world
 }
 
-export const useWorld = (
+export const useFetchedWorld = (
     totalRows: number,
     totalColumns: number,
     maxRowsPerSegment = 15,

@@ -213,6 +213,7 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 				},
 			}
 			k := tiles.CoordinateToKey(tile.Coordinate)
+			tile.Key = fmt.Sprintf("%03d.%03d.%03d", k.Depth, k.Row, k.Column)
 			idx[k] = tile
 
 			if terrain, ok := islandSet[k]; ok {
@@ -445,6 +446,9 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 				},
 			}
 		}
+	}
+	if err := stream.Send(terrainsResponse); err != nil {
+		return err
 	}
 
 	// tiles
