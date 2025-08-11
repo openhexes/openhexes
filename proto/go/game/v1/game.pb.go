@@ -25,10 +25,11 @@ const (
 
 type GetSampleWorldRequest struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
-	TotalRows            uint32                 `protobuf:"varint,1,opt,name=total_rows,json=totalRows,proto3" json:"total_rows,omitempty"`
-	TotalColumns         uint32                 `protobuf:"varint,2,opt,name=total_columns,json=totalColumns,proto3" json:"total_columns,omitempty"`
-	MaxRowsPerSegment    uint32                 `protobuf:"varint,3,opt,name=max_rows_per_segment,json=maxRowsPerSegment,proto3" json:"max_rows_per_segment,omitempty"`
-	MaxColumnsPerSegment uint32                 `protobuf:"varint,4,opt,name=max_columns_per_segment,json=maxColumnsPerSegment,proto3" json:"max_columns_per_segment,omitempty"`
+	TotalLayers          uint32                 `protobuf:"varint,1,opt,name=total_layers,json=totalLayers,proto3" json:"total_layers,omitempty"`
+	TotalRows            uint32                 `protobuf:"varint,2,opt,name=total_rows,json=totalRows,proto3" json:"total_rows,omitempty"`
+	TotalColumns         uint32                 `protobuf:"varint,3,opt,name=total_columns,json=totalColumns,proto3" json:"total_columns,omitempty"`
+	MaxRowsPerSegment    uint32                 `protobuf:"varint,4,opt,name=max_rows_per_segment,json=maxRowsPerSegment,proto3" json:"max_rows_per_segment,omitempty"`
+	MaxColumnsPerSegment uint32                 `protobuf:"varint,5,opt,name=max_columns_per_segment,json=maxColumnsPerSegment,proto3" json:"max_columns_per_segment,omitempty"`
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -61,6 +62,13 @@ func (x *GetSampleWorldRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetSampleWorldRequest.ProtoReflect.Descriptor instead.
 func (*GetSampleWorldRequest) Descriptor() ([]byte, []int) {
 	return file_game_v1_game_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *GetSampleWorldRequest) GetTotalLayers() uint32 {
+	if x != nil {
+		return x.TotalLayers
+	}
+	return 0
 }
 
 func (x *GetSampleWorldRequest) GetTotalRows() uint32 {
@@ -147,13 +155,14 @@ var File_game_v1_game_proto protoreflect.FileDescriptor
 
 const file_game_v1_game_proto_rawDesc = "" +
 	"\n" +
-	"\x12game/v1/game.proto\x12\agame.v1\x1a\x1aprogress/v1/progress.proto\x1a\x14world/v1/world.proto\"\xc3\x01\n" +
-	"\x15GetSampleWorldRequest\x12\x1d\n" +
+	"\x12game/v1/game.proto\x12\agame.v1\x1a\x1aprogress/v1/progress.proto\x1a\x14world/v1/world.proto\"\xe6\x01\n" +
+	"\x15GetSampleWorldRequest\x12!\n" +
+	"\ftotal_layers\x18\x01 \x01(\rR\vtotalLayers\x12\x1d\n" +
 	"\n" +
-	"total_rows\x18\x01 \x01(\rR\ttotalRows\x12#\n" +
-	"\rtotal_columns\x18\x02 \x01(\rR\ftotalColumns\x12/\n" +
-	"\x14max_rows_per_segment\x18\x03 \x01(\rR\x11maxRowsPerSegment\x125\n" +
-	"\x17max_columns_per_segment\x18\x04 \x01(\rR\x14maxColumnsPerSegment\"r\n" +
+	"total_rows\x18\x02 \x01(\rR\ttotalRows\x12#\n" +
+	"\rtotal_columns\x18\x03 \x01(\rR\ftotalColumns\x12/\n" +
+	"\x14max_rows_per_segment\x18\x04 \x01(\rR\x11maxRowsPerSegment\x125\n" +
+	"\x17max_columns_per_segment\x18\x05 \x01(\rR\x14maxColumnsPerSegment\"r\n" +
 	"\x16GetSampleWorldResponse\x12%\n" +
 	"\x05world\x18\x01 \x01(\v2\x0f.world.v1.WorldR\x05world\x121\n" +
 	"\bprogress\x18\x02 \x01(\v2\x15.progress.v1.ProgressR\bprogress2b\n" +

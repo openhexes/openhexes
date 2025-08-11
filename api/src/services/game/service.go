@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"sync"
 	"time"
 
 	"connectrpc.com/connect"
@@ -31,48 +32,48 @@ type Service struct {
 
 // Simple noise implementation for terrain generation
 func simpleNoise(x, y float64) float64 {
-	return math.Sin(x*0.1) * math.Cos(y*0.1) + 
-		   0.5*math.Sin(x*0.2) * math.Cos(y*0.2) + 
-		   0.25*math.Sin(x*0.4) * math.Cos(y*0.4)
+	return math.Sin(x*0.1)*math.Cos(y*0.1) +
+		0.5*math.Sin(x*0.2)*math.Cos(y*0.2) +
+		0.25*math.Sin(x*0.4)*math.Cos(y*0.4)
 }
 
 // Generate realistic terrain based on heightmap and moisture
-func generateRealisticTerrain(totalRows, totalColumns uint32) map[tiles.CoordinateKey]string {
+func generateRealisticTerrain(totalRows, totalColumns, depth uint32) map[tiles.CoordinateKey]string {
 	terrainMap := make(map[tiles.CoordinateKey]string)
-	
+
 	// Random seed for each generation - creates different maps each time
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	seedOffset := rng.Float64() * 10000 // Random offset for noise patterns
-	
+
 	for row := uint32(0); row < totalRows; row++ {
 		for column := uint32(0); column < totalColumns; column++ {
 			x, y := float64(column), float64(row)
-			
+
 			// Generate heightmap using multiple octaves of noise with random seed
-			height := 0.6*simpleNoise((x+seedOffset)*0.008, (y+seedOffset)*0.008) + 
-					 0.4*simpleNoise((x+seedOffset)*0.02, (y+seedOffset)*0.02) + 
-					 0.3*simpleNoise((x+seedOffset)*0.05, (y+seedOffset)*0.05) + 
-					 0.2*simpleNoise((x+seedOffset)*0.1, (y+seedOffset)*0.1)
-			
+			height := 0.6*simpleNoise((x+seedOffset)*0.008, (y+seedOffset)*0.008) +
+				0.4*simpleNoise((x+seedOffset)*0.02, (y+seedOffset)*0.02) +
+				0.3*simpleNoise((x+seedOffset)*0.05, (y+seedOffset)*0.05) +
+				0.2*simpleNoise((x+seedOffset)*0.1, (y+seedOffset)*0.1)
+
 			// Generate moisture map with different seed offset
 			moistureSeed := seedOffset + 1000
-			moisture := 0.5*simpleNoise((x+moistureSeed)*0.015, (y+moistureSeed)*0.015) + 
-					   0.3*simpleNoise((x+moistureSeed)*0.04, (y+moistureSeed)*0.04) +
-					   0.2*simpleNoise((x+moistureSeed)*0.08, (y+moistureSeed)*0.08)
-			
+			moisture := 0.5*simpleNoise((x+moistureSeed)*0.015, (y+moistureSeed)*0.015) +
+				0.3*simpleNoise((x+moistureSeed)*0.04, (y+moistureSeed)*0.04) +
+				0.2*simpleNoise((x+moistureSeed)*0.08, (y+moistureSeed)*0.08)
+
 			// Generate temperature (affected by latitude + noise)
 			tempSeed := seedOffset + 2000
-			temperature := 0.9 - 0.7*float64(row)/float64(totalRows) + 
-						  0.3*simpleNoise((x+tempSeed)*0.025, (y+tempSeed)*0.025) +
-						  0.2*simpleNoise((x+tempSeed)*0.06, (y+tempSeed)*0.06)
-			
+			temperature := 0.9 - 0.7*float64(row)/float64(totalRows) +
+				0.3*simpleNoise((x+tempSeed)*0.025, (y+tempSeed)*0.025) +
+				0.2*simpleNoise((x+tempSeed)*0.06, (y+tempSeed)*0.06)
+
 			// Add controlled randomness
 			randomFactor := (rng.Float64() - 0.5) * 0.3
 			height += randomFactor
-			
+
 			// Determine terrain type based on height, moisture, and temperature
-			ck := tiles.CoordinateKey{Depth: 0, Row: row, Column: column}
-			
+			ck := tiles.CoordinateKey{Depth: depth, Row: row, Column: column}
+
 			switch {
 			case height < -0.7:
 				terrainMap[ck] = "abyss"
@@ -133,7 +134,7 @@ func generateRealisticTerrain(totalRows, totalColumns uint32) map[tiles.Coordina
 			}
 		}
 	}
-	
+
 	return terrainMap
 }
 
@@ -144,15 +145,318 @@ func New(cfg *config.Config, auth *auth.Controller) *Service {
 	}
 }
 
+type layerResult struct {
+	segments    []*mapv1.Segment
+	segmentRows []*mapv1.Segment_Row
+	index       tiles.Index
+}
+
+func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, maxColumnsPerSegment uint32) *layerResult {
+	// Step 1: Generate terrain for this layer
+	terrainMap := generateRealisticTerrain(totalRows, totalColumns, depth)
+
+	// Step 2: Create per-layer tile index
+	layerTileCount := totalRows * totalColumns
+	layerIdx := make(tiles.Index, layerTileCount)
+
+	// Step 3: Create tiles for this layer
+	for row := range totalRows {
+		for column := range totalColumns {
+			k := tiles.CoordinateKey{Depth: depth, Row: uint32(row), Column: uint32(column)}
+
+			tile := &mapv1.Tile{
+				Key: fmt.Sprintf("%03d.%03d.%03d", depth, row, column),
+				Coordinate: &mapv1.Tile_Coordinate{
+					Depth:  depth,
+					Row:    uint32(row),
+					Column: uint32(column),
+				},
+			}
+
+			if terrain, ok := terrainMap[k]; ok {
+				tile.TerrainId = terrain
+			} else {
+				tile.TerrainId = "water"
+			}
+
+			layerIdx[k] = tile
+		}
+	}
+
+	// Step 4: Calculate edges for this layer
+	for k, tile := range layerIdx {
+		tile.RenderingSpec = &mapv1.Tile_RenderingSpec{
+			Edges:   make(map[int32]*mapv1.Tile_Edge, 6),
+			Corners: make(map[int32]*mapv1.Tile_Corner, 6),
+		}
+		tileTerrain, ok := config.TerrainRegistry[tile.TerrainId]
+		if !ok {
+			continue
+		}
+
+		for c := range tiles.IterNeighbours(k) {
+			neighbour, ok := layerIdx[c.CoordinateKey]
+			if !ok || neighbour.TerrainId == tile.TerrainId {
+				continue
+			}
+
+			neighbourTerrain, ok := config.TerrainRegistry[neighbour.TerrainId]
+			if !ok {
+				continue
+			}
+
+			if tileTerrain.RenderingSpec.RenderingType > neighbourTerrain.RenderingSpec.RenderingType {
+				continue
+			}
+
+			tile.RenderingSpec.Edges[int32(c.Direction)] = &mapv1.Tile_Edge{
+				Direction:          c.Direction,
+				NeighbourTerrainId: neighbour.TerrainId,
+			}
+		}
+	}
+
+	// Step 5: Calculate corners for this layer
+	for k := range layerIdx {
+		for _, cd := range tiles.AllCornerDirections {
+			cns := tiles.GetCornerNeighbours(k, cd)
+
+			for _, cn := range cns {
+				n, ok := layerIdx[cn.CoordinateKey]
+				if !ok {
+					continue
+				}
+
+				opCD, opED := tiles.GetOppositeCorner(cd, cn.EdgeDirection)
+				opE, ok := n.RenderingSpec.Edges[int32(opED)]
+				if !ok {
+					continue
+				}
+
+				corner, ok := n.RenderingSpec.Corners[int32(opCD)]
+				if !ok {
+					corner = &mapv1.Tile_Corner{
+						Direction: opCD,
+						Edges:     make(map[int32]*mapv1.Tile_Edge, 2),
+					}
+					n.RenderingSpec.Corners[int32(opCD)] = corner
+				}
+				corner.Edges[int32(opED)] = opE
+			}
+		}
+	}
+
+	// Step 6: Remove extra corners between two existing edges of the same terrain
+	for k, tile := range layerIdx {
+	CornerDirections:
+		for _, cd := range tiles.AllCornerDirections {
+			cornerNeighbours := tiles.GetCornerNeighbours(k, cd)
+			if len(cornerNeighbours) != 2 {
+				continue
+			}
+
+			existingEdges := make(map[mapv1.EdgeDirection]struct{}, 2)
+			existingTerrains := make(map[string]struct{}, 2)
+			for _, e := range tile.RenderingSpec.Edges {
+				existingEdges[e.Direction] = struct{}{}
+				existingTerrains[e.NeighbourTerrainId] = struct{}{}
+			}
+
+			if len(existingTerrains) > 1 {
+				continue
+			}
+
+			for _, n := range cornerNeighbours {
+				if _, ok := existingEdges[n.EdgeDirection]; !ok {
+					continue CornerDirections
+				}
+			}
+
+			// both edges are present, corner is not needed
+			delete(tile.RenderingSpec.Corners, int32(cd))
+		}
+	}
+
+	// Step 7: Create segments and segment grid for this layer
+	segmentsLength := totalRows / maxRowsPerSegment * totalColumns / maxColumnsPerSegment
+	segments := make([]*mapv1.Segment, 0, segmentsLength)
+
+	for rowStart := uint32(0); rowStart < totalRows; rowStart += maxRowsPerSegment {
+		for columnStart := uint32(0); columnStart < totalColumns; columnStart += maxColumnsPerSegment {
+			rowEnd := rowStart + maxRowsPerSegment
+			columnEnd := columnStart + maxColumnsPerSegment
+
+			tilesCapacity := maxRowsPerSegment * maxColumnsPerSegment
+
+			segments = append(segments, &mapv1.Segment{
+				Tiles: make([]*mapv1.Tile, 0, tilesCapacity),
+				Bounds: &mapv1.Segment_Bounds{
+					MinRow:    int32(rowStart),
+					MaxRow:    int32(rowEnd),
+					MinColumn: int32(columnStart),
+					MaxColumn: int32(columnEnd),
+				},
+			})
+		}
+	}
+
+	// Step 8: Assign tiles to segments for this layer
+	for row := range totalRows {
+		segRowIdx := row / maxRowsPerSegment
+		for column := range totalColumns {
+			segColIdx := column / maxColumnsPerSegment
+			segmentIndex := segRowIdx*(totalColumns/maxColumnsPerSegment) + segColIdx
+			segment := segments[segmentIndex]
+
+			coordinate := &mapv1.Tile_Coordinate{
+				Depth:  depth,
+				Row:    uint32(row),
+				Column: uint32(column),
+			}
+			k := tiles.CoordinateToKey(coordinate)
+			tile := layerIdx[k]
+
+			segment.Tiles = append(segment.Tiles, tile)
+		}
+	}
+
+	// Step 9: Arrange segments in a grid for this layer
+	gridRowLength := totalRows / maxRowsPerSegment
+	segmentsPerRow := totalColumns / maxColumnsPerSegment
+	segmentRows := make([]*mapv1.Segment_Row, 0, totalRows/maxRowsPerSegment)
+	gridRow := make([]*mapv1.Segment, 0, segmentsPerRow)
+	var rowStart *int32
+
+	for _, segment := range segments {
+		if rowStart == nil {
+			rowStart = &segment.Bounds.MinRow
+			gridRow = make([]*mapv1.Segment, 0, gridRowLength)
+			gridRow = append(gridRow, segment)
+		} else if *rowStart != segment.Bounds.MinRow {
+			segmentRows = append(segmentRows, &mapv1.Segment_Row{Segments: gridRow})
+			gridRow = make([]*mapv1.Segment, 0, gridRowLength)
+			gridRow = append(gridRow, segment)
+			rowStart = &segment.Bounds.MinRow
+		} else {
+			gridRow = append(gridRow, segment)
+		}
+	}
+	segmentRows = append(segmentRows, &mapv1.Segment_Row{Segments: gridRow})
+
+	// Step 10: Render SVG for all segments in this layer
+	for _, row := range segmentRows {
+		for _, segment := range row.Segments {
+			segment.RenderingSpec = &mapv1.Segment_RenderingSpec{
+				Svg: render.GenerateSVGSegment(segment, layerIdx),
+			}
+		}
+	}
+
+	return &layerResult{
+		segments:    segments,
+		segmentRows: segmentRows,
+		index:       layerIdx,
+	}
+}
+
+func sendWorld(stream *connect.ServerStream[gamev1.GetSampleWorldResponse], request *connect.Request[gamev1.GetSampleWorldRequest], layerSegmentRows [][]*mapv1.Segment_Row) error {
+	const defaultMaxChunkSizeBytes = 32 * 1024 // 32Kb
+
+	// grid dimensions
+	layers := make([]*mapv1.Grid, request.Msg.TotalLayers)
+	for i := uint32(0); i < request.Msg.TotalLayers; i++ {
+		layers[i] = &mapv1.Grid{
+			TotalRows:    request.Msg.TotalRows,
+			TotalColumns: request.Msg.TotalColumns,
+		}
+	}
+
+	dimensionsResponse := &gamev1.GetSampleWorldResponse{
+		World: &worldv1.World{
+			RenderingSpec: &worldv1.World_RenderingSpec{
+				TileHeight: config.TileHeight,
+				TileWidth:  config.TileWidth,
+			},
+			Layers: layers,
+		},
+	}
+	if err := stream.Send(dimensionsResponse); err != nil {
+		return err
+	}
+
+	// registries
+	terrainsResponse := &gamev1.GetSampleWorldResponse{
+		World: &worldv1.World{
+			TerrainRegistry: make(map[string]*mapv1.Terrain),
+		},
+	}
+	for key := range config.TerrainRegistry {
+		terrainsResponse.World.TerrainRegistry[key] = config.TerrainRegistry[key]
+		if proto.Size(terrainsResponse) >= defaultMaxChunkSizeBytes {
+			if err := stream.Send(terrainsResponse); err != nil {
+				return err
+			}
+			terrainsResponse = &gamev1.GetSampleWorldResponse{
+				World: &worldv1.World{
+					TerrainRegistry: make(map[string]*mapv1.Terrain),
+				},
+			}
+		}
+	}
+	if err := stream.Send(terrainsResponse); err != nil {
+		return err
+	}
+
+	// tiles - send each layer separately
+	for depth := uint32(0); depth < request.Msg.TotalLayers; depth++ {
+		segmentRows := layerSegmentRows[depth]
+
+		grid := &mapv1.Grid{
+			SegmentRows: make([]*mapv1.Segment_Row, 0, 100),
+		}
+		for _, row := range segmentRows {
+			grid.SegmentRows = append(grid.SegmentRows, row)
+			if proto.Size(grid) >= defaultMaxChunkSizeBytes {
+				response := &gamev1.GetSampleWorldResponse{
+					World: &worldv1.World{
+						Layers: []*mapv1.Grid{grid},
+					},
+				}
+				if err := stream.Send(response); err != nil {
+					return err
+				}
+				grid = &mapv1.Grid{
+					SegmentRows: make([]*mapv1.Segment_Row, 0, 100),
+				}
+			}
+		}
+		if len(grid.SegmentRows) > 0 {
+			response := &gamev1.GetSampleWorldResponse{
+				World: &worldv1.World{
+					Layers: []*mapv1.Grid{grid},
+				},
+			}
+			if err := stream.Send(response); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request[gamev1.GetSampleWorldRequest], stream *connect.ServerStream[gamev1.GetSampleWorldResponse]) error {
 	const (
 		defaultTotalRows            = uint32(64)
 		defaultTotalColumns         = uint32(64)
 		defaultMaxRowsPerSegment    = uint32(15)
 		defaultMaxColumnsPerSegment = uint32(15)
-		defaultMaxChunkSizeBytes    = 32 * 1024 // 32Kb
+		defalutTotalLayers          = uint32(2)
 	)
 
+	if request.Msg.TotalLayers == uint32(0) {
+		request.Msg.TotalLayers = defalutTotalLayers
+	}
 	if request.Msg.TotalRows == uint32(0) {
 		request.Msg.TotalRows = defaultTotalRows
 	}
@@ -198,343 +502,48 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 	defer reporter.Close()
 	reporter.Update()
 
-	// prepare segment containers
+	// Generate all layers in parallel
 	start := time.Now()
-	segmentsLength := request.Msg.TotalRows / request.Msg.MaxRowsPerSegment * request.Msg.TotalColumns / request.Msg.MaxColumnsPerSegment
-	segments := make([]*mapv1.Segment, 0, segmentsLength)
+	layerResults := make([]*layerResult, request.Msg.TotalLayers)
 
-	for rowStart := uint32(0); rowStart < request.Msg.TotalRows; rowStart += request.Msg.MaxRowsPerSegment {
-		for columnStart := uint32(0); columnStart < request.Msg.TotalColumns; columnStart += request.Msg.MaxColumnsPerSegment {
-			rowEnd := rowStart + request.Msg.MaxRowsPerSegment
-			columnEnd := columnStart + request.Msg.MaxColumnsPerSegment
-			segments = append(segments, &mapv1.Segment{
-				Tiles: make([]*mapv1.Tile, 0, request.Msg.MaxRowsPerSegment*request.Msg.MaxColumnsPerSegment),
-				Bounds: &mapv1.Segment_Bounds{
-					MinRow:    int32(rowStart),
-					MaxRow:    int32(rowEnd),
-					MinColumn: int32(columnStart),
-					MaxColumn: int32(columnEnd),
-				},
-			})
-		}
+	// Comment out progress reporting as requested
+	// Progress reporting will be made more suitable for parallelized generation later
+
+	var wg sync.WaitGroup
+
+	// Spawn one goroutine per layer, each handling the complete pipeline
+	for depth := uint32(0); depth < request.Msg.TotalLayers; depth++ {
+		wg.Add(1)
+		go func(d uint32) {
+			defer wg.Done()
+			layerResults[d] = generateLayer(d, request.Msg.TotalRows, request.Msg.TotalColumns, request.Msg.MaxRowsPerSegment, request.Msg.MaxColumnsPerSegment)
+		}(depth)
 	}
 
-	// arrange segments in a grid
-	gridRowLength := request.Msg.TotalRows / request.Msg.MaxRowsPerSegment
-	segmentsPerRow := request.Msg.TotalColumns / request.Msg.MaxColumnsPerSegment
-	segmentRows := make([]*mapv1.Segment_Row, 0, request.Msg.TotalRows/request.Msg.MaxRowsPerSegment)
-	gridRow := make([]*mapv1.Segment, 0, segmentsPerRow)
-	var rowStart *int32
+	// Wait for all layers to complete
+	wg.Wait()
 
-	for _, segment := range segments {
-		if rowStart == nil {
-			rowStart = &segment.Bounds.MinRow
-			gridRow = make([]*mapv1.Segment, 0, gridRowLength)
-			gridRow = append(gridRow, segment)
-		} else if *rowStart != segment.Bounds.MinRow {
-			segmentRows = append(segmentRows, &mapv1.Segment_Row{Segments: gridRow})
-			gridRow = make([]*mapv1.Segment, 0, gridRowLength)
-			gridRow = append(gridRow, segment)
-			rowStart = &segment.Bounds.MinRow
-		} else {
-			gridRow = append(gridRow, segment)
-		}
+	// Extract segment rows for sending
+	layerSegmentRows := make([][]*mapv1.Segment_Row, request.Msg.TotalLayers)
+	for i, result := range layerResults {
+		layerSegmentRows[i] = result.segmentRows
 	}
-	segmentRows = append(segmentRows, &mapv1.Segment_Row{Segments: gridRow})
 
+	// Update stages after all work is done
 	stageGrid.Duration = durationpb.New(time.Since(start))
 	stageGrid.State = progressv1.Stage_STATE_DONE
-	stageTiles.State = progressv1.Stage_STATE_RUNNING
-	reporter.Update()
-
-	// generate tiles & put them into respective segments
-	start = time.Now()
-	totalTiles := request.Msg.TotalRows * request.Msg.TotalColumns
-	var processedTileCount int
-
-	// Generate realistic terrain using noise-based heightmap
-	terrainMap := generateRealisticTerrain(request.Msg.TotalRows, request.Msg.TotalColumns)
-
-	idx := make(tiles.Index, totalTiles)
-	for row := range request.Msg.TotalRows {
-		for column := range request.Msg.TotalColumns {
-			tile := &mapv1.Tile{
-				Coordinate: &mapv1.Tile_Coordinate{
-					Row:    uint32(row),
-					Column: uint32(column),
-				},
-			}
-			k := tiles.CoordinateToKey(tile.Coordinate)
-			tile.Key = fmt.Sprintf("%03d.%03d.%03d", k.Depth, k.Row, k.Column)
-			idx[k] = tile
-
-			if terrain, ok := terrainMap[k]; ok {
-				tile.TerrainId = terrain
-			} else {
-				tile.TerrainId = "water"
-			}
-
-			processedTileCount++
-			if processedTileCount%10_000 == 0 {
-				stageTiles.Subtitle = fmt.Sprintf("%d / %d", processedTileCount, totalTiles)
-				reporter.Update(float64(processedTileCount) / float64(totalTiles))
-			}
-		}
-	}
-
-	// Assign tiles to their primary segments (no overlap for tile data)
-	for row := range request.Msg.TotalRows {
-		segRowIdx := row / request.Msg.MaxRowsPerSegment
-		segRow := segmentRows[segRowIdx]
-
-		for column := range request.Msg.TotalColumns {
-			segColIdx := column / request.Msg.MaxColumnsPerSegment
-			segment := segRow.Segments[segColIdx]
-
-			coordinate := &mapv1.Tile_Coordinate{
-				Row:    uint32(row),
-				Column: uint32(column),
-			}
-			k := tiles.CoordinateToKey(coordinate)
-			tile := idx[k]
-
-			segment.Tiles = append(segment.Tiles, tile)
-		}
-	}
-
-	stageTiles.Subtitle = fmt.Sprintf("%d", totalTiles)
 	stageTiles.Duration = durationpb.New(time.Since(start))
 	stageTiles.State = progressv1.Stage_STATE_DONE
-	stageEdges.State = progressv1.Stage_STATE_RUNNING
-	reporter.Update(0)
-
-	// calculate edges
-	start = time.Now()
-	processedTileCount = 0
-
-	for k, tile := range idx {
-		tile.RenderingSpec = &mapv1.Tile_RenderingSpec{
-			Edges:   make(map[int32]*mapv1.Tile_Edge, 6),
-			Corners: make(map[int32]*mapv1.Tile_Corner, 6),
-		}
-		tileTerrain, ok := config.TerrainRegistry[tile.TerrainId]
-		if !ok {
-			return fmt.Errorf("unregistered terrain id: %s: %q", k, tile.TerrainId)
-		}
-		tileTerrainZ := tileTerrain.RenderingSpec.RenderingType.Number()
-
-		for c := range tiles.IterNeighbours(k) {
-			neighbour, ok := idx[c.CoordinateKey]
-			if !ok || neighbour.TerrainId == tile.TerrainId {
-				continue
-			}
-
-			neighbourTerrain, ok := config.TerrainRegistry[neighbour.TerrainId]
-			if !ok {
-				return fmt.Errorf("unregistered terrain id: %s (neighbour of %s): %q", c.CoordinateKey, k, neighbour.TerrainId)
-			}
-			neighbourTerrainZ := neighbourTerrain.RenderingSpec.RenderingType.Number()
-
-			if tileTerrainZ > neighbourTerrainZ {
-				continue
-			}
-
-			tile.RenderingSpec.Edges[int32(c.Direction)] = &mapv1.Tile_Edge{
-				Direction:          c.Direction,
-				NeighbourTerrainId: neighbour.TerrainId,
-			}
-		}
-
-		processedTileCount++
-		if processedTileCount%10_000 == 0 {
-			stageEdges.Subtitle = fmt.Sprintf("%d / %d", processedTileCount, totalTiles)
-			reporter.Update(float64(processedTileCount) / float64(totalTiles))
-		}
-	}
-
-	stageEdges.Subtitle = fmt.Sprintf("%d", totalTiles)
 	stageEdges.Duration = durationpb.New(time.Since(start))
 	stageEdges.State = progressv1.Stage_STATE_DONE
-
-	// calculate corners
-	stageCorners.State = progressv1.Stage_STATE_RUNNING
-	reporter.Update(0)
-
-	start = time.Now()
-	processedTileCount = 0
-
-	for k := range idx {
-		for _, cd := range tiles.AllCornerDirections {
-			cns := tiles.GetCornerNeighbours(k, cd)
-
-			for _, cn := range cns {
-				n, ok := idx[cn.CoordinateKey]
-				if !ok {
-					// that's okay for tiles on the edge of the map
-					continue
-				}
-
-				opCD, opED := tiles.GetOppositeCorner(cd, cn.EdgeDirection)
-				opE, ok := n.RenderingSpec.Edges[int32(opED)]
-				if !ok {
-					// neighbour doesn't have a connecting edge
-					continue
-				}
-
-				corner, ok := n.RenderingSpec.Corners[int32(opCD)]
-				if !ok {
-					corner = &mapv1.Tile_Corner{
-						Direction: opCD,
-						Edges:     make(map[int32]*mapv1.Tile_Edge, 2),
-					}
-					n.RenderingSpec.Corners[int32(opCD)] = corner
-				}
-				corner.Edges[int32(opED)] = opE
-			}
-		}
-
-		processedTileCount++
-		if processedTileCount%10_000 == 0 {
-			stageCorners.Subtitle = fmt.Sprintf("%d / %d", processedTileCount, totalTiles)
-			reporter.Update(float64(processedTileCount) / float64(totalTiles))
-		}
-	}
-
-	// remove extra corners between two existing edges of the same terrain
-	for k, tile := range idx {
-	CornerDirections:
-		for _, cd := range tiles.AllCornerDirections {
-			cornerNeighbours := tiles.GetCornerNeighbours(k, cd)
-			if len(cornerNeighbours) != 2 {
-				continue
-			}
-
-			existingEdges := make(map[mapv1.EdgeDirection]struct{}, 2)
-			existingTerrains := make(map[string]struct{}, 2)
-			for _, e := range tile.RenderingSpec.Edges {
-				existingEdges[e.Direction] = struct{}{}
-				existingTerrains[e.NeighbourTerrainId] = struct{}{}
-			}
-
-			if len(existingTerrains) > 1 {
-				continue
-			}
-
-			for _, n := range cornerNeighbours {
-				if _, ok := existingEdges[n.EdgeDirection]; !ok {
-					continue CornerDirections
-				}
-			}
-
-			// both edges are present, corner is not needed
-			delete(tile.RenderingSpec.Corners, int32(cd))
-		}
-	}
-
-	stageCorners.Subtitle = fmt.Sprintf("%d", totalTiles)
 	stageCorners.Duration = durationpb.New(time.Since(start))
 	stageCorners.State = progressv1.Stage_STATE_DONE
-	stageRender.State = progressv1.Stage_STATE_RUNNING
-	reporter.Update(0)
-
-	start = time.Now()
-	var processedSegmentCount int
-
-	for _, row := range segmentRows {
-		for _, segment := range row.Segments {
-			segment.RenderingSpec = &mapv1.Segment_RenderingSpec{
-				Svg: render.GenerateSVGSegment(segment, idx),
-			}
-
-			processedSegmentCount++
-			if processedSegmentCount%100 == 0 {
-				stageRender.Subtitle = fmt.Sprintf("%d / %d", processedSegmentCount, len(segments))
-				reporter.Update(float64(processedSegmentCount) / float64(len(segments)))
-			}
-		}
-	}
-
-	stageRender.Subtitle = fmt.Sprintf("%d", len(segments))
 	stageRender.Duration = durationpb.New(time.Since(start))
 	stageRender.State = progressv1.Stage_STATE_DONE
 	reporter.Update(1)
 
-	// generation done, time to send
-
-	// grid dimensions
-	dimensionsResponse := &gamev1.GetSampleWorldResponse{
-		World: &worldv1.World{
-			RenderingSpec: &worldv1.World_RenderingSpec{
-				TileHeight: config.TileHeight,
-				TileWidth:  config.TileWidth,
-			},
-			Layers: []*mapv1.Grid{
-				{
-					TotalRows:    request.Msg.TotalRows,
-					TotalColumns: request.Msg.TotalColumns,
-				},
-			},
-		},
-	}
-	if err := stream.Send(dimensionsResponse); err != nil {
-		return err
-	}
-
-	// registries
-	terrainsResponse := &gamev1.GetSampleWorldResponse{
-		World: &worldv1.World{
-			TerrainRegistry: make(map[string]*mapv1.Terrain),
-		},
-	}
-	for key := range config.TerrainRegistry {
-		terrainsResponse.World.TerrainRegistry[key] = config.TerrainRegistry[key]
-		if proto.Size(terrainsResponse) >= defaultMaxChunkSizeBytes {
-			if err := stream.Send(terrainsResponse); err != nil {
-				return err
-			}
-			terrainsResponse = &gamev1.GetSampleWorldResponse{
-				World: &worldv1.World{
-					TerrainRegistry: make(map[string]*mapv1.Terrain),
-				},
-			}
-		}
-	}
-	if err := stream.Send(terrainsResponse); err != nil {
-		return err
-	}
-
-	// tiles
-	grid := &mapv1.Grid{
-		SegmentRows: make([]*mapv1.Segment_Row, 0, 100),
-	}
-	for _, row := range segmentRows {
-		grid.SegmentRows = append(grid.SegmentRows, row)
-		if proto.Size(grid) >= defaultMaxChunkSizeBytes {
-			response := &gamev1.GetSampleWorldResponse{
-				World: &worldv1.World{
-					Layers: []*mapv1.Grid{grid},
-				},
-			}
-			if err := stream.Send(response); err != nil {
-				return err
-			}
-			grid = &mapv1.Grid{
-				SegmentRows: make([]*mapv1.Segment_Row, 0, 100),
-			}
-		}
-	}
-	if len(grid.SegmentRows) > 0 {
-		response := &gamev1.GetSampleWorldResponse{
-			World: &worldv1.World{
-				Layers: []*mapv1.Grid{grid},
-			},
-		}
-		if err := stream.Send(response); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	// Send the world to the client
+	return sendWorld(stream, request, layerSegmentRows)
 }
 
 func BoundsInclude(b *mapv1.Segment_Bounds, t *mapv1.Tile, modifier int32) bool {

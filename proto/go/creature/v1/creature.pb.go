@@ -175,7 +175,7 @@ func (x *Creature_AttributeModification) GetNegateNegativeEffects() bool {
 type Creature_Kind struct {
 	state          protoimpl.MessageState  `protogen:"open.v1"`
 	Id             string                  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Tags           []string                `protobuf:"bytes,2,rep,name=tags,proto3" json:"tags,omitempty"`
+	Tags           map[string]bool         `protobuf:"bytes,2,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	MovementTypes  []Creature_MovementType `protobuf:"varint,3,rep,packed,name=movement_types,json=movementTypes,proto3,enum=creature.v1.Creature_MovementType" json:"movement_types,omitempty"`
 	NativeTerrains []string                `protobuf:"bytes,4,rep,name=native_terrains,json=nativeTerrains,proto3" json:"native_terrains,omitempty"`
 	unknownFields  protoimpl.UnknownFields
@@ -219,7 +219,7 @@ func (x *Creature_Kind) GetId() string {
 	return ""
 }
 
-func (x *Creature_Kind) GetTags() []string {
+func (x *Creature_Kind) GetTags() map[string]bool {
 	if x != nil {
 		return x.Tags
 	}
@@ -320,15 +320,15 @@ var File_creature_v1_creature_proto protoreflect.FileDescriptor
 
 const file_creature_v1_creature_proto_rawDesc = "" +
 	"\n" +
-	"\x1acreature/v1/creature.proto\x12\vcreature.v1\"\x8e\x05\n" +
+	"\x1acreature/v1/creature.proto\x12\vcreature.v1\"\xed\x05\n" +
 	"\bCreature\x1a\x9d\x01\n" +
 	"\x15AttributeModification\x12\x14\n" +
 	"\x05delta\x18\x01 \x01(\x05R\x05delta\x126\n" +
 	"\x17negate_positive_effects\x18\x02 \x01(\bR\x15negatePositiveEffects\x126\n" +
-	"\x17negate_negative_effects\x18\x03 \x01(\bR\x15negateNegativeEffects\x1a\xc3\x02\n" +
+	"\x17negate_negative_effects\x18\x03 \x01(\bR\x15negateNegativeEffects\x1a\xa2\x03\n" +
 	"\x04Kind\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04tags\x18\x02 \x03(\tR\x04tags\x12I\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x128\n" +
+	"\x04tags\x18\x02 \x03(\v2$.creature.v1.Creature.Kind.TagsEntryR\x04tags\x12I\n" +
 	"\x0emovement_types\x18\x03 \x03(\x0e2\".creature.v1.Creature.MovementTypeR\rmovementTypes\x12'\n" +
 	"\x0fnative_terrains\x18\x04 \x03(\tR\x0enativeTerrains\x1a\xa2\x01\n" +
 	"\x06Filter\x12\x10\n" +
@@ -338,7 +338,10 @@ const file_creature_v1_creature_proto_rawDesc = "" +
 	"\vexclude_ids\x18\x03 \x03(\tR\n" +
 	"excludeIds\x12!\n" +
 	"\finclude_tags\x18\x04 \x03(\tR\vincludeTags\x12!\n" +
-	"\fexclude_tags\x18\x05 \x03(\tR\vexcludeTags\"\x9b\x01\n" +
+	"\fexclude_tags\x18\x05 \x03(\tR\vexcludeTags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\x9b\x01\n" +
 	"\fMovementType\x12\x1d\n" +
 	"\x19MOVEMENT_TYPE_UNSPECIFIED\x10\x00\x12\x19\n" +
 	"\x15MOVEMENT_TYPE_WALKING\x10\x01\x12\x1a\n" +
@@ -360,21 +363,23 @@ func file_creature_v1_creature_proto_rawDescGZIP() []byte {
 }
 
 var file_creature_v1_creature_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_creature_v1_creature_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_creature_v1_creature_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_creature_v1_creature_proto_goTypes = []any{
 	(Creature_MovementType)(0),             // 0: creature.v1.Creature.MovementType
 	(*Creature)(nil),                       // 1: creature.v1.Creature
 	(*Creature_AttributeModification)(nil), // 2: creature.v1.Creature.AttributeModification
 	(*Creature_Kind)(nil),                  // 3: creature.v1.Creature.Kind
 	(*Creature_Kind_Filter)(nil),           // 4: creature.v1.Creature.Kind.Filter
+	nil,                                    // 5: creature.v1.Creature.Kind.TagsEntry
 }
 var file_creature_v1_creature_proto_depIdxs = []int32{
-	0, // 0: creature.v1.Creature.Kind.movement_types:type_name -> creature.v1.Creature.MovementType
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	5, // 0: creature.v1.Creature.Kind.tags:type_name -> creature.v1.Creature.Kind.TagsEntry
+	0, // 1: creature.v1.Creature.Kind.movement_types:type_name -> creature.v1.Creature.MovementType
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_creature_v1_creature_proto_init() }
@@ -388,7 +393,7 @@ func file_creature_v1_creature_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_creature_v1_creature_proto_rawDesc), len(file_creature_v1_creature_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

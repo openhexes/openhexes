@@ -22,9 +22,9 @@ export declare type Terrain = Message<"map.v1.Terrain"> & {
   id: string;
 
   /**
-   * @generated from field: repeated string tags = 2;
+   * @generated from field: map<string, bool> tags = 2;
    */
-  tags: string[];
+  tags: { [key: string]: boolean };
 
   /**
    * @generated from field: uint32 movement_penalty = 3;

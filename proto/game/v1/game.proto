@@ -8,10 +8,11 @@ import "world/v1/world.proto";
 option go_package = "github.com/openhexes/proto;gamev1";
 
 message GetSampleWorldRequest {
-  uint32 total_rows = 1;
-  uint32 total_columns = 2;
-  uint32 max_rows_per_segment = 3;
-  uint32 max_columns_per_segment = 4;
+  uint32 total_layers = 1;
+  uint32 total_rows = 2;
+  uint32 total_columns = 3;
+  uint32 max_rows_per_segment = 4;
+  uint32 max_columns_per_segment = 5;
 }
 
 message GetSampleWorldResponse {

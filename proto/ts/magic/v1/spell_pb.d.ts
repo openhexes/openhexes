@@ -20,9 +20,9 @@ export declare type Spell = Message<"magic.v1.Spell"> & {
   id: string;
 
   /**
-   * @generated from field: repeated string tags = 2;
+   * @generated from field: map<string, bool> tags = 2;
    */
-  tags: string[];
+  tags: { [key: string]: boolean };
 };
 
 /**

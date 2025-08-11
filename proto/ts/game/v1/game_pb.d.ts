@@ -17,22 +17,27 @@ export declare const file_game_v1_game: GenFile;
  */
 export declare type GetSampleWorldRequest = Message<"game.v1.GetSampleWorldRequest"> & {
   /**
-   * @generated from field: uint32 total_rows = 1;
+   * @generated from field: uint32 total_layers = 1;
+   */
+  totalLayers: number;
+
+  /**
+   * @generated from field: uint32 total_rows = 2;
    */
   totalRows: number;
 
   /**
-   * @generated from field: uint32 total_columns = 2;
+   * @generated from field: uint32 total_columns = 3;
    */
   totalColumns: number;
 
   /**
-   * @generated from field: uint32 max_rows_per_segment = 3;
+   * @generated from field: uint32 max_rows_per_segment = 4;
    */
   maxRowsPerSegment: number;
 
   /**
-   * @generated from field: uint32 max_columns_per_segment = 4;
+   * @generated from field: uint32 max_columns_per_segment = 5;
    */
   maxColumnsPerSegment: number;
 };

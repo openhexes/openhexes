@@ -25,18 +25,15 @@ const (
 )
 
 type Controller struct {
-	cfg       *config.Config
-	cache     *expirable.LRU[string, *db.Account]
-	testUsers map[string]*GoogleClaims // credential -> email
+	cfg   *config.Config
+	cache *expirable.LRU[string, *db.Account]
 }
 
 func NewController(cfg *config.Config) *Controller {
-	c := &Controller{
-		cfg:       cfg,
-		cache:     expirable.NewLRU[string, *db.Account](cfg.Auth.Storage.MaxSize, nil, cfg.Auth.Storage.TTL),
-		testUsers: make(map[string]*GoogleClaims, 0),
+	return &Controller{
+		cfg:   cfg,
+		cache: expirable.NewLRU[string, *db.Account](cfg.Auth.Storage.MaxSize, nil, cfg.Auth.Storage.TTL),
 	}
-	return c.setUpTestUsers()
 }
 
 func AccountFromContext(ctx context.Context) *db.Account {
@@ -46,7 +43,7 @@ func AccountFromContext(ctx context.Context) *db.Account {
 func (c *Controller) AccountFromRequestHeader(ctx context.Context, header http.Header) (*db.Account, error) {
 	log := config.GetLogger(ctx)
 
-	cookie, err := (&http.Request{Header: header}).Cookie("hexes.auth.google")
+	cookie, err := (&http.Request{Header: header}).Cookie(config.AuthCookieGoogle)
 	if err != nil {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
@@ -70,15 +67,15 @@ func (c *Controller) AccountFromRequestHeader(ctx context.Context, header http.H
 	return account, nil
 }
 
-func (c *Controller) resolveCredential(ctx context.Context, credential string) (*GoogleClaims, error) {
+func (c *Controller) resolveCredential(ctx context.Context, credential string) (*config.GoogleClaims, error) {
 	log := config.GetLogger(ctx)
 
 	if c.cfg.Test.Enabled {
-		if claims, ok := c.testUsers[credential]; ok {
-			log.Info("resolved test user", zap.String("email", claims.Email))
+		if claims, ok := c.cfg.Test.Accounts[credential]; ok {
+			log.Info("resolved test account", zap.String("email", claims.Email))
 			return claims, nil
 		}
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid test user credentials"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid test account credentials"))
 	}
 
 	info, err := idtoken.Validate(ctx, credential, c.cfg.Auth.Google.ClientID)
@@ -86,7 +83,7 @@ func (c *Controller) resolveCredential(ctx context.Context, credential string) (
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("validating google credentials: %w", err))
 	}
 
-	claims := &GoogleClaims{}
+	claims := &config.GoogleClaims{}
 	for k, v := range info.Claims {
 		if k == "email" {
 			claims.Email = v.(string)
@@ -118,15 +115,19 @@ func (c *Controller) authenticate(ctx context.Context, credential string) (*db.A
 
 	var account db.Account
 	err = c.cfg.Postgres.Tx(ctx, func(tx pgx.Tx, q *db.Queries) error {
-		account, err = q.GetAccount(ctx, claims.Email)
+		account, err = q.GetAccountByEmail(ctx, claims.Email)
 		if errors.Is(err, pgx.ErrNoRows) {
 			var isOwner bool
+			var isActive bool
 			if slices.Contains(c.cfg.Auth.Owners.Emails, claims.Email) {
 				isOwner = true
 			}
+			if slices.Contains(c.cfg.Auth.PreActivatedEmails, claims.Email) {
+				isActive = true
+			}
 
 			account, err = q.CreateAccount(ctx, db.CreateAccountParams{
-				Active:      isOwner,
+				Active:      isOwner || isActive,
 				Email:       claims.Email,
 				DisplayName: claims.Name,
 				Picture:     claims.Picture,

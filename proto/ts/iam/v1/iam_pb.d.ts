@@ -29,6 +29,11 @@ export declare type Account = Message<"iam.v1.Account"> & {
    * @generated from field: string email = 3;
    */
   email: string;
+
+  /**
+   * @generated from field: repeated string roles = 4;
+   */
+  roles: string[];
 };
 
 /**
@@ -100,6 +105,10 @@ export declare const ResolveAccountResponseSchema: GenMessage<ResolveAccountResp
  * @generated from message iam.v1.ListAccountsRequest
  */
 export declare type ListAccountsRequest = Message<"iam.v1.ListAccountsRequest"> & {
+  /**
+   * @generated from field: optional bool active = 1;
+   */
+  active?: boolean;
 };
 
 /**
@@ -123,6 +132,43 @@ export declare type ListAccountsResponse = Message<"iam.v1.ListAccountsResponse"
  * Use `create(ListAccountsResponseSchema)` to create a new message.
  */
 export declare const ListAccountsResponseSchema: GenMessage<ListAccountsResponse>;
+
+/**
+ * @generated from message iam.v1.GetAccountRequest
+ */
+export declare type GetAccountRequest = Message<"iam.v1.GetAccountRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: bool with_roles = 2;
+   */
+  withRoles: boolean;
+};
+
+/**
+ * Describes the message iam.v1.GetAccountRequest.
+ * Use `create(GetAccountRequestSchema)` to create a new message.
+ */
+export declare const GetAccountRequestSchema: GenMessage<GetAccountRequest>;
+
+/**
+ * @generated from message iam.v1.GetAccountResponse
+ */
+export declare type GetAccountResponse = Message<"iam.v1.GetAccountResponse"> & {
+  /**
+   * @generated from field: iam.v1.Account account = 1;
+   */
+  account?: Account;
+};
+
+/**
+ * Describes the message iam.v1.GetAccountResponse.
+ * Use `create(GetAccountResponseSchema)` to create a new message.
+ */
+export declare const GetAccountResponseSchema: GenMessage<GetAccountResponse>;
 
 /**
  * @generated from message iam.v1.UpdateAccountActivationRequest
@@ -171,6 +217,14 @@ export declare const IAMService: GenService<{
     methodKind: "server_streaming";
     input: typeof ListAccountsRequestSchema;
     output: typeof ListAccountsResponseSchema;
+  },
+  /**
+   * @generated from rpc iam.v1.IAMService.GetAccount
+   */
+  getAccount: {
+    methodKind: "unary";
+    input: typeof GetAccountRequestSchema;
+    output: typeof GetAccountResponseSchema;
   },
   /**
    * @generated from rpc iam.v1.IAMService.UpdateAccountActivation

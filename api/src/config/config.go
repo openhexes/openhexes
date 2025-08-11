@@ -3,11 +3,8 @@ package config
 import (
 	"context"
 	"fmt"
-	"strings"
-	"time"
 
 	"github.com/caarlos0/env/v11"
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -41,20 +38,9 @@ func New(ctx context.Context, opts ...Option) (*Config, error) {
 	for _, opt := range opts {
 		opt(&cfg)
 	}
-
-	if cfg.Test.Enabled {
-		cfg.Test.ID = fmt.Sprintf(
-			"%s-%s",
-			strings.ReplaceAll(time.Now().Format(time.TimeOnly), ":", "-"),
-			uuid.NewString()[24:],
-		)
-		cfg.Auth.Owners.Emails = []string{"owner@test.com"}
-	}
-
 	if err := cfg.setUpLogging(ctx); err != nil {
 		return nil, fmt.Errorf("setting up logging: %w", err)
 	}
-
 	return &cfg, nil
 }
 
@@ -65,20 +51,12 @@ func (cfg *Config) SetUp(ctx context.Context) error {
 	if err := ValidateRegistries(); err != nil {
 		return fmt.Errorf("validating registries: %w", err)
 	}
-
+	if err := cfg.setUpTests(ctx); err != nil {
+		return fmt.Errorf("setting up tests: %w", err)
+	}
 	if err := cfg.setUpPostgres(ctx); err != nil {
 		return fmt.Errorf("setting up postgres: %w", err)
 	}
-
-	if cfg.Test.Enabled {
-		if err := cfg.Postgres.CreateTemporaryDatabase(ctx); err != nil {
-			return fmt.Errorf("creating temporary database: %w", err)
-		}
-		if err := cfg.Postgres.ApplyDatabaseMigrations(ctx); err != nil {
-			return fmt.Errorf("applying database migrations: %w", err)
-		}
-	}
-
 	if err := cfg.Postgres.SetUpEssentialData(ctx); err != nil {
 		return fmt.Errorf("setting up essentials: %w", err)
 	}

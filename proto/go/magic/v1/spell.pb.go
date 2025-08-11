@@ -24,7 +24,7 @@ const (
 type Spell struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Tags          []string               `protobuf:"bytes,2,rep,name=tags,proto3" json:"tags,omitempty"`
+	Tags          map[string]bool        `protobuf:"bytes,2,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -66,7 +66,7 @@ func (x *Spell) GetId() string {
 	return ""
 }
 
-func (x *Spell) GetTags() []string {
+func (x *Spell) GetTags() map[string]bool {
 	if x != nil {
 		return x.Tags
 	}
@@ -153,10 +153,10 @@ var File_magic_v1_spell_proto protoreflect.FileDescriptor
 
 const file_magic_v1_spell_proto_rawDesc = "" +
 	"\n" +
-	"\x14magic/v1/spell.proto\x12\bmagic.v1\"\xd0\x01\n" +
+	"\x14magic/v1/spell.proto\x12\bmagic.v1\"\xa4\x02\n" +
 	"\x05Spell\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04tags\x18\x02 \x03(\tR\x04tags\x1a\xa2\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12-\n" +
+	"\x04tags\x18\x02 \x03(\v2\x19.magic.v1.Spell.TagsEntryR\x04tags\x1a\xa2\x01\n" +
 	"\x06Filter\x12\x10\n" +
 	"\x03all\x18\x01 \x01(\bR\x03all\x12\x1f\n" +
 	"\vinclude_ids\x18\x02 \x03(\tR\n" +
@@ -164,7 +164,10 @@ const file_magic_v1_spell_proto_rawDesc = "" +
 	"\vexclude_ids\x18\x03 \x03(\tR\n" +
 	"excludeIds\x12!\n" +
 	"\finclude_tags\x18\x04 \x03(\tR\vincludeTags\x12!\n" +
-	"\fexclude_tags\x18\x05 \x03(\tR\vexcludeTagsB\x88\x01\n" +
+	"\fexclude_tags\x18\x05 \x03(\tR\vexcludeTags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01B\x88\x01\n" +
 	"\fcom.magic.v1B\n" +
 	"SpellProtoP\x01Z+github.com/openhexes/proto/magic/v1;magicv1\xa2\x02\x03MXX\xaa\x02\bMagic.V1\xca\x02\bMagic\\V1\xe2\x02\x14Magic\\V1\\GPBMetadata\xea\x02\tMagic::V1b\x06proto3"
 
@@ -180,17 +183,19 @@ func file_magic_v1_spell_proto_rawDescGZIP() []byte {
 	return file_magic_v1_spell_proto_rawDescData
 }
 
-var file_magic_v1_spell_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_magic_v1_spell_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_magic_v1_spell_proto_goTypes = []any{
 	(*Spell)(nil),        // 0: magic.v1.Spell
 	(*Spell_Filter)(nil), // 1: magic.v1.Spell.Filter
+	nil,                  // 2: magic.v1.Spell.TagsEntry
 }
 var file_magic_v1_spell_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	2, // 0: magic.v1.Spell.tags:type_name -> magic.v1.Spell.TagsEntry
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_magic_v1_spell_proto_init() }
@@ -204,7 +209,7 @@ func file_magic_v1_spell_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_magic_v1_spell_proto_rawDesc), len(file_magic_v1_spell_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

@@ -160,7 +160,7 @@ func (Terrain_RenderingType) EnumDescriptor() ([]byte, []int) {
 type Terrain struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Tags            []string               `protobuf:"bytes,2,rep,name=tags,proto3" json:"tags,omitempty"`
+	Tags            map[string]bool        `protobuf:"bytes,2,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	MovementPenalty uint32                 `protobuf:"varint,3,opt,name=movement_penalty,json=movementPenalty,proto3" json:"movement_penalty,omitempty"`
 	CanPassWith     []Terrain_MovementType `protobuf:"varint,4,rep,packed,name=can_pass_with,json=canPassWith,proto3,enum=map.v1.Terrain_MovementType" json:"can_pass_with,omitempty"`
 	CanStopWith     []Terrain_MovementType `protobuf:"varint,5,rep,packed,name=can_stop_with,json=canStopWith,proto3,enum=map.v1.Terrain_MovementType" json:"can_stop_with,omitempty"`
@@ -207,7 +207,7 @@ func (x *Terrain) GetId() string {
 	return ""
 }
 
-func (x *Terrain) GetTags() []string {
+func (x *Terrain) GetTags() map[string]bool {
 	if x != nil {
 		return x.Tags
 	}
@@ -497,7 +497,7 @@ type Terrain_Effect_ModifySpellLevel struct {
 
 func (x *Terrain_Effect_ModifySpellLevel) Reset() {
 	*x = Terrain_Effect_ModifySpellLevel{}
-	mi := &file_map_v1_terrain_proto_msgTypes[3]
+	mi := &file_map_v1_terrain_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -509,7 +509,7 @@ func (x *Terrain_Effect_ModifySpellLevel) String() string {
 func (*Terrain_Effect_ModifySpellLevel) ProtoMessage() {}
 
 func (x *Terrain_Effect_ModifySpellLevel) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_terrain_proto_msgTypes[3]
+	mi := &file_map_v1_terrain_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -550,7 +550,7 @@ type Terrain_Effect_PreventSpellCasting struct {
 
 func (x *Terrain_Effect_PreventSpellCasting) Reset() {
 	*x = Terrain_Effect_PreventSpellCasting{}
-	mi := &file_map_v1_terrain_proto_msgTypes[4]
+	mi := &file_map_v1_terrain_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -562,7 +562,7 @@ func (x *Terrain_Effect_PreventSpellCasting) String() string {
 func (*Terrain_Effect_PreventSpellCasting) ProtoMessage() {}
 
 func (x *Terrain_Effect_PreventSpellCasting) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_terrain_proto_msgTypes[4]
+	mi := &file_map_v1_terrain_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -607,7 +607,7 @@ type Terrain_Effect_DisableNativeTerrainBonuses struct {
 
 func (x *Terrain_Effect_DisableNativeTerrainBonuses) Reset() {
 	*x = Terrain_Effect_DisableNativeTerrainBonuses{}
-	mi := &file_map_v1_terrain_proto_msgTypes[5]
+	mi := &file_map_v1_terrain_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -619,7 +619,7 @@ func (x *Terrain_Effect_DisableNativeTerrainBonuses) String() string {
 func (*Terrain_Effect_DisableNativeTerrainBonuses) ProtoMessage() {}
 
 func (x *Terrain_Effect_DisableNativeTerrainBonuses) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_terrain_proto_msgTypes[5]
+	mi := &file_map_v1_terrain_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -646,7 +646,7 @@ type Terrain_Effect_ModifyCreatureMovementType struct {
 
 func (x *Terrain_Effect_ModifyCreatureMovementType) Reset() {
 	*x = Terrain_Effect_ModifyCreatureMovementType{}
-	mi := &file_map_v1_terrain_proto_msgTypes[6]
+	mi := &file_map_v1_terrain_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -658,7 +658,7 @@ func (x *Terrain_Effect_ModifyCreatureMovementType) String() string {
 func (*Terrain_Effect_ModifyCreatureMovementType) ProtoMessage() {}
 
 func (x *Terrain_Effect_ModifyCreatureMovementType) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_terrain_proto_msgTypes[6]
+	mi := &file_map_v1_terrain_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -705,7 +705,7 @@ type Terrain_Effect_ModifyCreatureMorale struct {
 
 func (x *Terrain_Effect_ModifyCreatureMorale) Reset() {
 	*x = Terrain_Effect_ModifyCreatureMorale{}
-	mi := &file_map_v1_terrain_proto_msgTypes[7]
+	mi := &file_map_v1_terrain_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -717,7 +717,7 @@ func (x *Terrain_Effect_ModifyCreatureMorale) String() string {
 func (*Terrain_Effect_ModifyCreatureMorale) ProtoMessage() {}
 
 func (x *Terrain_Effect_ModifyCreatureMorale) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_terrain_proto_msgTypes[7]
+	mi := &file_map_v1_terrain_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -757,7 +757,7 @@ type Terrain_Effect_ModifyCreatureLuck struct {
 
 func (x *Terrain_Effect_ModifyCreatureLuck) Reset() {
 	*x = Terrain_Effect_ModifyCreatureLuck{}
-	mi := &file_map_v1_terrain_proto_msgTypes[8]
+	mi := &file_map_v1_terrain_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -769,7 +769,7 @@ func (x *Terrain_Effect_ModifyCreatureLuck) String() string {
 func (*Terrain_Effect_ModifyCreatureLuck) ProtoMessage() {}
 
 func (x *Terrain_Effect_ModifyCreatureLuck) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_terrain_proto_msgTypes[8]
+	mi := &file_map_v1_terrain_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -809,7 +809,7 @@ type Terrain_Effect_ModifyCreatureAttack struct {
 
 func (x *Terrain_Effect_ModifyCreatureAttack) Reset() {
 	*x = Terrain_Effect_ModifyCreatureAttack{}
-	mi := &file_map_v1_terrain_proto_msgTypes[9]
+	mi := &file_map_v1_terrain_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -821,7 +821,7 @@ func (x *Terrain_Effect_ModifyCreatureAttack) String() string {
 func (*Terrain_Effect_ModifyCreatureAttack) ProtoMessage() {}
 
 func (x *Terrain_Effect_ModifyCreatureAttack) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_terrain_proto_msgTypes[9]
+	mi := &file_map_v1_terrain_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -861,7 +861,7 @@ type Terrain_Effect_ModifyCreatureDefence struct {
 
 func (x *Terrain_Effect_ModifyCreatureDefence) Reset() {
 	*x = Terrain_Effect_ModifyCreatureDefence{}
-	mi := &file_map_v1_terrain_proto_msgTypes[10]
+	mi := &file_map_v1_terrain_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -873,7 +873,7 @@ func (x *Terrain_Effect_ModifyCreatureDefence) String() string {
 func (*Terrain_Effect_ModifyCreatureDefence) ProtoMessage() {}
 
 func (x *Terrain_Effect_ModifyCreatureDefence) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_terrain_proto_msgTypes[10]
+	mi := &file_map_v1_terrain_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -913,7 +913,7 @@ type Terrain_Effect_ModifyCreatureSpeed struct {
 
 func (x *Terrain_Effect_ModifyCreatureSpeed) Reset() {
 	*x = Terrain_Effect_ModifyCreatureSpeed{}
-	mi := &file_map_v1_terrain_proto_msgTypes[11]
+	mi := &file_map_v1_terrain_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -925,7 +925,7 @@ func (x *Terrain_Effect_ModifyCreatureSpeed) String() string {
 func (*Terrain_Effect_ModifyCreatureSpeed) ProtoMessage() {}
 
 func (x *Terrain_Effect_ModifyCreatureSpeed) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_terrain_proto_msgTypes[11]
+	mi := &file_map_v1_terrain_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -959,10 +959,10 @@ var File_map_v1_terrain_proto protoreflect.FileDescriptor
 
 const file_map_v1_terrain_proto_rawDesc = "" +
 	"\n" +
-	"\x14map/v1/terrain.proto\x12\x06map.v1\x1a\x1acreature/v1/creature.proto\x1a\x14magic/v1/spell.proto\"\x95\x19\n" +
+	"\x14map/v1/terrain.proto\x12\x06map.v1\x1a\x1acreature/v1/creature.proto\x1a\x14magic/v1/spell.proto\"\xe9\x19\n" +
 	"\aTerrain\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04tags\x18\x02 \x03(\tR\x04tags\x12)\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12-\n" +
+	"\x04tags\x18\x02 \x03(\v2\x19.map.v1.Terrain.TagsEntryR\x04tags\x12)\n" +
 	"\x10movement_penalty\x18\x03 \x01(\rR\x0fmovementPenalty\x12@\n" +
 	"\rcan_pass_with\x18\x04 \x03(\x0e2\x1c.map.v1.Terrain.MovementTypeR\vcanPassWith\x12@\n" +
 	"\rcan_stop_with\x18\x05 \x03(\x0e2\x1c.map.v1.Terrain.MovementTypeR\vcanStopWith\x120\n" +
@@ -1011,7 +1011,10 @@ const file_map_v1_terrain_proto_rawDesc = "" +
 	"\fmodification\x18\x02 \x01(\v2+.creature.v1.Creature.AttributeModificationR\fmodificationB\x06\n" +
 	"\x04kind\x1aU\n" +
 	"\rRenderingSpec\x12D\n" +
-	"\x0erendering_type\x18\x01 \x01(\x0e2\x1d.map.v1.Terrain.RenderingTypeR\rrenderingType\"\x9b\x01\n" +
+	"\x0erendering_type\x18\x01 \x01(\x0e2\x1d.map.v1.Terrain.RenderingTypeR\rrenderingType\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\x9b\x01\n" +
 	"\fMovementType\x12\x1d\n" +
 	"\x19MOVEMENT_TYPE_UNSPECIFIED\x10\x00\x12\x19\n" +
 	"\x15MOVEMENT_TYPE_WALKING\x10\x01\x12\x1a\n" +
@@ -1049,62 +1052,64 @@ func file_map_v1_terrain_proto_rawDescGZIP() []byte {
 }
 
 var file_map_v1_terrain_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_map_v1_terrain_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_map_v1_terrain_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_map_v1_terrain_proto_goTypes = []any{
 	(Terrain_MovementType)(0),                          // 0: map.v1.Terrain.MovementType
 	(Terrain_RenderingType)(0),                         // 1: map.v1.Terrain.RenderingType
 	(*Terrain)(nil),                                    // 2: map.v1.Terrain
 	(*Terrain_Effect)(nil),                             // 3: map.v1.Terrain.Effect
 	(*Terrain_RenderingSpec)(nil),                      // 4: map.v1.Terrain.RenderingSpec
-	(*Terrain_Effect_ModifySpellLevel)(nil),            // 5: map.v1.Terrain.Effect.ModifySpellLevel
-	(*Terrain_Effect_PreventSpellCasting)(nil),         // 6: map.v1.Terrain.Effect.PreventSpellCasting
-	(*Terrain_Effect_DisableNativeTerrainBonuses)(nil), // 7: map.v1.Terrain.Effect.DisableNativeTerrainBonuses
-	(*Terrain_Effect_ModifyCreatureMovementType)(nil),  // 8: map.v1.Terrain.Effect.ModifyCreatureMovementType
-	(*Terrain_Effect_ModifyCreatureMorale)(nil),        // 9: map.v1.Terrain.Effect.ModifyCreatureMorale
-	(*Terrain_Effect_ModifyCreatureLuck)(nil),          // 10: map.v1.Terrain.Effect.ModifyCreatureLuck
-	(*Terrain_Effect_ModifyCreatureAttack)(nil),        // 11: map.v1.Terrain.Effect.ModifyCreatureAttack
-	(*Terrain_Effect_ModifyCreatureDefence)(nil),       // 12: map.v1.Terrain.Effect.ModifyCreatureDefence
-	(*Terrain_Effect_ModifyCreatureSpeed)(nil),         // 13: map.v1.Terrain.Effect.ModifyCreatureSpeed
-	(*v1.Spell_Filter)(nil),                            // 14: magic.v1.Spell.Filter
-	(*v11.Creature_Kind_Filter)(nil),                   // 15: creature.v1.Creature.Kind.Filter
-	(v11.Creature_MovementType)(0),                     // 16: creature.v1.Creature.MovementType
-	(*v11.Creature_AttributeModification)(nil),         // 17: creature.v1.Creature.AttributeModification
+	nil,                                                // 5: map.v1.Terrain.TagsEntry
+	(*Terrain_Effect_ModifySpellLevel)(nil),            // 6: map.v1.Terrain.Effect.ModifySpellLevel
+	(*Terrain_Effect_PreventSpellCasting)(nil),         // 7: map.v1.Terrain.Effect.PreventSpellCasting
+	(*Terrain_Effect_DisableNativeTerrainBonuses)(nil), // 8: map.v1.Terrain.Effect.DisableNativeTerrainBonuses
+	(*Terrain_Effect_ModifyCreatureMovementType)(nil),  // 9: map.v1.Terrain.Effect.ModifyCreatureMovementType
+	(*Terrain_Effect_ModifyCreatureMorale)(nil),        // 10: map.v1.Terrain.Effect.ModifyCreatureMorale
+	(*Terrain_Effect_ModifyCreatureLuck)(nil),          // 11: map.v1.Terrain.Effect.ModifyCreatureLuck
+	(*Terrain_Effect_ModifyCreatureAttack)(nil),        // 12: map.v1.Terrain.Effect.ModifyCreatureAttack
+	(*Terrain_Effect_ModifyCreatureDefence)(nil),       // 13: map.v1.Terrain.Effect.ModifyCreatureDefence
+	(*Terrain_Effect_ModifyCreatureSpeed)(nil),         // 14: map.v1.Terrain.Effect.ModifyCreatureSpeed
+	(*v1.Spell_Filter)(nil),                            // 15: magic.v1.Spell.Filter
+	(*v11.Creature_Kind_Filter)(nil),                   // 16: creature.v1.Creature.Kind.Filter
+	(v11.Creature_MovementType)(0),                     // 17: creature.v1.Creature.MovementType
+	(*v11.Creature_AttributeModification)(nil),         // 18: creature.v1.Creature.AttributeModification
 }
 var file_map_v1_terrain_proto_depIdxs = []int32{
-	0,  // 0: map.v1.Terrain.can_pass_with:type_name -> map.v1.Terrain.MovementType
-	0,  // 1: map.v1.Terrain.can_stop_with:type_name -> map.v1.Terrain.MovementType
-	3,  // 2: map.v1.Terrain.effects:type_name -> map.v1.Terrain.Effect
-	4,  // 3: map.v1.Terrain.rendering_spec:type_name -> map.v1.Terrain.RenderingSpec
-	5,  // 4: map.v1.Terrain.Effect.modify_spell_level:type_name -> map.v1.Terrain.Effect.ModifySpellLevel
-	6,  // 5: map.v1.Terrain.Effect.prevent_spell_casting:type_name -> map.v1.Terrain.Effect.PreventSpellCasting
-	7,  // 6: map.v1.Terrain.Effect.disable_native_terrain_bonuses:type_name -> map.v1.Terrain.Effect.DisableNativeTerrainBonuses
-	8,  // 7: map.v1.Terrain.Effect.modify_creature_movement_type:type_name -> map.v1.Terrain.Effect.ModifyCreatureMovementType
-	9,  // 8: map.v1.Terrain.Effect.modify_creature_morale:type_name -> map.v1.Terrain.Effect.ModifyCreatureMorale
-	10, // 9: map.v1.Terrain.Effect.modify_creature_luck:type_name -> map.v1.Terrain.Effect.ModifyCreatureLuck
-	11, // 10: map.v1.Terrain.Effect.modify_creature_attack:type_name -> map.v1.Terrain.Effect.ModifyCreatureAttack
-	12, // 11: map.v1.Terrain.Effect.modify_creature_defence:type_name -> map.v1.Terrain.Effect.ModifyCreatureDefence
-	13, // 12: map.v1.Terrain.Effect.modify_creature_speed:type_name -> map.v1.Terrain.Effect.ModifyCreatureSpeed
-	1,  // 13: map.v1.Terrain.RenderingSpec.rendering_type:type_name -> map.v1.Terrain.RenderingType
-	14, // 14: map.v1.Terrain.Effect.ModifySpellLevel.filter:type_name -> magic.v1.Spell.Filter
-	14, // 15: map.v1.Terrain.Effect.PreventSpellCasting.filter:type_name -> magic.v1.Spell.Filter
-	15, // 16: map.v1.Terrain.Effect.ModifyCreatureMovementType.filter:type_name -> creature.v1.Creature.Kind.Filter
-	16, // 17: map.v1.Terrain.Effect.ModifyCreatureMovementType.remove:type_name -> creature.v1.Creature.MovementType
-	16, // 18: map.v1.Terrain.Effect.ModifyCreatureMovementType.add:type_name -> creature.v1.Creature.MovementType
-	15, // 19: map.v1.Terrain.Effect.ModifyCreatureMorale.filter:type_name -> creature.v1.Creature.Kind.Filter
-	17, // 20: map.v1.Terrain.Effect.ModifyCreatureMorale.modification:type_name -> creature.v1.Creature.AttributeModification
-	15, // 21: map.v1.Terrain.Effect.ModifyCreatureLuck.filter:type_name -> creature.v1.Creature.Kind.Filter
-	17, // 22: map.v1.Terrain.Effect.ModifyCreatureLuck.modification:type_name -> creature.v1.Creature.AttributeModification
-	15, // 23: map.v1.Terrain.Effect.ModifyCreatureAttack.filter:type_name -> creature.v1.Creature.Kind.Filter
-	17, // 24: map.v1.Terrain.Effect.ModifyCreatureAttack.modification:type_name -> creature.v1.Creature.AttributeModification
-	15, // 25: map.v1.Terrain.Effect.ModifyCreatureDefence.filter:type_name -> creature.v1.Creature.Kind.Filter
-	17, // 26: map.v1.Terrain.Effect.ModifyCreatureDefence.modification:type_name -> creature.v1.Creature.AttributeModification
-	15, // 27: map.v1.Terrain.Effect.ModifyCreatureSpeed.filter:type_name -> creature.v1.Creature.Kind.Filter
-	17, // 28: map.v1.Terrain.Effect.ModifyCreatureSpeed.modification:type_name -> creature.v1.Creature.AttributeModification
-	29, // [29:29] is the sub-list for method output_type
-	29, // [29:29] is the sub-list for method input_type
-	29, // [29:29] is the sub-list for extension type_name
-	29, // [29:29] is the sub-list for extension extendee
-	0,  // [0:29] is the sub-list for field type_name
+	5,  // 0: map.v1.Terrain.tags:type_name -> map.v1.Terrain.TagsEntry
+	0,  // 1: map.v1.Terrain.can_pass_with:type_name -> map.v1.Terrain.MovementType
+	0,  // 2: map.v1.Terrain.can_stop_with:type_name -> map.v1.Terrain.MovementType
+	3,  // 3: map.v1.Terrain.effects:type_name -> map.v1.Terrain.Effect
+	4,  // 4: map.v1.Terrain.rendering_spec:type_name -> map.v1.Terrain.RenderingSpec
+	6,  // 5: map.v1.Terrain.Effect.modify_spell_level:type_name -> map.v1.Terrain.Effect.ModifySpellLevel
+	7,  // 6: map.v1.Terrain.Effect.prevent_spell_casting:type_name -> map.v1.Terrain.Effect.PreventSpellCasting
+	8,  // 7: map.v1.Terrain.Effect.disable_native_terrain_bonuses:type_name -> map.v1.Terrain.Effect.DisableNativeTerrainBonuses
+	9,  // 8: map.v1.Terrain.Effect.modify_creature_movement_type:type_name -> map.v1.Terrain.Effect.ModifyCreatureMovementType
+	10, // 9: map.v1.Terrain.Effect.modify_creature_morale:type_name -> map.v1.Terrain.Effect.ModifyCreatureMorale
+	11, // 10: map.v1.Terrain.Effect.modify_creature_luck:type_name -> map.v1.Terrain.Effect.ModifyCreatureLuck
+	12, // 11: map.v1.Terrain.Effect.modify_creature_attack:type_name -> map.v1.Terrain.Effect.ModifyCreatureAttack
+	13, // 12: map.v1.Terrain.Effect.modify_creature_defence:type_name -> map.v1.Terrain.Effect.ModifyCreatureDefence
+	14, // 13: map.v1.Terrain.Effect.modify_creature_speed:type_name -> map.v1.Terrain.Effect.ModifyCreatureSpeed
+	1,  // 14: map.v1.Terrain.RenderingSpec.rendering_type:type_name -> map.v1.Terrain.RenderingType
+	15, // 15: map.v1.Terrain.Effect.ModifySpellLevel.filter:type_name -> magic.v1.Spell.Filter
+	15, // 16: map.v1.Terrain.Effect.PreventSpellCasting.filter:type_name -> magic.v1.Spell.Filter
+	16, // 17: map.v1.Terrain.Effect.ModifyCreatureMovementType.filter:type_name -> creature.v1.Creature.Kind.Filter
+	17, // 18: map.v1.Terrain.Effect.ModifyCreatureMovementType.remove:type_name -> creature.v1.Creature.MovementType
+	17, // 19: map.v1.Terrain.Effect.ModifyCreatureMovementType.add:type_name -> creature.v1.Creature.MovementType
+	16, // 20: map.v1.Terrain.Effect.ModifyCreatureMorale.filter:type_name -> creature.v1.Creature.Kind.Filter
+	18, // 21: map.v1.Terrain.Effect.ModifyCreatureMorale.modification:type_name -> creature.v1.Creature.AttributeModification
+	16, // 22: map.v1.Terrain.Effect.ModifyCreatureLuck.filter:type_name -> creature.v1.Creature.Kind.Filter
+	18, // 23: map.v1.Terrain.Effect.ModifyCreatureLuck.modification:type_name -> creature.v1.Creature.AttributeModification
+	16, // 24: map.v1.Terrain.Effect.ModifyCreatureAttack.filter:type_name -> creature.v1.Creature.Kind.Filter
+	18, // 25: map.v1.Terrain.Effect.ModifyCreatureAttack.modification:type_name -> creature.v1.Creature.AttributeModification
+	16, // 26: map.v1.Terrain.Effect.ModifyCreatureDefence.filter:type_name -> creature.v1.Creature.Kind.Filter
+	18, // 27: map.v1.Terrain.Effect.ModifyCreatureDefence.modification:type_name -> creature.v1.Creature.AttributeModification
+	16, // 28: map.v1.Terrain.Effect.ModifyCreatureSpeed.filter:type_name -> creature.v1.Creature.Kind.Filter
+	18, // 29: map.v1.Terrain.Effect.ModifyCreatureSpeed.modification:type_name -> creature.v1.Creature.AttributeModification
+	30, // [30:30] is the sub-list for method output_type
+	30, // [30:30] is the sub-list for method input_type
+	30, // [30:30] is the sub-list for extension type_name
+	30, // [30:30] is the sub-list for extension extendee
+	0,  // [0:30] is the sub-list for field type_name
 }
 
 func init() { file_map_v1_terrain_proto_init() }
@@ -1123,14 +1128,14 @@ func file_map_v1_terrain_proto_init() {
 		(*Terrain_Effect_ModifyCreatureDefence_)(nil),
 		(*Terrain_Effect_ModifyCreatureSpeed_)(nil),
 	}
-	file_map_v1_terrain_proto_msgTypes[4].OneofWrappers = []any{}
+	file_map_v1_terrain_proto_msgTypes[5].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_map_v1_terrain_proto_rawDesc), len(file_map_v1_terrain_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

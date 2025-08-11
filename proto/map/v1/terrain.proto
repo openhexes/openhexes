@@ -95,7 +95,7 @@ message Terrain {
   }
 
   string id = 1;
-  repeated string tags = 2;
+  map<string, bool> tags = 2;
 
   uint32 movement_penalty = 3;
   repeated map.v1.Terrain.MovementType can_pass_with = 4;

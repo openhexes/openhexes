@@ -55,12 +55,30 @@ func (q *Queries) CreateRole(ctx context.Context, id string) error {
 	return err
 }
 
-const getAccount = `-- name: GetAccount :one
+const getAccountByEmail = `-- name: GetAccountByEmail :one
 select id, active, created_at, email, display_name, picture from accounts where email = $1
 `
 
-func (q *Queries) GetAccount(ctx context.Context, email string) (Account, error) {
-	row := q.db.QueryRow(ctx, getAccount, email)
+func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account, error) {
+	row := q.db.QueryRow(ctx, getAccountByEmail, email)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Active,
+		&i.CreatedAt,
+		&i.Email,
+		&i.DisplayName,
+		&i.Picture,
+	)
+	return i, err
+}
+
+const getAccountByID = `-- name: GetAccountByID :one
+select id, active, created_at, email, display_name, picture from accounts where id = $1
+`
+
+func (q *Queries) GetAccountByID(ctx context.Context, id uuid.UUID) (Account, error) {
+	row := q.db.QueryRow(ctx, getAccountByID, id)
 	var i Account
 	err := row.Scan(
 		&i.ID,
@@ -89,34 +107,10 @@ func (q *Queries) GrantRole(ctx context.Context, arg GrantRoleParams) error {
 	return err
 }
 
-const listAccountRoles = `-- name: ListAccountRoles :many
-select role_id from role_bindings where account_id = $1
-`
-
-func (q *Queries) ListAccountRoles(ctx context.Context, id uuid.UUID) ([]string, error) {
-	rows, err := q.db.Query(ctx, listAccountRoles, id)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []string
-	for rows.Next() {
-		var role_id string
-		if err := rows.Scan(&role_id); err != nil {
-			return nil, err
-		}
-		items = append(items, role_id)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listAccounts = `-- name: ListAccounts :many
 select id, active, created_at, email, display_name, picture from accounts 
 where (active = $1 or $1 is null)
-order by id
+order by email
 `
 
 func (q *Queries) ListAccounts(ctx context.Context, active pgtype.Bool) ([]Account, error) {
@@ -139,6 +133,39 @@ func (q *Queries) ListAccounts(ctx context.Context, active pgtype.Bool) ([]Accou
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listGrants = `-- name: ListGrants :many
+select role_id from role_bindings 
+where 
+    account_id = $1
+    and (role_id = any($2::varchar[]) or coalesce(cardinality($2), 0) = 0)
+order by role_id
+`
+
+type ListGrantsParams struct {
+	AccountID uuid.UUID
+	RoleIds   []string
+}
+
+func (q *Queries) ListGrants(ctx context.Context, arg ListGrantsParams) ([]string, error) {
+	rows, err := q.db.Query(ctx, listGrants, arg.AccountID, arg.RoleIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var role_id string
+		if err := rows.Scan(&role_id); err != nil {
+			return nil, err
+		}
+		items = append(items, role_id)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

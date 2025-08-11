@@ -58,9 +58,9 @@ export declare type Creature_Kind = Message<"creature.v1.Creature.Kind"> & {
   id: string;
 
   /**
-   * @generated from field: repeated string tags = 2;
+   * @generated from field: map<string, bool> tags = 2;
    */
-  tags: string[];
+  tags: { [key: string]: boolean };
 
   /**
    * @generated from field: repeated creature.v1.Creature.MovementType movement_types = 3;

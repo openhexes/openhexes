@@ -48,6 +48,15 @@ func (cfg *Config) setUpPostgres(ctx context.Context) error {
 		return fmt.Errorf("initializing database pool: %w", err)
 	}
 
+	if cfg.Test.Enabled {
+		if err := cfg.Postgres.CreateTemporaryDatabase(ctx); err != nil {
+			return fmt.Errorf("creating temporary database: %w", err)
+		}
+		if err := cfg.Postgres.ApplyDatabaseMigrations(ctx); err != nil {
+			return fmt.Errorf("applying database migrations: %w", err)
+		}
+	}
+
 	return nil
 }
 
@@ -156,9 +165,9 @@ func (cfg *Postgres) ApplyDatabaseMigrations(ctx context.Context) error {
 
 func (cfg *Postgres) SetUpEssentialData(ctx context.Context) error {
 	return cfg.Tx(ctx, func(tx pgx.Tx, q *db.Queries) error {
-		for _, role := range []string{"owner"} {
+		for _, role := range CoreRoles {
 			if err := q.CreateRole(ctx, role); err != nil {
-				return fmt.Errorf("creating role: %q: %w", role, err)
+				return fmt.Errorf("creating core role: %q: %w", role, err)
 			}
 		}
 		return nil

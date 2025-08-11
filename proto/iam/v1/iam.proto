@@ -15,20 +15,32 @@ message Account {
   }
 
   string id = 1;
-  Account.Meta meta = 2;
+  iam.v1.Account.Meta meta = 2;
   string email = 3;
+  repeated string roles = 4;
 }
 
 message ResolveAccountRequest {}
 
 message ResolveAccountResponse {
-  Account account = 1;
+  iam.v1.Account account = 1;
 }
 
-message ListAccountsRequest {}
+message ListAccountsRequest {
+  optional bool active = 1;
+}
 
 message ListAccountsResponse {
-  repeated Account accounts = 1;
+  repeated iam.v1.Account accounts = 1;
+}
+
+message GetAccountRequest {
+  string id = 1;
+  bool with_roles = 2;
+}
+
+message GetAccountResponse {
+  iam.v1.Account account = 1;
 }
 
 message UpdateAccountActivationRequest {
@@ -40,5 +52,6 @@ message UpdateAccountActivationResponse {}
 service IAMService {
   rpc ResolveAccount(ResolveAccountRequest) returns (ResolveAccountResponse);
   rpc ListAccounts(ListAccountsRequest) returns (stream ListAccountsResponse);
+  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse);
   rpc UpdateAccountActivation(UpdateAccountActivationRequest) returns (UpdateAccountActivationResponse);
 }

@@ -1,9 +1,12 @@
 -- name: ListAccounts :many
 select * from accounts 
 where (active = sqlc.narg('active') or sqlc.narg('active') is null)
-order by id;
+order by email;
 
--- name: GetAccount :one
+-- name: GetAccountByID :one
+select * from accounts where id = @id;
+
+-- name: GetAccountByEmail :one
 select * from accounts where email = @email;
 
 -- name: CreateAccount :one
@@ -28,8 +31,12 @@ on conflict do nothing;
 delete from role_bindings
 where role_id = @role_id and account_id = @account_id;
 
--- name: ListAccountRoles :many
-select role_id from role_bindings where account_id = @id;
+-- name: ListGrants :many
+select role_id from role_bindings 
+where 
+    account_id = @account_id
+    and (role_id = any(@role_ids::varchar[]) or coalesce(cardinality(@role_ids), 0) = 0)
+order by role_id;
 
 -- name: UpdateAccountActivation :exec
 update accounts set active = @active where id = any(@ids::uuid[]);
