@@ -24,7 +24,7 @@ export const LayerSelector: React.FC = () => {
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-6 text-xs">
+                <Button variant="ghost" size="icon" className="h-6 text-xs px-6">
                     <Layers size={4} />
                     {selectedDepth}
                 </Button>

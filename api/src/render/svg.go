@@ -343,7 +343,7 @@ const (
 	svgDefsHex = `<defs><path id="%s" d="%s"/><clipPath id="%s" clipPathUnits="userSpaceOnUse">%s</clipPath>%s</defs>`
 )
 
-func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index) string {
+func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index, layerDepth uint32) string {
 	var builder strings.Builder
 
 	minX, minY, segW, segH := segmentWorldRect(segment.Bounds)
@@ -377,9 +377,12 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index) string {
 
 	// Add neighboring tiles if we have an index and they would affect the rendering
 	if tileIndex != nil {
+		// Use the layer depth passed as parameter (works for both empty and populated segments)
+		segmentDepth := layerDepth
+		
 		for row := segment.Bounds.MinRow - 1; row <= segment.Bounds.MaxRow+1; row++ {
 			for col := segment.Bounds.MinColumn - 1; col <= segment.Bounds.MaxColumn+1; col++ {
-				coordKey := tiles.CoordinateKey{Depth: 0, Row: uint32(row), Column: uint32(col)}
+				coordKey := tiles.CoordinateKey{Depth: segmentDepth, Row: uint32(row), Column: uint32(col)}
 				if tile, exists := tileIndex[coordKey]; exists {
 					// Check if this tile is not already in our primary list
 					isAlreadyIncluded := false

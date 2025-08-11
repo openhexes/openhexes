@@ -347,7 +347,7 @@ func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, max
 	for _, row := range layer.SegmentRows {
 		for _, segment := range row.Segments {
 			segment.RenderingSpec = &mapv1.Segment_RenderingSpec{
-				Svg: render.GenerateSVGSegment(segment, layerIdx),
+				Svg: render.GenerateSVGSegment(segment, layerIdx, depth),
 			}
 		}
 	}

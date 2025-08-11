@@ -17,7 +17,7 @@ export const StatusBar: React.FC = () => {
     return (
         <div className="absolute left-0 bottom-0 w-screen p-1">
             <div className="w-full flex items-center gap-1">
-                <div className={cn(pillClassName, "p-0 px-1")}>
+                <div className={cn(pillClassName, "p-0")}>
                     <LayerSelector />
                 </div>
                 {selectedTile !== undefined && (
