@@ -53,32 +53,36 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
 
     const _applyPan = React.useCallback(
         (dx: number, dy: number) => {
+            // Early exit if no movement
+            if (dx === 0 && dy === 0) return
+            
             const rect = containerRef.current?.getBoundingClientRect() ?? {
                 height: window.innerHeight,
                 width: window.innerWidth,
             }
 
             // Accumulate movement deltas
-            setAccumulatedDelta((prev) => ({
-                x: prev.x + dx,
-                y: prev.y + dy,
-            }))
+            setAccumulatedDelta((prev) => {
+                const newAccumulated = {
+                    x: prev.x + dx,
+                    y: prev.y + dy,
+                }
 
-            setAccumulatedDelta((accumulated) => {
                 const effectiveRowHeight = rowHeight * zoom
                 const effectiveTileWidth = tileWidth * zoom
 
                 // Calculate how many tiles to move based on accumulated delta
-                const tilesToMoveX = Math.floor(Math.abs(accumulated.x) / effectiveTileWidth)
-                const tilesToMoveY = Math.floor(Math.abs(accumulated.y) / effectiveRowHeight)
+                const tilesToMoveX = Math.floor(Math.abs(newAccumulated.x) / effectiveTileWidth)
+                const tilesToMoveY = Math.floor(Math.abs(newAccumulated.y) / effectiveRowHeight)
 
+                // Early exit if no tile movement - don't trigger any state updates
                 if (tilesToMoveX === 0 && tilesToMoveY === 0) {
-                    return accumulated // No movement yet
+                    return newAccumulated // Return accumulated delta but don't update offset
                 }
 
                 // Calculate actual pixel movement (discrete tile steps)
-                const actualDx = tilesToMoveX * effectiveTileWidth * Math.sign(accumulated.x)
-                const actualDy = tilesToMoveY * effectiveRowHeight * Math.sign(accumulated.y)
+                const actualDx = tilesToMoveX * effectiveTileWidth * Math.sign(newAccumulated.x)
+                const actualDy = tilesToMoveY * effectiveRowHeight * Math.sign(newAccumulated.y)
 
                 // Apply the discrete pan movement
                 setOffset((prev) => {
@@ -90,7 +94,8 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
 
                     if (rect.width < scaledMapWidth) {
                         const maxX = scaledMapWidth - rect.width
-                        next.x = Math.max(-maxX, Math.min(0, prev.x + actualDx))
+                        const newX = Math.max(-maxX, Math.min(0, prev.x + actualDx))
+                        next.x = newX
                     } else {
                         // Center the map if it's smaller than viewport
                         next.x = (rect.width - scaledMapWidth) / 2
@@ -98,26 +103,29 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
 
                     if (rect.height < scaledMapHeight) {
                         const maxY = scaledMapHeight - rect.height
-                        next.y = Math.max(-maxY, Math.min(0, prev.y + actualDy))
+                        const newY = Math.max(-maxY, Math.min(0, prev.y + actualDy))
+                        next.y = newY
                     } else {
                         // Center the map if it's smaller than viewport
                         next.y = (rect.height - scaledMapHeight) / 2
                     }
 
+                    console.info("OFFSET CHANGED", { from: prev, to: next })
                     return next
                 })
 
                 // Reset accumulated delta, keeping remainder
                 return {
-                    x: accumulated.x - actualDx,
-                    y: accumulated.y - actualDy,
+                    x: newAccumulated.x - actualDx,
+                    y: newAccumulated.y - actualDy,
                 }
             })
         },
         [mapHeight, mapWidth, rowHeight, tileWidth, zoom],
     )
 
-    const _updateVisibility = React.useCallback(() => {
+    // Separate effect for visibility calculation - only runs when offset actually changes
+    React.useEffect(() => {
         const rect = containerRef.current?.getBoundingClientRect() ?? {
             height: window.innerHeight,
             width: window.innerWidth,
@@ -155,24 +163,23 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
 
                 if (intersects) {
                     visibleSegments.push(segment)
-
                     visibleTiles.push(...(segment.tiles || []))
                 }
             }
         }
 
+        console.info("UPDATED SEGMENTS")
         setVisibleSegments(visibleSegments)
         setVisibleTiles(visibleTiles)
-    }, [grid.segmentRows, offset.x, offset.y, rowHeight, tileWidth, zoom])
+    }, [offset.x, offset.y, rowHeight, tileWidth, zoom, grid.segmentRows])
 
     const flushPan = React.useCallback(() => {
         if (!panPending.current) return
         const { dx, dy } = panPending.current
         panPending.current = null
         _applyPan(dx, dy)
-        _updateVisibility()
         panRef.current = null
-    }, [_applyPan, _updateVisibility])
+    }, [_applyPan])
 
     const handlePan = React.useCallback(
         (dx: number, dy: number) => {
@@ -187,9 +194,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
         [flushPan],
     )
 
-    React.useEffect(() => {
-        _updateVisibility()
-    }, [height, width, zoom, _updateVisibility])
+    // Visibility is now handled by the effect above, no need for separate effect
 
     React.useEffect(() => handlePan(0, 0), [height, width, handlePan])
 
