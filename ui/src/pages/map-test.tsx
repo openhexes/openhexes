@@ -21,8 +21,8 @@ export const MapTest = () => {
         return <ProgressView progress={progress} />
     }
 
-    if (world?.layers[0] !== undefined) {
-        return <Map height={height} width={width} world={world} grid={world.layers[0]} />
+    if (world !== undefined) {
+        return <Map height={height} width={width} world={world} />
     }
 
     return <ErrorView error={error ?? new Error("unknown error")} />

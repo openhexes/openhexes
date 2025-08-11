@@ -1,13 +1,9 @@
+import { useNoOverscroll } from "@/hooks/use-no-overscroll"
 import { WorldContext } from "@/hooks/use-world"
 import * as segmentUtil from "@/lib/segments"
 import * as tileUtil from "@/lib/tiles"
 import { create } from "@bufbuild/protobuf"
-import {
-    type Grid,
-    type Tile as PTile,
-    type Segment,
-    Segment_BoundsSchema,
-} from "proto/ts/map/v1/tile_pb"
+import { type Tile as PTile, type Segment, Segment_BoundsSchema } from "proto/ts/map/v1/tile_pb"
 import type { World } from "proto/ts/world/v1/world_pb"
 import React from "react"
 
@@ -19,7 +15,6 @@ interface MapProps {
     height: number
     width: number
     world: World
-    grid: Grid
 }
 
 interface Position {
@@ -27,20 +22,14 @@ interface Position {
     y: number
 }
 
-export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => {
-    const { tileHeight = 0, tileWidth = 0 } = world.renderingSpec || {}
+export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
+    useNoOverscroll()
 
-    const rafRef = React.useRef<number | null>(null)
-    const pending = React.useRef<{ dx: number; dy: number } | null>(null)
+    const [selectedTile, setSelectedTile] = React.useState<PTile | undefined>(undefined)
+    const [selectedDepth, selectDepth] = React.useState<number>(0)
 
-    React.useEffect(() => {
-        // prevent "go back/forward" on overscroll
-        const prev = document.body.style.overscrollBehaviorX
-        document.body.style.overscrollBehaviorX = "none"
-        return () => {
-            document.body.style.overscrollBehaviorX = prev
-        }
-    }, [])
+    const panRef = React.useRef<number | null>(null)
+    const panPending = React.useRef<{ dx: number; dy: number } | null>(null)
 
     const containerRef = React.useRef<HTMLDivElement>(null)
     const [lastPosition, setLastPosition] = React.useState<Position | null>(null)
@@ -50,10 +39,12 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
     const [visibleSegments, setVisibleSegments] = React.useState<Segment[]>([])
     const [visibleTiles, setVisibleTiles] = React.useState<PTile[]>([])
 
+    const { tileHeight = 0, tileWidth = 0 } = world.renderingSpec || {}
+    const grid = world.layers[selectedDepth]
     const rowHeight = tileHeight * 0.75
     const mapWidth = Math.ceil(grid.totalColumns * tileWidth + tileWidth / 2) // extra half for shifted rows
     const mapHeight = Math.ceil((grid.totalRows - 1) * rowHeight + tileHeight) // = tileHeight*(0.75*rows + 0.25)
-    
+
     // Calculate zoom level for fit-to-screen
     const rect = containerRef.current?.getBoundingClientRect()
     const fitZoom = rect ? Math.min(rect.width / mapWidth, rect.height / mapHeight) : 0.5
@@ -164,29 +155,27 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
     )
 
     const flushPan = React.useCallback(() => {
-        if (!pending.current) return
-        const { dx, dy } = pending.current
-        pending.current = null
+        if (!panPending.current) return
+        const { dx, dy } = panPending.current
+        panPending.current = null
         _applyPan(dx, dy)
-        rafRef.current = null
+        panRef.current = null
     }, [_applyPan])
 
     const handlePan = React.useCallback(
         (dx: number, dy: number) => {
-            pending.current = {
-                dx: (pending.current?.dx ?? 0) + dx,
-                dy: (pending.current?.dy ?? 0) + dy,
+            panPending.current = {
+                dx: (panPending.current?.dx ?? 0) + dx,
+                dy: (panPending.current?.dy ?? 0) + dy,
             }
-            if (rafRef.current == null) {
-                rafRef.current = requestAnimationFrame(flushPan)
+            if (panRef.current == null) {
+                panRef.current = requestAnimationFrame(flushPan)
             }
         },
         [flushPan],
     )
 
     React.useEffect(() => handlePan(0, 0), [height, width, handlePan])
-
-    const [selectedTile, setSelectedTile] = React.useState<PTile | undefined>(undefined)
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         e.preventDefault()
@@ -224,33 +213,36 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
         setLastPosition(null)
     }
 
-    const handleClick = React.useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-        if (e.shiftKey) {
-            e.preventDefault()
-            e.stopPropagation()
-            
-            const newZoomState = !isZoomedOut
-            setIsZoomedOut(newZoomState)
-            
-            // When zooming out to fit, center the map
-            if (newZoomState) {
-                const rect = containerRef.current?.getBoundingClientRect()
-                if (rect) {
-                    const fitZoom = Math.min(rect.width / mapWidth, rect.height / mapHeight)
-                    const scaledMapWidth = mapWidth * fitZoom
-                    const scaledMapHeight = mapHeight * fitZoom
-                    
-                    setOffset({
-                        x: (rect.width - scaledMapWidth) / 2,
-                        y: (rect.height - scaledMapHeight) / 2
-                    })
+    const handleClick = React.useCallback(
+        (e: React.MouseEvent<HTMLDivElement>) => {
+            if (e.shiftKey) {
+                e.preventDefault()
+                e.stopPropagation()
+
+                const newZoomState = !isZoomedOut
+                setIsZoomedOut(newZoomState)
+
+                // When zooming out to fit, center the map
+                if (newZoomState) {
+                    const rect = containerRef.current?.getBoundingClientRect()
+                    if (rect) {
+                        const fitZoom = Math.min(rect.width / mapWidth, rect.height / mapHeight)
+                        const scaledMapWidth = mapWidth * fitZoom
+                        const scaledMapHeight = mapHeight * fitZoom
+
+                        setOffset({
+                            x: (rect.width - scaledMapWidth) / 2,
+                            y: (rect.height - scaledMapHeight) / 2,
+                        })
+                    }
+                } else {
+                    // Reset to normal position when zooming back in
+                    setOffset({ x: 0, y: 0 })
                 }
-            } else {
-                // Reset to normal position when zooming back in
-                setOffset({ x: 0, y: 0 })
             }
-        }
-    }, [isZoomedOut, mapWidth, mapHeight])
+        },
+        [isZoomedOut, mapWidth, mapHeight],
+    )
 
     const handleTileSelect = (tile?: PTile) => {
         if (tile?.key === selectedTile?.key) {
@@ -261,7 +253,15 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
     }
 
     return (
-        <WorldContext value={{ world: world, selectedTile, selectTile: handleTileSelect }}>
+        <WorldContext
+            value={{
+                world: world,
+                selectedDepth,
+                selectDepth,
+                selectedTile,
+                selectTile: handleTileSelect,
+            }}
+        >
             <div
                 ref={containerRef}
                 data-testid="map-container"
@@ -294,14 +294,15 @@ export const GridView: React.FC<MapProps> = ({ height, width, world, grid }) => 
                     ))}
 
                     {/* interactive tiles on top - only render when not zoomed out */}
-                    {!isZoomedOut && visibleTiles.map((tile) => (
-                        <TileView
-                            tile={tile}
-                            key={tile.key}
-                            height={tileHeight}
-                            width={tileWidth}
-                        />
-                    ))}
+                    {!isZoomedOut &&
+                        visibleTiles.map((tile) => (
+                            <TileView
+                                tile={tile}
+                                key={tile.key}
+                                height={tileHeight}
+                                width={tileWidth}
+                            />
+                        ))}
                 </div>
 
                 <StatusBar />

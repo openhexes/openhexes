@@ -149,30 +149,31 @@ func (x *Segment) GetRenderingSpec() *Segment_RenderingSpec {
 	return nil
 }
 
-type Grid struct {
+type Layer struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	SegmentRows   []*Segment_Row         `protobuf:"bytes,1,rep,name=segment_rows,json=segmentRows,proto3" json:"segment_rows,omitempty"`
-	TotalRows     uint32                 `protobuf:"varint,2,opt,name=total_rows,json=totalRows,proto3" json:"total_rows,omitempty"`
-	TotalColumns  uint32                 `protobuf:"varint,3,opt,name=total_columns,json=totalColumns,proto3" json:"total_columns,omitempty"`
-	Depth         uint32                 `protobuf:"varint,4,opt,name=depth,proto3" json:"depth,omitempty"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Depth         uint32                 `protobuf:"varint,2,opt,name=depth,proto3" json:"depth,omitempty"`
+	TotalRows     uint32                 `protobuf:"varint,3,opt,name=total_rows,json=totalRows,proto3" json:"total_rows,omitempty"`
+	TotalColumns  uint32                 `protobuf:"varint,4,opt,name=total_columns,json=totalColumns,proto3" json:"total_columns,omitempty"`
+	SegmentRows   []*Segment_Row         `protobuf:"bytes,5,rep,name=segment_rows,json=segmentRows,proto3" json:"segment_rows,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Grid) Reset() {
-	*x = Grid{}
+func (x *Layer) Reset() {
+	*x = Layer{}
 	mi := &file_map_v1_tile_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Grid) String() string {
+func (x *Layer) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Grid) ProtoMessage() {}
+func (*Layer) ProtoMessage() {}
 
-func (x *Grid) ProtoReflect() protoreflect.Message {
+func (x *Layer) ProtoReflect() protoreflect.Message {
 	mi := &file_map_v1_tile_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -184,37 +185,44 @@ func (x *Grid) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Grid.ProtoReflect.Descriptor instead.
-func (*Grid) Descriptor() ([]byte, []int) {
+// Deprecated: Use Layer.ProtoReflect.Descriptor instead.
+func (*Layer) Descriptor() ([]byte, []int) {
 	return file_map_v1_tile_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *Grid) GetSegmentRows() []*Segment_Row {
+func (x *Layer) GetName() string {
 	if x != nil {
-		return x.SegmentRows
+		return x.Name
 	}
-	return nil
+	return ""
 }
 
-func (x *Grid) GetTotalRows() uint32 {
+func (x *Layer) GetDepth() uint32 {
+	if x != nil {
+		return x.Depth
+	}
+	return 0
+}
+
+func (x *Layer) GetTotalRows() uint32 {
 	if x != nil {
 		return x.TotalRows
 	}
 	return 0
 }
 
-func (x *Grid) GetTotalColumns() uint32 {
+func (x *Layer) GetTotalColumns() uint32 {
 	if x != nil {
 		return x.TotalColumns
 	}
 	return 0
 }
 
-func (x *Grid) GetDepth() uint32 {
+func (x *Layer) GetSegmentRows() []*Segment_Row {
 	if x != nil {
-		return x.Depth
+		return x.SegmentRows
 	}
-	return 0
+	return nil
 }
 
 type Tile_Coordinate struct {
@@ -651,13 +659,14 @@ const file_map_v1_tile_proto_rawDesc = "" +
 	"\rRenderingSpec\x12\x10\n" +
 	"\x03svg\x18\x01 \x01(\tR\x03svg\x1a2\n" +
 	"\x03Row\x12+\n" +
-	"\bsegments\x18\x01 \x03(\v2\x0f.map.v1.SegmentR\bsegments\"\x98\x01\n" +
-	"\x04Grid\x126\n" +
-	"\fsegment_rows\x18\x01 \x03(\v2\x13.map.v1.Segment.RowR\vsegmentRows\x12\x1d\n" +
+	"\bsegments\x18\x01 \x03(\v2\x0f.map.v1.SegmentR\bsegments\"\xad\x01\n" +
+	"\x05Layer\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
+	"\x05depth\x18\x02 \x01(\rR\x05depth\x12\x1d\n" +
 	"\n" +
-	"total_rows\x18\x02 \x01(\rR\ttotalRows\x12#\n" +
-	"\rtotal_columns\x18\x03 \x01(\rR\ftotalColumns\x12\x14\n" +
-	"\x05depth\x18\x04 \x01(\rR\x05depthBy\n" +
+	"total_rows\x18\x03 \x01(\rR\ttotalRows\x12#\n" +
+	"\rtotal_columns\x18\x04 \x01(\rR\ftotalColumns\x126\n" +
+	"\fsegment_rows\x18\x05 \x03(\v2\x13.map.v1.Segment.RowR\vsegmentRowsBy\n" +
 	"\n" +
 	"com.map.v1B\tTileProtoP\x01Z'github.com/openhexes/proto/map/v1;mapv1\xa2\x02\x03MXX\xaa\x02\x06Map.V1\xca\x02\x06Map\\V1\xe2\x02\x12Map\\V1\\GPBMetadata\xea\x02\aMap::V1b\x06proto3"
 
@@ -677,7 +686,7 @@ var file_map_v1_tile_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_map_v1_tile_proto_goTypes = []any{
 	(*Tile)(nil),                  // 0: map.v1.Tile
 	(*Segment)(nil),               // 1: map.v1.Segment
-	(*Grid)(nil),                  // 2: map.v1.Grid
+	(*Layer)(nil),                 // 2: map.v1.Layer
 	(*Tile_Coordinate)(nil),       // 3: map.v1.Tile.Coordinate
 	(*Tile_Edge)(nil),             // 4: map.v1.Tile.Edge
 	(*Tile_Corner)(nil),           // 5: map.v1.Tile.Corner
@@ -697,7 +706,7 @@ var file_map_v1_tile_proto_depIdxs = []int32{
 	10, // 2: map.v1.Segment.bounds:type_name -> map.v1.Segment.Bounds
 	0,  // 3: map.v1.Segment.tiles:type_name -> map.v1.Tile
 	11, // 4: map.v1.Segment.rendering_spec:type_name -> map.v1.Segment.RenderingSpec
-	12, // 5: map.v1.Grid.segment_rows:type_name -> map.v1.Segment.Row
+	12, // 5: map.v1.Layer.segment_rows:type_name -> map.v1.Segment.Row
 	13, // 6: map.v1.Tile.Edge.direction:type_name -> map.v1.EdgeDirection
 	14, // 7: map.v1.Tile.Corner.direction:type_name -> map.v1.CornerDirection
 	7,  // 8: map.v1.Tile.Corner.edges:type_name -> map.v1.Tile.Corner.EdgesEntry

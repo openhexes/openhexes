@@ -4,7 +4,7 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import type { Message } from "@bufbuild/protobuf";
-import type { Grid } from "../../map/v1/tile_pb";
+import type { Layer } from "../../map/v1/tile_pb";
 import type { Terrain } from "../../map/v1/terrain_pb";
 import type { Spell } from "../../magic/v1/spell_pb";
 import type { Creature } from "../../creature/v1/creature_pb";
@@ -19,9 +19,9 @@ export declare const file_world_v1_world: GenFile;
  */
 export declare type World = Message<"world.v1.World"> & {
   /**
-   * @generated from field: repeated map.v1.Grid layers = 1;
+   * @generated from field: repeated map.v1.Layer layers = 1;
    */
-  layers: Grid[];
+  layers: Layer[];
 
   /**
    * @generated from field: world.v1.World.RenderingSpec rendering_spec = 2;

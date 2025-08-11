@@ -228,33 +228,38 @@ export declare type Segment_Row = Message<"map.v1.Segment.Row"> & {
 export declare const Segment_RowSchema: GenMessage<Segment_Row>;
 
 /**
- * @generated from message map.v1.Grid
+ * @generated from message map.v1.Layer
  */
-export declare type Grid = Message<"map.v1.Grid"> & {
+export declare type Layer = Message<"map.v1.Layer"> & {
   /**
-   * @generated from field: repeated map.v1.Segment.Row segment_rows = 1;
+   * @generated from field: string name = 1;
    */
-  segmentRows: Segment_Row[];
+  name: string;
 
   /**
-   * @generated from field: uint32 total_rows = 2;
+   * @generated from field: uint32 depth = 2;
+   */
+  depth: number;
+
+  /**
+   * @generated from field: uint32 total_rows = 3;
    */
   totalRows: number;
 
   /**
-   * @generated from field: uint32 total_columns = 3;
+   * @generated from field: uint32 total_columns = 4;
    */
   totalColumns: number;
 
   /**
-   * @generated from field: uint32 depth = 4;
+   * @generated from field: repeated map.v1.Segment.Row segment_rows = 5;
    */
-  depth: number;
+  segmentRows: Segment_Row[];
 };
 
 /**
- * Describes the message map.v1.Grid.
- * Use `create(GridSchema)` to create a new message.
+ * Describes the message map.v1.Layer.
+ * Use `create(LayerSchema)` to create a new message.
  */
-export declare const GridSchema: GenMessage<Grid>;
+export declare const LayerSchema: GenMessage<Layer>;
 

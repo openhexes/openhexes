@@ -145,13 +145,14 @@ func New(cfg *config.Config, auth *auth.Controller) *Service {
 	}
 }
 
-type layerResult struct {
-	segments    []*mapv1.Segment
-	segmentRows []*mapv1.Segment_Row
-	index       tiles.Index
-}
+func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, maxColumnsPerSegment uint32) *mapv1.Layer {
+	layer := &mapv1.Layer{
+		Depth:        depth,
+		TotalRows:    totalRows,
+		TotalColumns: totalColumns,
+		SegmentRows:  make([]*mapv1.Segment_Row, 0, totalRows/maxRowsPerSegment),
+	}
 
-func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, maxColumnsPerSegment uint32) *layerResult {
 	// Step 1: Generate terrain for this layer
 	terrainMap := generateRealisticTerrain(totalRows, totalColumns, depth)
 
@@ -323,7 +324,6 @@ func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, max
 	// Step 9: Arrange segments in a grid for this layer
 	gridRowLength := totalRows / maxRowsPerSegment
 	segmentsPerRow := totalColumns / maxColumnsPerSegment
-	segmentRows := make([]*mapv1.Segment_Row, 0, totalRows/maxRowsPerSegment)
 	gridRow := make([]*mapv1.Segment, 0, segmentsPerRow)
 	var rowStart *int32
 
@@ -333,7 +333,7 @@ func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, max
 			gridRow = make([]*mapv1.Segment, 0, gridRowLength)
 			gridRow = append(gridRow, segment)
 		} else if *rowStart != segment.Bounds.MinRow {
-			segmentRows = append(segmentRows, &mapv1.Segment_Row{Segments: gridRow})
+			layer.SegmentRows = append(layer.SegmentRows, &mapv1.Segment_Row{Segments: gridRow})
 			gridRow = make([]*mapv1.Segment, 0, gridRowLength)
 			gridRow = append(gridRow, segment)
 			rowStart = &segment.Bounds.MinRow
@@ -341,10 +341,10 @@ func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, max
 			gridRow = append(gridRow, segment)
 		}
 	}
-	segmentRows = append(segmentRows, &mapv1.Segment_Row{Segments: gridRow})
+	layer.SegmentRows = append(layer.SegmentRows, &mapv1.Segment_Row{Segments: gridRow})
 
 	// Step 10: Render SVG for all segments in this layer
-	for _, row := range segmentRows {
+	for _, row := range layer.SegmentRows {
 		for _, segment := range row.Segments {
 			segment.RenderingSpec = &mapv1.Segment_RenderingSpec{
 				Svg: render.GenerateSVGSegment(segment, layerIdx),
@@ -352,24 +352,11 @@ func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, max
 		}
 	}
 
-	return &layerResult{
-		segments:    segments,
-		segmentRows: segmentRows,
-		index:       layerIdx,
-	}
+	return layer
 }
 
-func sendWorld(stream *connect.ServerStream[gamev1.GetSampleWorldResponse], request *connect.Request[gamev1.GetSampleWorldRequest], layerSegmentRows [][]*mapv1.Segment_Row) error {
+func sendWorld(stream *connect.ServerStream[gamev1.GetSampleWorldResponse], request *connect.Request[gamev1.GetSampleWorldRequest], world *worldv1.World) error {
 	const defaultMaxChunkSizeBytes = 32 * 1024 // 32Kb
-
-	// grid dimensions
-	layers := make([]*mapv1.Grid, request.Msg.TotalLayers)
-	for i := uint32(0); i < request.Msg.TotalLayers; i++ {
-		layers[i] = &mapv1.Grid{
-			TotalRows:    request.Msg.TotalRows,
-			TotalColumns: request.Msg.TotalColumns,
-		}
-	}
 
 	dimensionsResponse := &gamev1.GetSampleWorldResponse{
 		World: &worldv1.World{
@@ -377,8 +364,16 @@ func sendWorld(stream *connect.ServerStream[gamev1.GetSampleWorldResponse], requ
 				TileHeight: config.TileHeight,
 				TileWidth:  config.TileWidth,
 			},
-			Layers: layers,
+			Layers: make([]*mapv1.Layer, 0, len(world.Layers)),
 		},
+	}
+	for _, layer := range world.Layers {
+		dimensionsResponse.World.Layers = append(dimensionsResponse.World.Layers, &mapv1.Layer{
+			Depth:        layer.Depth,
+			Name:         layer.Name,
+			TotalRows:    layer.TotalRows,
+			TotalColumns: layer.TotalColumns,
+		})
 	}
 	if err := stream.Send(dimensionsResponse); err != nil {
 		return err
@@ -408,32 +403,32 @@ func sendWorld(stream *connect.ServerStream[gamev1.GetSampleWorldResponse], requ
 	}
 
 	// tiles - send each layer separately
-	for depth := uint32(0); depth < request.Msg.TotalLayers; depth++ {
-		segmentRows := layerSegmentRows[depth]
-
-		grid := &mapv1.Grid{
+	for _, layer := range world.Layers {
+		chunk := &mapv1.Layer{
+			Depth:       layer.Depth,
 			SegmentRows: make([]*mapv1.Segment_Row, 0, 100),
 		}
-		for _, row := range segmentRows {
-			grid.SegmentRows = append(grid.SegmentRows, row)
-			if proto.Size(grid) >= defaultMaxChunkSizeBytes {
+		for _, row := range layer.SegmentRows {
+			chunk.SegmentRows = append(chunk.SegmentRows, row)
+			if proto.Size(chunk) >= defaultMaxChunkSizeBytes {
 				response := &gamev1.GetSampleWorldResponse{
 					World: &worldv1.World{
-						Layers: []*mapv1.Grid{grid},
+						Layers: []*mapv1.Layer{chunk},
 					},
 				}
 				if err := stream.Send(response); err != nil {
 					return err
 				}
-				grid = &mapv1.Grid{
+				chunk = &mapv1.Layer{
+					Depth:       layer.Depth,
 					SegmentRows: make([]*mapv1.Segment_Row, 0, 100),
 				}
 			}
 		}
-		if len(grid.SegmentRows) > 0 {
+		if len(chunk.SegmentRows) > 0 {
 			response := &gamev1.GetSampleWorldResponse{
 				World: &worldv1.World{
-					Layers: []*mapv1.Grid{grid},
+					Layers: []*mapv1.Layer{chunk},
 				},
 			}
 			if err := stream.Send(response); err != nil {
@@ -504,7 +499,9 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 
 	// Generate all layers in parallel
 	start := time.Now()
-	layerResults := make([]*layerResult, request.Msg.TotalLayers)
+	world := &worldv1.World{
+		Layers: make([]*mapv1.Layer, request.Msg.TotalLayers),
+	}
 
 	// Comment out progress reporting as requested
 	// Progress reporting will be made more suitable for parallelized generation later
@@ -516,18 +513,12 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 		wg.Add(1)
 		go func(d uint32) {
 			defer wg.Done()
-			layerResults[d] = generateLayer(d, request.Msg.TotalRows, request.Msg.TotalColumns, request.Msg.MaxRowsPerSegment, request.Msg.MaxColumnsPerSegment)
+			world.Layers[d] = generateLayer(d, request.Msg.TotalRows, request.Msg.TotalColumns, request.Msg.MaxRowsPerSegment, request.Msg.MaxColumnsPerSegment)
 		}(depth)
 	}
 
 	// Wait for all layers to complete
 	wg.Wait()
-
-	// Extract segment rows for sending
-	layerSegmentRows := make([][]*mapv1.Segment_Row, request.Msg.TotalLayers)
-	for i, result := range layerResults {
-		layerSegmentRows[i] = result.segmentRows
-	}
 
 	// Update stages after all work is done
 	stageGrid.Duration = durationpb.New(time.Since(start))
@@ -543,7 +534,7 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 	reporter.Update(1)
 
 	// Send the world to the client
-	return sendWorld(stream, request, layerSegmentRows)
+	return sendWorld(stream, request, world)
 }
 
 func BoundsInclude(b *mapv1.Segment_Bounds, t *mapv1.Tile, modifier int32) bool {

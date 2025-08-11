@@ -1,6 +1,6 @@
 import { create } from "@bufbuild/protobuf"
 import { GetSampleWorldRequestSchema } from "proto/ts/game/v1/game_pb"
-import { GridSchema, type Tile } from "proto/ts/map/v1/tile_pb"
+import { type Tile } from "proto/ts/map/v1/tile_pb"
 import type { Progress } from "proto/ts/progress/v1/progress_pb"
 import { type World, WorldSchema } from "proto/ts/world/v1/world_pb"
 import React from "react"
@@ -13,12 +13,16 @@ const sleep = async (ms: number) => {
 
 type S = {
     world: World
+    selectedDepth: number
+    selectDepth: (depth: number) => void
     selectedTile?: Tile
     selectTile: (tile: Tile) => void
 }
 
 export const WorldContext = React.createContext<S>({
     world: create(WorldSchema),
+    selectedDepth: 0,
+    selectDepth: () => null,
     selectTile: () => null,
 })
 
@@ -72,20 +76,12 @@ const buildWorld = async (
             world.creatureRegistry[k] = v
         }
 
-        for (const [idx, incoming] of response.world.layers.entries()) {
-            if (world.layers[idx] === undefined) {
-                world.layers[idx] = create(GridSchema)
-            }
-
-            const grid = world.layers[idx]
-            if (incoming.totalRows > 0) {
-                grid.totalRows = incoming.totalRows
-            }
-            if (incoming.totalColumns > 0) {
-                grid.totalColumns = incoming.totalColumns
-            }
-            if (incoming.segmentRows) {
-                grid.segmentRows.push(...incoming.segmentRows)
+        for (const chunk of response.world.layers) {
+            const layer = world.layers[chunk.depth]
+            if (layer === undefined) {
+                world.layers[chunk.depth] = chunk
+            } else {
+                layer.segmentRows.push(...chunk.segmentRows)
             }
         }
     }

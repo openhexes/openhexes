@@ -56,9 +56,10 @@ message Segment {
   map.v1.Segment.RenderingSpec rendering_spec = 3;
 }
 
-message Grid {
-  repeated map.v1.Segment.Row segment_rows = 1;
-  uint32 total_rows = 2;
-  uint32 total_columns = 3;
-  uint32 depth = 4;
+message Layer {
+  string name = 1;
+  uint32 depth = 2;
+  uint32 total_rows = 3;
+  uint32 total_columns = 4;
+  repeated map.v1.Segment.Row segment_rows = 5;
 }

@@ -26,7 +26,7 @@ const (
 
 type World struct {
 	state            protoimpl.MessageState   `protogen:"open.v1"`
-	Layers           []*v1.Grid               `protobuf:"bytes,1,rep,name=layers,proto3" json:"layers,omitempty"`
+	Layers           []*v1.Layer              `protobuf:"bytes,1,rep,name=layers,proto3" json:"layers,omitempty"`
 	RenderingSpec    *World_RenderingSpec     `protobuf:"bytes,2,opt,name=rendering_spec,json=renderingSpec,proto3" json:"rendering_spec,omitempty"`
 	TerrainRegistry  map[string]*v1.Terrain   `protobuf:"bytes,3,rep,name=terrain_registry,json=terrainRegistry,proto3" json:"terrain_registry,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	SpellRegistry    map[string]*v11.Spell    `protobuf:"bytes,4,rep,name=spell_registry,json=spellRegistry,proto3" json:"spell_registry,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
@@ -65,7 +65,7 @@ func (*World) Descriptor() ([]byte, []int) {
 	return file_world_v1_world_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *World) GetLayers() []*v1.Grid {
+func (x *World) GetLayers() []*v1.Layer {
 	if x != nil {
 		return x.Layers
 	}
@@ -158,9 +158,9 @@ var File_world_v1_world_proto protoreflect.FileDescriptor
 
 const file_world_v1_world_proto_rawDesc = "" +
 	"\n" +
-	"\x14world/v1/world.proto\x12\bworld.v1\x1a\x1acreature/v1/creature.proto\x1a\x14magic/v1/spell.proto\x1a\x14map/v1/terrain.proto\x1a\x11map/v1/tile.proto\"\xb8\x05\n" +
-	"\x05World\x12$\n" +
-	"\x06layers\x18\x01 \x03(\v2\f.map.v1.GridR\x06layers\x12D\n" +
+	"\x14world/v1/world.proto\x12\bworld.v1\x1a\x1acreature/v1/creature.proto\x1a\x14magic/v1/spell.proto\x1a\x14map/v1/terrain.proto\x1a\x11map/v1/tile.proto\"\xb9\x05\n" +
+	"\x05World\x12%\n" +
+	"\x06layers\x18\x01 \x03(\v2\r.map.v1.LayerR\x06layers\x12D\n" +
 	"\x0erendering_spec\x18\x02 \x01(\v2\x1d.world.v1.World.RenderingSpecR\rrenderingSpec\x12O\n" +
 	"\x10terrain_registry\x18\x03 \x03(\v2$.world.v1.World.TerrainRegistryEntryR\x0fterrainRegistry\x12I\n" +
 	"\x0espell_registry\x18\x04 \x03(\v2\".world.v1.World.SpellRegistryEntryR\rspellRegistry\x12R\n" +
@@ -201,13 +201,13 @@ var file_world_v1_world_proto_goTypes = []any{
 	nil,                         // 2: world.v1.World.TerrainRegistryEntry
 	nil,                         // 3: world.v1.World.SpellRegistryEntry
 	nil,                         // 4: world.v1.World.CreatureRegistryEntry
-	(*v1.Grid)(nil),             // 5: map.v1.Grid
+	(*v1.Layer)(nil),            // 5: map.v1.Layer
 	(*v1.Terrain)(nil),          // 6: map.v1.Terrain
 	(*v11.Spell)(nil),           // 7: magic.v1.Spell
 	(*v12.Creature)(nil),        // 8: creature.v1.Creature
 }
 var file_world_v1_world_proto_depIdxs = []int32{
-	5, // 0: world.v1.World.layers:type_name -> map.v1.Grid
+	5, // 0: world.v1.World.layers:type_name -> map.v1.Layer
 	1, // 1: world.v1.World.rendering_spec:type_name -> world.v1.World.RenderingSpec
 	2, // 2: world.v1.World.terrain_registry:type_name -> world.v1.World.TerrainRegistryEntry
 	3, // 3: world.v1.World.spell_registry:type_name -> world.v1.World.SpellRegistryEntry
