@@ -141,7 +141,6 @@ func (e *Env) GetSampleWorld(options *gamev1.GetSampleWorldRequest, opts ...Help
 			if int(chunk.Depth) >= len(world.Layers) {
 				world.Layers = append(world.Layers, chunk)
 			} else {
-				// Merge segment rows
 				world.Layers[chunk.Depth].SegmentRows = append(world.Layers[chunk.Depth].SegmentRows, chunk.SegmentRows...)
 			}
 		}
