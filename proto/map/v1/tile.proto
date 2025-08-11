@@ -45,6 +45,7 @@ message Segment {
 
   message RenderingSpec {
     string svg = 1;
+    string svg_lightweight = 2; // Simplified SVG for fullscreen view without edges, corners, and patterns
   }
 
   message Row {

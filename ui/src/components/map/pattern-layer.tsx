@@ -8,8 +8,14 @@ interface P {
     tileHeight: number
 }
 
-export const PatternLayer: React.FC<P> = ({ segment, tileHeight, tileWidth }) => {
-    const svgMarkup = segment.renderingSpec?.svg || ""
+interface PatternLayerProps extends P {
+    isZoomedOut?: boolean
+}
+
+export const PatternLayer: React.FC<PatternLayerProps> = ({ segment, tileHeight, tileWidth, isZoomedOut }) => {
+    const svgMarkup = isZoomedOut 
+        ? (segment.renderingSpec?.svgLightweight || segment.renderingSpec?.svg || "")
+        : (segment.renderingSpec?.svg || "")
     if (!svgMarkup) return null
 
     const { x, y } = segmentOriginWorldPx(segment, tileWidth, tileHeight)

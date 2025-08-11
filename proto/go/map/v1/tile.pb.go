@@ -518,10 +518,11 @@ func (x *Segment_Bounds) GetMaxColumn() int32 {
 }
 
 type Segment_RenderingSpec struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Svg           string                 `protobuf:"bytes,1,opt,name=svg,proto3" json:"svg,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Svg            string                 `protobuf:"bytes,1,opt,name=svg,proto3" json:"svg,omitempty"`
+	SvgLightweight string                 `protobuf:"bytes,2,opt,name=svg_lightweight,json=svgLightweight,proto3" json:"svg_lightweight,omitempty"` // Simplified SVG for fullscreen view without edges, corners, and patterns
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *Segment_RenderingSpec) Reset() {
@@ -557,6 +558,13 @@ func (*Segment_RenderingSpec) Descriptor() ([]byte, []int) {
 func (x *Segment_RenderingSpec) GetSvg() string {
 	if x != nil {
 		return x.Svg
+	}
+	return ""
+}
+
+func (x *Segment_RenderingSpec) GetSvgLightweight() string {
+	if x != nil {
+		return x.SvgLightweight
 	}
 	return ""
 }
@@ -644,7 +652,7 @@ const file_map_v1_tile_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\v2\x11.map.v1.Tile.EdgeR\x05value:\x028\x01\x1aO\n" +
 	"\fCornersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\x05R\x03key\x12)\n" +
-	"\x05value\x18\x02 \x01(\v2\x13.map.v1.Tile.CornerR\x05value:\x028\x01\"\xf4\x02\n" +
+	"\x05value\x18\x02 \x01(\v2\x13.map.v1.Tile.CornerR\x05value:\x028\x01\"\x9d\x03\n" +
 	"\aSegment\x12.\n" +
 	"\x06bounds\x18\x01 \x01(\v2\x16.map.v1.Segment.BoundsR\x06bounds\x12\"\n" +
 	"\x05tiles\x18\x02 \x03(\v2\f.map.v1.TileR\x05tiles\x12D\n" +
@@ -655,9 +663,10 @@ const file_map_v1_tile_proto_rawDesc = "" +
 	"\n" +
 	"min_column\x18\x03 \x01(\x05R\tminColumn\x12\x1d\n" +
 	"\n" +
-	"max_column\x18\x04 \x01(\x05R\tmaxColumn\x1a!\n" +
+	"max_column\x18\x04 \x01(\x05R\tmaxColumn\x1aJ\n" +
 	"\rRenderingSpec\x12\x10\n" +
-	"\x03svg\x18\x01 \x01(\tR\x03svg\x1a2\n" +
+	"\x03svg\x18\x01 \x01(\tR\x03svg\x12'\n" +
+	"\x0fsvg_lightweight\x18\x02 \x01(\tR\x0esvgLightweight\x1a2\n" +
 	"\x03Row\x12+\n" +
 	"\bsegments\x18\x01 \x03(\v2\x0f.map.v1.SegmentR\bsegments\"\xad\x01\n" +
 	"\x05Layer\x12\x12\n" +

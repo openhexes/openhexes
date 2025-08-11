@@ -290,6 +290,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
                             segment={segment}
                             tileHeight={tileHeight}
                             tileWidth={tileWidth}
+                            isZoomedOut={isZoomedOut}
                         />
                     ))}
 

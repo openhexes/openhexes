@@ -38,7 +38,7 @@ func main() {
 		zap.L().Error("creating server: %s", zap.Error(err))
 	} else {
 		if srvErr = srv.Init(); srvErr != nil {
-			zap.L().Error("initializing server: %s", zap.Error(srvErr))
+			zap.L().Error("initializing server", zap.Error(srvErr))
 			return
 		}
 		if srvErr = srv.Run(ctx); srvErr != nil {

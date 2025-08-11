@@ -203,6 +203,13 @@ export declare type Segment_RenderingSpec = Message<"map.v1.Segment.RenderingSpe
    * @generated from field: string svg = 1;
    */
   svg: string;
+
+  /**
+   * Simplified SVG for fullscreen view without edges, corners, and patterns
+   *
+   * @generated from field: string svg_lightweight = 2;
+   */
+  svgLightweight: string;
 };
 
 /**

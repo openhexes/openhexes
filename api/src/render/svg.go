@@ -469,3 +469,77 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index, layerDept
 
 	return builder.String()
 }
+
+func GenerateLightweightSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index, layerDepth uint32) string {
+	var builder strings.Builder
+
+	minX, minY, segW, segH := segmentWorldRect(segment.Bounds)
+	key := getSegmentKey(segment)
+
+	// SVG root
+	fmt.Fprintf(&builder, svgHeader, f64(segW), f64(segH), f64(minX), f64(minY), f64(segW), f64(segH))
+
+	// Build the clip path uses: one <use> for each tile that could be rendered in this segment
+	// This includes tiles with 1-tile overlap to eliminate seams
+	hexSymbolID := key + "-hex"
+	clipID := key + "-clip"
+
+	var uses strings.Builder
+	for row := segment.Bounds.MinRow - 1; row <= segment.Bounds.MaxRow+1; row++ {
+		for col := segment.Bounds.MinColumn - 1; col <= segment.Bounds.MaxColumn+1; col++ {
+			ox, oy := tileOriginWorld(uint32(row), uint32(col))
+			fmt.Fprintf(&uses, `<use href="#%s" x="%s" y="%s"/>`, hexSymbolID, f64(ox), f64(oy))
+		}
+	}
+
+	// Emit defs: hex symbol + union clip made from <use> items (no patterns for lightweight version)
+	fmt.Fprintf(&builder, `<defs><path id="%s" d="%s"/><clipPath id="%s" clipPathUnits="userSpaceOnUse">%s</clipPath></defs>`, hexSymbolID, hexagonPathD(), clipID, uses.String())
+
+	// Everything we draw is clipped to the union of the hexes in this segment
+	fmt.Fprintf(&builder, `<g clip-path="url(#%s)" shape-rendering="geometricPrecision">`, clipID)
+
+	// Collect all tiles to render (primary tiles + overlapping neighbors for seamless rendering)
+	tilesToRender := make([]*mapv1.Tile, 0, len(segment.Tiles))
+	tilesToRender = append(tilesToRender, segment.Tiles...)
+
+	// Add neighboring tiles if we have an index and they would affect the rendering
+	if tileIndex != nil {
+		// Use the layer depth passed as parameter (works for both empty and populated segments)
+		segmentDepth := layerDepth
+		
+		for row := segment.Bounds.MinRow - 1; row <= segment.Bounds.MaxRow+1; row++ {
+			for col := segment.Bounds.MinColumn - 1; col <= segment.Bounds.MaxColumn+1; col++ {
+				coordKey := tiles.CoordinateKey{Depth: segmentDepth, Row: uint32(row), Column: uint32(col)}
+				if tile, exists := tileIndex[coordKey]; exists {
+					// Check if this tile is not already in our primary list
+					isAlreadyIncluded := false
+					for _, primaryTile := range segment.Tiles {
+						if primaryTile.Coordinate.Row == uint32(row) && primaryTile.Coordinate.Column == uint32(col) {
+							isAlreadyIncluded = true
+							break
+						}
+					}
+					if !isAlreadyIncluded {
+						tilesToRender = append(tilesToRender, tile)
+					}
+				}
+			}
+		}
+	}
+
+	for _, tile := range tilesToRender {
+		// Only render terrain fill - no patterns, edges, or corners for lightweight version
+		outerVertices := hexagonVerticesWorld(tile.Coordinate.Row, tile.Coordinate.Column)
+		terrainPath := polygonPathData(outerVertices)
+		fmt.Fprintf(
+			&builder,
+			`<path d="%s" %s/>`,
+			terrainPath,
+			cssVarFill(terrainVarName("terrain", tile.TerrainId), "#78716c"),
+		)
+	}
+
+	builder.WriteString(`</g></svg>`)
+
+	return builder.String()
+}
