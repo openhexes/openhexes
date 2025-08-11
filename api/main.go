@@ -21,11 +21,11 @@ func main() {
 		log.Fatalf("loading config: %s", err)
 	}
 	if err = cfg.SetUp(ctx); err != nil {
-		zap.L().Fatal("failed to set up: %s", zap.Error(err))
+		zap.L().Fatal("failed to set up", zap.Error(err))
 	}
 	defer func() {
 		if err = cfg.TearDown(ctx); err != nil {
-			zap.L().Error("failed to tear down: %s", zap.Error(err))
+			zap.L().Error("failed to tear down", zap.Error(err))
 		}
 		if srvErr != nil {
 			os.Exit(1)
@@ -35,14 +35,14 @@ func main() {
 	var srv *server.Server
 	srv, srvErr = server.New(cfg, auth.NewController(cfg))
 	if srvErr != nil {
-		zap.L().Error("creating server: %s", zap.Error(err))
+		zap.L().Error("creating server", zap.Error(srvErr))
 	} else {
 		if srvErr = srv.Init(); srvErr != nil {
 			zap.L().Error("initializing server", zap.Error(srvErr))
 			return
 		}
 		if srvErr = srv.Run(ctx); srvErr != nil {
-			zap.L().Error("running server: %s", zap.Error(srvErr))
+			zap.L().Error("running server", zap.Error(srvErr))
 		}
 	}
 }
