@@ -137,19 +137,12 @@ func (e *Env) GetSampleWorld(options *gamev1.GetSampleWorldRequest, opts ...Help
 				world.TerrainRegistry[k] = v
 			}
 		}
-		if len(response.World.Layers) > 0 {
-			if len(world.Layers) == 0 {
-				world.Layers = make([]*mapv1.Grid, len(response.World.Layers))
-			}
-			for i, layer := range response.World.Layers {
-				if layer != nil {
-					if world.Layers[i] == nil {
-						world.Layers[i] = layer
-					} else {
-						// Merge segment rows
-						world.Layers[i].SegmentRows = append(world.Layers[i].SegmentRows, layer.SegmentRows...)
-					}
-				}
+		for _, chunk := range response.World.Layers {
+			if int(chunk.Depth) >= len(world.Layers) {
+				world.Layers = append(world.Layers, chunk)
+			} else {
+				// Merge segment rows
+				world.Layers[chunk.Depth].SegmentRows = append(world.Layers[chunk.Depth].SegmentRows, chunk.SegmentRows...)
 			}
 		}
 	}
