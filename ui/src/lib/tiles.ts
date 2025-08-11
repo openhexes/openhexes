@@ -11,7 +11,7 @@ export const boundsIntersect = (
     if (a.maxRow < b.minRow || a.minRow > b.maxRow) {
         return false
     }
-    if (a.maxColumn < b.minColumn || a.minRow > b.maxRow) {
+    if (a.maxColumn < b.minColumn || a.minColumn > b.maxColumn) {
         return false
     }
     return true

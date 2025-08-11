@@ -34,6 +34,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
     const containerRef = React.useRef<HTMLDivElement>(null)
     const [lastPosition, setLastPosition] = React.useState<Position | null>(null)
     const [offset, setOffset] = React.useState<Position>({ x: 0, y: 0 })
+    const [, setAccumulatedDelta] = React.useState<Position>({ x: 0, y: 0 })
     const [isZoomedOut, setIsZoomedOut] = React.useState<boolean>(false)
 
     const [visibleSegments, setVisibleSegments] = React.useState<Segment[]>([])
@@ -57,110 +58,121 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
                 width: window.innerWidth,
             }
 
-            setOffset((prev) => {
-                const next = { x: prev.x, y: prev.y }
+            // Accumulate movement deltas
+            setAccumulatedDelta((prev) => ({
+                x: prev.x + dx,
+                y: prev.y + dy,
+            }))
 
-                // Account for zoom when calculating pan bounds
-                const scaledMapWidth = mapWidth * zoom
-                const scaledMapHeight = mapHeight * zoom
+            setAccumulatedDelta((accumulated) => {
+                const effectiveRowHeight = rowHeight * zoom
+                const effectiveTileWidth = tileWidth * zoom
 
-                if (rect.width < scaledMapWidth) {
-                    const maxX = scaledMapWidth - rect.width
-                    next.x = Math.floor(Math.max(-maxX, Math.min(0, prev.x + dx)))
-                } else {
-                    // Center the map if it's smaller than viewport
-                    next.x = (rect.width - scaledMapWidth) / 2
+                // Calculate how many tiles to move based on accumulated delta
+                const tilesToMoveX = Math.floor(Math.abs(accumulated.x) / effectiveTileWidth)
+                const tilesToMoveY = Math.floor(Math.abs(accumulated.y) / effectiveRowHeight)
+
+                if (tilesToMoveX === 0 && tilesToMoveY === 0) {
+                    return accumulated // No movement yet
                 }
 
-                if (rect.height < scaledMapHeight) {
-                    const maxY = scaledMapHeight - rect.height
-                    next.y = Math.floor(Math.max(-maxY, Math.min(0, prev.y + dy)))
-                } else {
-                    // Center the map if it's smaller than viewport
-                    next.y = (rect.height - scaledMapHeight) / 2
-                }
+                // Calculate actual pixel movement (discrete tile steps)
+                const actualDx = tilesToMoveX * effectiveTileWidth * Math.sign(accumulated.x)
+                const actualDy = tilesToMoveY * effectiveRowHeight * Math.sign(accumulated.y)
 
-                return next
-            })
+                // Apply the discrete pan movement
+                setOffset((prev) => {
+                    const next = { x: prev.x, y: prev.y }
 
-            // Account for zoom when calculating visibility (more tiles visible when zoomed out)
-            const effectiveRowHeight = rowHeight * zoom
-            const effectiveTileWidth = tileWidth * zoom
-            const maxVisibleRows = Math.ceil(rect.height / effectiveRowHeight)
-            const maxVisibleColumns = Math.ceil(rect.width / effectiveTileWidth)
-            const skippedColumnCount = Math.ceil(-offset.x / effectiveTileWidth)
-            const skippedRowCount = Math.ceil(-offset.y / effectiveRowHeight)
-            const visibleBounds = create(Segment_BoundsSchema, {
-                minRow: skippedRowCount,
-                maxRow: skippedRowCount + maxVisibleRows,
-                minColumn: skippedColumnCount,
-                maxColumn: skippedColumnCount + maxVisibleColumns,
-            })
+                    // Account for zoom when calculating pan bounds
+                    const scaledMapWidth = mapWidth * zoom
+                    const scaledMapHeight = mapHeight * zoom
 
-            const rowStartingIndex =
-                Math.floor((skippedRowCount / grid.totalRows) * grid.segmentRows.length) - 1
-
-            const visibleSegments: Segment[] = []
-            const visibleTiles: PTile[] = []
-            for (let i = rowStartingIndex; i < grid.segmentRows.length; i++) {
-                const row = grid.segmentRows[i]
-                if (row === undefined) {
-                    continue
-                }
-
-                let segmentsFound = false
-                const columnStartingIndex =
-                    Math.floor((skippedColumnCount / grid.totalColumns) * row.segments.length) - 1
-
-                for (let j = columnStartingIndex; j < row.segments.length; j++) {
-                    const segment = row.segments[j]
-                    if (segment === undefined) {
-                        continue
-                    }
-
-                    if (tileUtil.boundsIntersect(segment.bounds, visibleBounds)) {
-                        visibleSegments.push(segment)
-                        visibleTiles.push(
-                            ...segment.tiles.filter((tile) =>
-                                tileUtil.boundsInclude(tile, visibleBounds, 2),
-                            ),
-                        )
-                        segmentsFound = true
+                    if (rect.width < scaledMapWidth) {
+                        const maxX = scaledMapWidth - rect.width
+                        next.x = Math.max(-maxX, Math.min(0, prev.x + actualDx))
                     } else {
-                        if (segmentsFound) {
-                            break
-                        }
+                        // Center the map if it's smaller than viewport
+                        next.x = (rect.width - scaledMapWidth) / 2
                     }
-                }
 
-                if (!segmentsFound && visibleTiles.length > 0) {
-                    break
+                    if (rect.height < scaledMapHeight) {
+                        const maxY = scaledMapHeight - rect.height
+                        next.y = Math.max(-maxY, Math.min(0, prev.y + actualDy))
+                    } else {
+                        // Center the map if it's smaller than viewport
+                        next.y = (rect.height - scaledMapHeight) / 2
+                    }
+
+                    return next
+                })
+
+                // Reset accumulated delta, keeping remainder
+                return {
+                    x: accumulated.x - actualDx,
+                    y: accumulated.y - actualDy,
+                }
+            })
+        },
+        [mapHeight, mapWidth, rowHeight, tileWidth, zoom],
+    )
+
+    const _updateVisibility = React.useCallback(() => {
+        const rect = containerRef.current?.getBoundingClientRect() ?? {
+            height: window.innerHeight,
+            width: window.innerWidth,
+        }
+
+        // Account for zoom when calculating visibility
+        const effectiveRowHeight = rowHeight * zoom
+        const effectiveTileWidth = tileWidth * zoom
+        // Small buffer for edge cases, but not too large
+        const maxVisibleRows = Math.ceil(rect.height / effectiveRowHeight) + 1
+        const maxVisibleColumns = Math.ceil(rect.width / effectiveTileWidth) + 1
+
+        // Simple tile-based calculation
+        const startColumn = Math.max(0, Math.floor(-offset.x / effectiveTileWidth))
+        const startRow = Math.max(0, Math.floor(-offset.y / effectiveRowHeight))
+
+        const visibleBounds = create(Segment_BoundsSchema, {
+            minRow: startRow,
+            maxRow: startRow + maxVisibleRows,
+            minColumn: startColumn,
+            maxColumn: startColumn + maxVisibleColumns,
+        })
+
+        const visibleSegments: Segment[] = []
+        const visibleTiles: PTile[] = []
+
+        // Check all segments and track visibility
+        for (const row of grid.segmentRows) {
+            if (!row) continue
+
+            for (const segment of row.segments) {
+                if (!segment || !segment.bounds) continue
+
+                const intersects = tileUtil.boundsIntersect(segment.bounds, visibleBounds)
+
+                if (intersects) {
+                    visibleSegments.push(segment)
+
+                    visibleTiles.push(...(segment.tiles || []))
                 }
             }
-            setVisibleSegments(visibleSegments)
-            setVisibleTiles(visibleTiles)
-        },
-        [
-            grid.segmentRows,
-            grid.totalColumns,
-            grid.totalRows,
-            mapHeight,
-            mapWidth,
-            offset.x,
-            offset.y,
-            rowHeight,
-            tileWidth,
-            zoom,
-        ],
-    )
+        }
+
+        setVisibleSegments(visibleSegments)
+        setVisibleTiles(visibleTiles)
+    }, [grid.segmentRows, offset.x, offset.y, rowHeight, tileWidth, zoom])
 
     const flushPan = React.useCallback(() => {
         if (!panPending.current) return
         const { dx, dy } = panPending.current
         panPending.current = null
         _applyPan(dx, dy)
+        _updateVisibility()
         panRef.current = null
-    }, [_applyPan])
+    }, [_applyPan, _updateVisibility])
 
     const handlePan = React.useCallback(
         (dx: number, dy: number) => {
@@ -174,6 +186,10 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
         },
         [flushPan],
     )
+
+    React.useEffect(() => {
+        _updateVisibility()
+    }, [height, width, zoom, _updateVisibility])
 
     React.useEffect(() => handlePan(0, 0), [height, width, handlePan])
 
@@ -213,6 +229,11 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
         setLastPosition(null)
     }
 
+    const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+        // Invert direction for natural trackpad scrolling
+        handlePan(-e.deltaX, -e.deltaY)
+    }
+
     const handleClick = React.useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
             if (e.shiftKey) {
@@ -221,6 +242,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
 
                 const newZoomState = !isZoomedOut
                 setIsZoomedOut(newZoomState)
+                setAccumulatedDelta({ x: 0, y: 0 }) // Reset accumulated movement
 
                 // When zooming out to fit, center the map
                 if (newZoomState) {
@@ -270,6 +292,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
                 onMouseMoveCapture={handleMouseMove}
                 onTouchMoveCapture={handleTouchMove}
                 onTouchEndCapture={handleTouchEnd}
+                onWheelCapture={handleWheel}
                 onClickCapture={handleClick}
                 onMouseLeave={() => handleTileSelect()}
             >
@@ -284,6 +307,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
                         willChange: "transform",
                     }}
                 >
+                    {/* Actual segments for rendering */}
                     {visibleSegments.map((segment) => (
                         <PatternLayer
                             key={segmentUtil.getKey(segment)}

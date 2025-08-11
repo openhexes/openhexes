@@ -29,7 +29,7 @@ export const LayerSelector: React.FC = () => {
                     {selectedDepth}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80 p-0">
+            <PopoverContent className="w-80 mx-1 p-0">
                 <Command>
                     <CommandInput placeholder="Search layers..." className="h-9" />
                     <CommandList>
@@ -43,6 +43,7 @@ export const LayerSelector: React.FC = () => {
                                         selectDepth(parseInt(v))
                                         setOpen(false)
                                     }}
+                                    disabled={selectedDepth === l.depth}
                                 >
                                     {l.name || l.depth}
                                 </CommandItem>

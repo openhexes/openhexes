@@ -40,6 +40,7 @@ const buildWorld = async (
     setProgress: React.Dispatch<React.SetStateAction<Progress | undefined>>,
 ): Promise<World> => {
     const request = create(GetSampleWorldRequestSchema, {
+        totalLayers: 5,
         totalRows,
         totalColumns,
         maxRowsPerSegment,

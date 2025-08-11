@@ -25,7 +25,7 @@ export const TileView: React.FC<TileProps> = ({ tile, height, width }) => {
     const className = cn(
         "tile",
         "select-none flex items-center justify-center absolute",
-        "text-s text-transparent bg-transparent hover:text-black opacity-20",
+        "text-s text-transparent bg-transparent hover:text-black opacity-55",
     )
 
     const style: React.CSSProperties = {
