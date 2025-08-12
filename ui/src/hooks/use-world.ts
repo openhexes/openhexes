@@ -19,6 +19,8 @@ type S = {
     selectTile: (tile: Tile) => void
     smoothPan?: boolean
     setSmoothPan?: (smooth: boolean) => void
+    useDetailedSvg?: boolean
+    setUseDetailedSvg?: (detailed: boolean) => void
 }
 
 export const WorldContext = React.createContext<S>({
@@ -56,7 +58,6 @@ const buildWorld = async (
     })
 
     for await (const response of GameClient.getSampleWorld(request, { timeoutMs: 60000 })) {
-        console.debug(response)
         if (response.progress) {
             setProgress(response.progress)
         }

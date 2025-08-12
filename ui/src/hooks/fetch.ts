@@ -18,7 +18,7 @@ const invalidArgumentMessage = "[invalid_argument]"
 
 const transport = createGrpcWebTransport({
     baseUrl: (import.meta.env.VITE_API_ADDRESS as string) || "http://localhost:6002",
-    useBinaryFormat: true, // switch to false to use JSON, bodies will be readable in devtools
+    useBinaryFormat: false, // switch to false to use JSON, bodies will be readable in devtools
     defaultTimeoutMs: 30000,
     fetch: (input, init) => fetch(input, { ...init, credentials: "include" }),
 })

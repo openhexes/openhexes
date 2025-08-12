@@ -220,20 +220,6 @@ export declare type Segment_RenderingSpec = Message<"map.v1.Segment.RenderingSpe
    * @generated from field: string svg_lightweight = 2;
    */
   svgLightweight: string;
-
-  /**
-   * Rasterized WebP image data for performance
-   *
-   * @generated from field: bytes webp = 3;
-   */
-  webp: Uint8Array;
-
-  /**
-   * Simplified WebP for fullscreen view
-   *
-   * @generated from field: bytes webp_lightweight = 4;
-   */
-  webpLightweight: Uint8Array;
 };
 
 /**

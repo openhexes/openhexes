@@ -8,6 +8,7 @@ import type { World } from "proto/ts/world/v1/world_pb"
 import React from "react"
 
 import { SegmentView } from "./segment-view"
+import { SelectedTileOverlay } from "./selected-tile-overlay"
 import { StatusBar } from "./status-bar"
 // REMOVED: import { TileView } from "./tile-view" - not needed, no individual interactive tiles
 
@@ -30,6 +31,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
     const [selectedTile, setSelectedTile] = React.useState<PTile | undefined>(undefined)
     const [selectedDepth, selectDepth] = React.useState<number>(0)
     const [smoothPan, setSmoothPan] = React.useState<boolean>(false)
+    const [useDetailedSvg, setUseDetailedSvg] = React.useState<boolean>(false)
 
     const panRef = React.useRef<number | null>(null)
     const panPending = React.useRef<{ dx: number; dy: number } | null>(null)
@@ -338,10 +340,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
     }
 
     const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-        e.preventDefault() // Prevent page bounce
-        e.stopPropagation() // Stop event bubbling
-
-        // Invert direction for natural trackpad scrolling
+        e.stopPropagation()
         handlePan(-e.deltaX, -e.deltaY)
     }
 
@@ -392,6 +391,8 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
                 selectTile: handleTileSelect,
                 smoothPan,
                 setSmoothPan,
+                useDetailedSvg,
+                setUseDetailedSvg,
             }}
         >
             <div
@@ -424,50 +425,17 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
                             segment={segment}
                             tileHeight={tileHeight}
                             tileWidth={tileWidth}
-                            isZoomedOut={isZoomedOut}
+                            useDetailedSvg={useDetailedSvg}
                         />
                     ))}
 
-                    {/* Tile highlight overlay */}
-                    {selectedTile &&
-                        (() => {
-                            const { row, column } = tileUtil.getCoordinates(selectedTile)
-                            const even = row % 2 === 0
-                            const left = column * tileWidth + (even ? 0 : tileWidth / 2)
-                            const top = row * rowHeight
-
-                            // Create hex border using SVG - the only way to get proper hex border
-                            const hexPoints = `
-                            ${tileWidth / 2},2 
-                            ${tileWidth - 2},${tileHeight / 4} 
-                            ${tileWidth - 2},${(3 * tileHeight) / 4} 
-                            ${tileWidth / 2},${tileHeight - 2} 
-                            2,${(3 * tileHeight) / 4} 
-                            2,${tileHeight / 4}
-                        `
-
-                            return (
-                                <div
-                                    className="absolute pointer-events-none"
-                                    style={{
-                                        left,
-                                        top,
-                                        width: tileWidth,
-                                        height: tileHeight,
-                                        zIndex: 999,
-                                    }}
-                                >
-                                    <svg width={tileWidth} height={tileHeight}>
-                                        <polygon
-                                            points={hexPoints}
-                                            fill="rgba(253, 224, 71, 0.3)"
-                                            stroke="#eab308"
-                                            strokeWidth="2"
-                                        />
-                                    </svg>
-                                </div>
-                            )
-                        })()}
+                    {/* Selected tile overlay */}
+                    <SelectedTileOverlay
+                        tile={selectedTile}
+                        tileWidth={tileWidth}
+                        tileHeight={tileHeight}
+                        rowHeight={rowHeight}
+                    />
                 </div>
 
                 <StatusBar />

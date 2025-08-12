@@ -28,6 +28,14 @@ func TestGameService(t *testing.T) {
 			e.Require.NotNil(layer, "layer %d should not be nil", i)
 			e.Require.Equal(request.TotalRows, layer.TotalRows, "layer %d should have 8 rows", i)
 			e.Require.Equal(request.TotalColumns, layer.TotalColumns, "layer %d should have 8 columns", i)
+
+			for _, r := range layer.SegmentRows {
+				for _, s := range r.Segments {
+					e.Require.NotEmpty(s.RenderingSpec)
+					e.Require.NotEmpty(s.RenderingSpec.Svg)
+					e.Require.NotEmpty(s.RenderingSpec.SvgLightweight)
+				}
+			}
 		}
 	})
 }

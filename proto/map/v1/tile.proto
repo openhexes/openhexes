@@ -47,8 +47,6 @@ message Segment {
   message RenderingSpec {
     string svg = 1;
     string svg_lightweight = 2; // Simplified SVG for fullscreen view without edges, corners, and patterns
-    bytes webp = 3; // Rasterized WebP image data for performance
-    bytes webp_lightweight = 4; // Simplified WebP for fullscreen view
   }
 
   message Row {

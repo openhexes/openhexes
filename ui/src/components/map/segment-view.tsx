@@ -2,21 +2,18 @@ import { segmentOriginWorldPx } from "@/lib/segments"
 import type { Segment } from "proto/ts/map/v1/tile_pb"
 import React from "react"
 
-interface P {
+interface SegmentViewProps {
     segment: Segment
     tileWidth: number
     tileHeight: number
+    useDetailedSvg?: boolean
 }
 
-interface PatternLayerProps extends P {
-    isZoomedOut?: boolean
-}
-
-export const SegmentView: React.FC<PatternLayerProps> = ({
+export const SegmentView: React.FC<SegmentViewProps> = ({
     segment,
     tileHeight,
     tileWidth,
-    isZoomedOut,
+    useDetailedSvg = false,
 }) => {
     const { x, y } = segmentOriginWorldPx(segment, tileWidth, tileHeight)
 
@@ -29,33 +26,24 @@ export const SegmentView: React.FC<PatternLayerProps> = ({
     const segWidth = (maxC - minC + 1) * tileWidth + tileWidth / 2 // Add padding for offset rows
     const segHeight = (maxR - minR + 1) * rowHeight + tileHeight * 0.25 // Add padding for tile height
 
-    // Use WebP data based on zoom level
+    // Use SVG data based on detail level preference
     const renderingSpec = segment.renderingSpec
-    const webpData = isZoomedOut ? renderingSpec?.webpLightweight : renderingSpec?.webp
+    const svgContent = useDetailedSvg ? renderingSpec?.svg : renderingSpec?.svgLightweight
 
-    // WebP should always be available - no fallbacks needed
-    if (!webpData || webpData.length === 0) {
-        console.error(`Missing WebP data for segment ${segment.bounds?.depth}.${minR}.${minC}`)
+    if (!svgContent) {
         return null
     }
 
-    // Convert bytes to blob URL (WebP format)
-    const blob = new Blob([new Uint8Array(webpData)], { type: "image/webp" })
-    const imageUrl = URL.createObjectURL(blob)
-
     return (
-        <img
-            src={imageUrl}
-            alt={`Segment ${segment.bounds?.depth}.${minR}.${minC}`}
+        <div
             className="absolute pointer-events-none"
             style={{
                 left: x,
                 top: y,
                 width: segWidth,
                 height: segHeight,
-                imageRendering: "pixelated", // Crisp scaling for pixel art
             }}
-            onLoad={() => URL.revokeObjectURL(imageUrl)} // Clean up blob URL
+            dangerouslySetInnerHTML={{ __html: svgContent }}
         />
     )
 }

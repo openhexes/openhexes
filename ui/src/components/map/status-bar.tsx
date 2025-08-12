@@ -6,7 +6,7 @@ import React from "react"
 import { LayerSelector } from "./layer-selector"
 
 export const StatusBar: React.FC = () => {
-    const { selectedTile, smoothPan, setSmoothPan } = useWorld()
+    const { selectedTile, smoothPan, setSmoothPan, useDetailedSvg, setUseDetailedSvg } = useWorld()
 
     const pillClassName = cn(
         "bg-black text-white rounded-sm",
@@ -25,6 +25,12 @@ export const StatusBar: React.FC = () => {
                     onClick={() => setSmoothPan?.(!smoothPan)}
                 >
                     {smoothPan ? "Smooth" : "Discrete"} Pan
+                </button>
+                <button
+                    className={cn(pillClassName, "cursor-pointer hover:opacity-100")}
+                    onClick={() => setUseDetailedSvg?.(!useDetailedSvg)}
+                >
+                    {useDetailedSvg ? "Detailed" : "Lightweight"} SVG
                 </button>
                 {selectedTile !== undefined && (
                     <>

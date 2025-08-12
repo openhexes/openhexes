@@ -58,3 +58,5 @@ Example sequence:
 Respect [Effective Go](https://go.dev/doc/effective_go).
 Don't leave obvious comments.
 Run `pnpm format` after editing code.
+
+- write tests instead of attempting to curl non-existing urls

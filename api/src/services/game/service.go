@@ -252,14 +252,6 @@ func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, max
 			if err != nil {
 				return nil, fmt.Errorf("generating SVG (lightweight) for segment: %s: %w", segment.Key, err)
 			}
-			segment.RenderingSpec.Webp, err = render.GenerateWebPSegment(segment, layerIdx, depth)
-			if err != nil {
-				return nil, fmt.Errorf("generating WebP for segment: %s: %w", segment.Key, err)
-			}
-			segment.RenderingSpec.WebpLightweight, err = render.GenerateLightweightWebPSegment(segment, layerIdx, depth)
-			if err != nil {
-				return nil, fmt.Errorf("generating WebP (lightweight) for segment %s: %w", segment.Key, err)
-			}
 		}
 	}
 
