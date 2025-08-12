@@ -1,4 +1,4 @@
-import { ErrorView } from "@/components/utils/error"
+import { ErrorView } from "@/components/utils/error-view"
 import { ProgressView } from "@/components/utils/progress-view"
 import { useFetchedWorld } from "@/hooks/use-world"
 import { useWindowSize } from "@uidotdev/usehooks"
@@ -27,18 +27,6 @@ export const MapTest = () => {
         optimalSegmentTiles, // maxRowsPerSegment
         optimalSegmentTiles, // maxColumnsPerSegment
     )
-
-    // Debug segment sizing
-    React.useEffect(() => {
-        if (width && height) {
-            console.info(
-                `Screen: ${width}x${height}, Optimal segment size: ${optimalSegmentTiles}x${optimalSegmentTiles} tiles`,
-            )
-            console.info(
-                `Target: ~9 segments visible, Previous: 16x20 (320 tiles/segment), New: ${optimalSegmentTiles}x${optimalSegmentTiles} (${optimalSegmentTiles * optimalSegmentTiles} tiles/segment)`,
-            )
-        }
-    }, [width, height, optimalSegmentTiles])
 
     if (!height || !width) {
         return null

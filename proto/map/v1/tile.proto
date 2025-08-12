@@ -47,15 +47,18 @@ message Segment {
   message RenderingSpec {
     string svg = 1;
     string svg_lightweight = 2; // Simplified SVG for fullscreen view without edges, corners, and patterns
+    bytes webp = 3; // Rasterized WebP image data for performance
+    bytes webp_lightweight = 4; // Simplified WebP for fullscreen view
   }
 
   message Row {
     repeated map.v1.Segment segments = 1;
   }
 
-  map.v1.Segment.Bounds bounds = 1;
-  repeated map.v1.Tile tiles = 2;
-  map.v1.Segment.RenderingSpec rendering_spec = 3;
+  string key = 1;
+  map.v1.Segment.Bounds bounds = 2;
+  repeated map.v1.Tile tiles = 3;
+  map.v1.Segment.RenderingSpec rendering_spec = 4;
 }
 
 message Layer {

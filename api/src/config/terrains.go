@@ -1,6 +1,10 @@
 package config
 
-import mapv1 "github.com/openhexes/proto/map/v1"
+import (
+	"fmt"
+
+	mapv1 "github.com/openhexes/proto/map/v1"
+)
 
 var (
 	defaultCanPassWith = []mapv1.Terrain_MovementType{
@@ -116,6 +120,9 @@ var (
 func ValidateRegistries() error {
 	for id, v := range TerrainRegistry {
 		v.Id = id
+		if v.RenderingSpec == nil {
+			return fmt.Errorf("terrain %q is invalid: missing rendering spec", id)
+		}
 	}
 	return nil
 }

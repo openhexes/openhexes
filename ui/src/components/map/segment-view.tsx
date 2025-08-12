@@ -12,8 +12,12 @@ interface PatternLayerProps extends P {
     isZoomedOut?: boolean
 }
 
-export const SegmentView: React.FC<PatternLayerProps> = ({ segment, tileHeight, tileWidth }) => {
-    // TESTING: Remove SVGs completely, just show labels + borders to test panning performance
+export const SegmentView: React.FC<PatternLayerProps> = ({
+    segment,
+    tileHeight,
+    tileWidth,
+    isZoomedOut,
+}) => {
     const { x, y } = segmentOriginWorldPx(segment, tileWidth, tileHeight)
 
     // Calculate segment dimensions
@@ -22,25 +26,36 @@ export const SegmentView: React.FC<PatternLayerProps> = ({ segment, tileHeight, 
     const minC = segment.bounds?.minColumn ?? 0
     const maxC = segment.bounds?.maxColumn ?? 0
     const rowHeight = 0.75 * tileHeight
-    const segWidth =
-        (maxC + 1) * tileWidth +
-        (maxR % 2 !== 0 ? tileWidth / 2 : 0) -
-        (minC * tileWidth + (minR % 2 !== 0 ? tileWidth / 2 : 0))
-    const segHeight = maxR * rowHeight + tileHeight - minR * rowHeight
+    const segWidth = (maxC - minC + 1) * tileWidth + tileWidth / 2 // Add padding for offset rows
+    const segHeight = (maxR - minR + 1) * rowHeight + tileHeight * 0.25 // Add padding for tile height
+
+    // Use WebP data based on zoom level
+    const renderingSpec = segment.renderingSpec
+    const webpData = isZoomedOut ? renderingSpec?.webpLightweight : renderingSpec?.webp
+
+    // WebP should always be available - no fallbacks needed
+    if (!webpData || webpData.length === 0) {
+        console.error(`Missing WebP data for segment ${segment.bounds?.depth}.${minR}.${minC}`)
+        return null
+    }
+
+    // Convert bytes to blob URL (WebP format)
+    const blob = new Blob([new Uint8Array(webpData)], { type: "image/webp" })
+    const imageUrl = URL.createObjectURL(blob)
 
     return (
-        <div
-            className="absolute pointer-events-none border-2 border-lime-500 bg-lime-100 flex items-center justify-center font-mono"
+        <img
+            src={imageUrl}
+            alt={`Segment ${segment.bounds?.depth}.${minR}.${minC}`}
+            className="absolute pointer-events-none"
             style={{
                 left: x,
                 top: y,
                 width: segWidth,
                 height: segHeight,
-                fontSize: "24px",
-                color: "var(--color-lime-700)",
+                imageRendering: "pixelated", // Crisp scaling for pixel art
             }}
-        >
-            {segment.bounds?.depth}.{minR}.{minC}
-        </div>
+            onLoad={() => URL.revokeObjectURL(imageUrl)} // Clean up blob URL
+        />
     )
 }

@@ -14,25 +14,44 @@ import (
 const snapScale = 2000.0 // 1/2000 px grid
 const wedgeRatio = 0.9
 
+var (
+	terrainFillColors = map[mapv1.Terrain_RenderingType]string{
+		mapv1.Terrain_RENDERING_TYPE_ABYSS:        "#000000",
+		mapv1.Terrain_RENDERING_TYPE_WATER:        "#2e4255",
+		mapv1.Terrain_RENDERING_TYPE_GRASS:        "#4f7253",
+		mapv1.Terrain_RENDERING_TYPE_HIGHLANDS:    "#507747",
+		mapv1.Terrain_RENDERING_TYPE_DIRT:         "#605a42",
+		mapv1.Terrain_RENDERING_TYPE_ASH:          "#2e2e2e",
+		mapv1.Terrain_RENDERING_TYPE_SUBTERRANEAN: "#0a0a0a",
+		mapv1.Terrain_RENDERING_TYPE_ROUGH:        "#3d3333",
+		mapv1.Terrain_RENDERING_TYPE_WASTELAND:    "#a78d45",
+		mapv1.Terrain_RENDERING_TYPE_SAND:         "#c9ae73",
+		mapv1.Terrain_RENDERING_TYPE_SNOW:         "#c6d2d4",
+		mapv1.Terrain_RENDERING_TYPE_SWAMP:        "#468e6e",
+	}
+
+	terrainAccentColors = map[mapv1.Terrain_RenderingType]string{
+		mapv1.Terrain_RENDERING_TYPE_ABYSS:        "#000000",
+		mapv1.Terrain_RENDERING_TYPE_WATER:        "#324a62",
+		mapv1.Terrain_RENDERING_TYPE_GRASS:        "#3f6543",
+		mapv1.Terrain_RENDERING_TYPE_HIGHLANDS:    "#47684b",
+		mapv1.Terrain_RENDERING_TYPE_DIRT:         "#55503c",
+		mapv1.Terrain_RENDERING_TYPE_ASH:          "#272727",
+		mapv1.Terrain_RENDERING_TYPE_SUBTERRANEAN: "#171717",
+		mapv1.Terrain_RENDERING_TYPE_ROUGH:        "#2d2727",
+		mapv1.Terrain_RENDERING_TYPE_WASTELAND:    "#9e8644",
+		mapv1.Terrain_RENDERING_TYPE_SAND:         "#bca36d",
+		mapv1.Terrain_RENDERING_TYPE_SNOW:         "#bec8ca",
+		mapv1.Terrain_RENDERING_TYPE_SWAMP:        "#5d9f81",
+	}
+)
+
 func snap(v float64) float64 {
 	return math.Round(v*snapScale) / snapScale
 }
 
 func f64(v float64) string {
 	return strconv.FormatFloat(snap(v), 'f', -1, 64)
-}
-
-// cssVarFill returns an SVG fill attribute string with a CSS variable
-// name and a hardcoded fallback value (CSS variable syntax supports fallbacks).
-func cssVarFill(varName, fallback string) string {
-	return fmt.Sprintf(`fill="var(--%s, %s)"`, varName, fallback)
-}
-
-// terrainVarName converts a terrain ID (like "core/terrain/water") to a
-// CSS variable name (like "terrain-core-terrain-water-fill").
-func terrainVarName(prefix, terrainID string) string {
-	safeID := strings.ToLower(strings.ReplaceAll(terrainID, "/", "-"))
-	return fmt.Sprintf("%s-%s-fill", prefix, safeID)
 }
 
 // hexagonVerticesWorld returns the outer vertices of a pointy-top hexagon
@@ -343,7 +362,7 @@ const (
 	svgDefsHex = `<defs><path id="%s" d="%s"/><clipPath id="%s" clipPathUnits="userSpaceOnUse">%s</clipPath>%s</defs>`
 )
 
-func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index, layerDepth uint32) string {
+func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index, layerDepth uint32) (string, error) {
 	var builder strings.Builder
 
 	minX, minY, segW, segH := segmentWorldRect(segment.Bounds)
@@ -358,8 +377,17 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index, layerDept
 	clipID := key + "-clip"
 
 	var uses strings.Builder
-	for row := segment.Bounds.MinRow - 1; row <= segment.Bounds.MaxRow+1; row++ {
-		for col := segment.Bounds.MinColumn - 1; col <= segment.Bounds.MaxColumn+1; col++ {
+	startRow := segment.Bounds.MinRow - 1
+	if startRow < 0 {
+		startRow = 0
+	}
+	startCol := segment.Bounds.MinColumn - 1
+	if startCol < 0 {
+		startCol = 0
+	}
+
+	for row := startRow; row <= segment.Bounds.MaxRow+1; row++ {
+		for col := startCol; col <= segment.Bounds.MaxColumn+1; col++ {
 			ox, oy := tileOriginWorld(uint32(row), uint32(col))
 			fmt.Fprintf(&uses, `<use href="#%s" x="%s" y="%s"/>`, hexSymbolID, f64(ox), f64(oy))
 		}
@@ -379,7 +407,7 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index, layerDept
 	if tileIndex != nil {
 		// Use the layer depth passed as parameter (works for both empty and populated segments)
 		segmentDepth := layerDepth
-		
+
 		for row := segment.Bounds.MinRow - 1; row <= segment.Bounds.MaxRow+1; row++ {
 			for col := segment.Bounds.MinColumn - 1; col <= segment.Bounds.MaxColumn+1; col++ {
 				coordKey := tiles.CoordinateKey{Depth: segmentDepth, Row: uint32(row), Column: uint32(col)}
@@ -401,6 +429,11 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index, layerDept
 	}
 
 	for _, tile := range tilesToRender {
+		terrain, ok := config.TerrainRegistry[tile.TerrainId]
+		if !ok {
+			return "", fmt.Errorf("tile %s is invalid: terrain not registered: %q", tile.Key, tile.TerrainId)
+		}
+
 		// 1. Terrain fill
 		outerVertices := hexagonVerticesWorld(tile.Coordinate.Row, tile.Coordinate.Column)
 		terrainPath := polygonPathData(outerVertices)
@@ -408,7 +441,7 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index, layerDept
 			&builder,
 			`<path d="%s" %s/>`,
 			terrainPath,
-			cssVarFill(terrainVarName("terrain", tile.TerrainId), "#78716c"),
+			terrainFillColors[terrain.RenderingSpec.RenderingType],
 		)
 
 		// 1.5. Terrain pattern overlay
@@ -431,7 +464,7 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index, layerDept
 					&builder,
 					`<path d="%s" %s/>`,
 					wedgePath(outerVertices, innerVertices, segment[0], segment[1]),
-					cssVarFill(terrainVarName("edge", edge.NeighbourTerrainId), "rgba(255, 255, 255, 0.1)"),
+					terrainAccentColors[terrain.RenderingSpec.RenderingType],
 				)
 			}
 		}
@@ -440,18 +473,21 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index, layerDept
 		if len(tile.RenderingSpec.Corners) > 0 {
 			innerVertices := insetHexagonVertices(outerVertices, wedgeRatio)
 			for _, corner := range tile.RenderingSpec.Corners {
-				var terrain *mapv1.Terrain
+				var tt *mapv1.Terrain
 				for _, edge := range corner.Edges {
 					t, ok := config.TerrainRegistry[edge.NeighbourTerrainId]
 					if !ok {
-						continue
+						return "", fmt.Errorf(
+							"tile %q: corner %s: edge %s: invalid neighbour terrain: %q",
+							tile.Key, corner.Direction, edge.Direction, edge.NeighbourTerrainId,
+						)
 					}
-					if terrain == nil || t.RenderingSpec.RenderingType > terrain.RenderingSpec.RenderingType {
-						terrain = t
+					if tt == nil || t.RenderingSpec.RenderingType > tt.RenderingSpec.RenderingType {
+						tt = t
 					}
 				}
-				if terrain == nil {
-					continue
+				if tt == nil {
+					return "", fmt.Errorf("tile %q: corner %s: failed to detect terrain", tile.Key, corner.Direction)
 				}
 
 				vertexIndex := CornerVertexIndex(corner.Direction) // helper mapping dir → vertex index
@@ -459,7 +495,7 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index, layerDept
 					&builder,
 					`<path d="%s" %s/>`,
 					cornerPath(outerVertices, innerVertices, vertexIndex),
-					cssVarFill(terrainVarName("corner", terrain.Id), "rgba(255, 255, 255, 0.1)"),
+					terrainAccentColors[tt.RenderingSpec.RenderingType],
 				)
 			}
 		}
@@ -467,10 +503,10 @@ func GenerateSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index, layerDept
 
 	builder.WriteString(`</g></svg>`)
 
-	return builder.String()
+	return builder.String(), nil
 }
 
-func GenerateLightweightSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index, layerDepth uint32) string {
+func GenerateLightweightSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index, layerDepth uint32) (string, error) {
 	var builder strings.Builder
 
 	minX, minY, segW, segH := segmentWorldRect(segment.Bounds)
@@ -485,8 +521,17 @@ func GenerateLightweightSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index
 	clipID := key + "-clip"
 
 	var uses strings.Builder
-	for row := segment.Bounds.MinRow - 1; row <= segment.Bounds.MaxRow+1; row++ {
-		for col := segment.Bounds.MinColumn - 1; col <= segment.Bounds.MaxColumn+1; col++ {
+	startRow := segment.Bounds.MinRow - 1
+	if startRow < 0 {
+		startRow = 0
+	}
+	startCol := segment.Bounds.MinColumn - 1
+	if startCol < 0 {
+		startCol = 0
+	}
+
+	for row := startRow; row <= segment.Bounds.MaxRow+1; row++ {
+		for col := startCol; col <= segment.Bounds.MaxColumn+1; col++ {
 			ox, oy := tileOriginWorld(uint32(row), uint32(col))
 			fmt.Fprintf(&uses, `<use href="#%s" x="%s" y="%s"/>`, hexSymbolID, f64(ox), f64(oy))
 		}
@@ -506,7 +551,7 @@ func GenerateLightweightSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index
 	if tileIndex != nil {
 		// Use the layer depth passed as parameter (works for both empty and populated segments)
 		segmentDepth := layerDepth
-		
+
 		for row := segment.Bounds.MinRow - 1; row <= segment.Bounds.MaxRow+1; row++ {
 			for col := segment.Bounds.MinColumn - 1; col <= segment.Bounds.MaxColumn+1; col++ {
 				coordKey := tiles.CoordinateKey{Depth: segmentDepth, Row: uint32(row), Column: uint32(col)}
@@ -528,6 +573,11 @@ func GenerateLightweightSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index
 	}
 
 	for _, tile := range tilesToRender {
+		terrain, ok := config.TerrainRegistry[tile.TerrainId]
+		if !ok {
+			return "", fmt.Errorf("tile %s is invalid: terrain not registered: %q", tile.Key, tile.TerrainId)
+		}
+
 		// Only render terrain fill - no patterns, edges, or corners for lightweight version
 		outerVertices := hexagonVerticesWorld(tile.Coordinate.Row, tile.Coordinate.Column)
 		terrainPath := polygonPathData(outerVertices)
@@ -535,11 +585,11 @@ func GenerateLightweightSVGSegment(segment *mapv1.Segment, tileIndex tiles.Index
 			&builder,
 			`<path d="%s" %s/>`,
 			terrainPath,
-			cssVarFill(terrainVarName("terrain", tile.TerrainId), "#78716c"),
+			terrainFillColors[terrain.RenderingSpec.RenderingType],
 		)
 	}
 
 	builder.WriteString(`</g></svg>`)
 
-	return builder.String()
+	return builder.String(), nil
 }

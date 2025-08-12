@@ -143,17 +143,22 @@ export declare const Tile_RenderingSpecSchema: GenMessage<Tile_RenderingSpec>;
  */
 export declare type Segment = Message<"map.v1.Segment"> & {
   /**
-   * @generated from field: map.v1.Segment.Bounds bounds = 1;
+   * @generated from field: string key = 1;
+   */
+  key: string;
+
+  /**
+   * @generated from field: map.v1.Segment.Bounds bounds = 2;
    */
   bounds?: Segment_Bounds;
 
   /**
-   * @generated from field: repeated map.v1.Tile tiles = 2;
+   * @generated from field: repeated map.v1.Tile tiles = 3;
    */
   tiles: Tile[];
 
   /**
-   * @generated from field: map.v1.Segment.RenderingSpec rendering_spec = 3;
+   * @generated from field: map.v1.Segment.RenderingSpec rendering_spec = 4;
    */
   renderingSpec?: Segment_RenderingSpec;
 };
@@ -215,6 +220,20 @@ export declare type Segment_RenderingSpec = Message<"map.v1.Segment.RenderingSpe
    * @generated from field: string svg_lightweight = 2;
    */
   svgLightweight: string;
+
+  /**
+   * Rasterized WebP image data for performance
+   *
+   * @generated from field: bytes webp = 3;
+   */
+  webp: Uint8Array;
+
+  /**
+   * Simplified WebP for fullscreen view
+   *
+   * @generated from field: bytes webp_lightweight = 4;
+   */
+  webpLightweight: Uint8Array;
 };
 
 /**

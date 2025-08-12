@@ -2,6 +2,7 @@ package game
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -35,7 +36,7 @@ func New(cfg *config.Config, auth *auth.Controller) *Service {
 	}
 }
 
-func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, maxColumnsPerSegment, totalLayers uint32) *mapv1.Layer {
+func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, maxColumnsPerSegment, totalLayers uint32) (*mapv1.Layer, error) {
 	layer := &mapv1.Layer{
 		Depth:        depth,
 		TotalRows:    totalRows,
@@ -182,6 +183,7 @@ func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, max
 			tilesCapacity := maxRowsPerSegment * maxColumnsPerSegment
 
 			segments = append(segments, &mapv1.Segment{
+				Key:   fmt.Sprintf("%d.%d.%d", depth, rowStart, columnStart),
 				Tiles: make([]*mapv1.Tile, 0, tilesCapacity),
 				Bounds: &mapv1.Segment_Bounds{
 					Depth:     depth,
@@ -212,7 +214,6 @@ func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, max
 			tile := layerIdx[k]
 
 			segment.Tiles = append(segment.Tiles, tile)
-
 		}
 	}
 
@@ -241,14 +242,28 @@ func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, max
 	// Step 10: Render SVG for all segments in this layer
 	for _, row := range layer.SegmentRows {
 		for _, segment := range row.Segments {
-			segment.RenderingSpec = &mapv1.Segment_RenderingSpec{
-				Svg:            render.GenerateSVGSegment(segment, layerIdx, depth),
-				SvgLightweight: render.GenerateLightweightSVGSegment(segment, layerIdx, depth),
+			segment.RenderingSpec = &mapv1.Segment_RenderingSpec{}
+			var err error
+			segment.RenderingSpec.Svg, err = render.GenerateSVGSegment(segment, layerIdx, depth)
+			if err != nil {
+				return nil, fmt.Errorf("generating SVG for segment: %s: %w", segment.Key, err)
+			}
+			segment.RenderingSpec.SvgLightweight, err = render.GenerateLightweightSVGSegment(segment, layerIdx, depth)
+			if err != nil {
+				return nil, fmt.Errorf("generating SVG (lightweight) for segment: %s: %w", segment.Key, err)
+			}
+			segment.RenderingSpec.Webp, err = render.GenerateWebPSegment(segment, layerIdx, depth)
+			if err != nil {
+				return nil, fmt.Errorf("generating WebP for segment: %s: %w", segment.Key, err)
+			}
+			segment.RenderingSpec.WebpLightweight, err = render.GenerateLightweightWebPSegment(segment, layerIdx, depth)
+			if err != nil {
+				return nil, fmt.Errorf("generating WebP (lightweight) for segment %s: %w", segment.Key, err)
 			}
 		}
 	}
 
-	return layer
+	return layer, nil
 }
 
 func sendWorld(stream *connect.ServerStream[gamev1.GetSampleWorldResponse], request *connect.Request[gamev1.GetSampleWorldRequest], world *worldv1.World) error {
@@ -403,18 +418,34 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 	// Progress reporting will be made more suitable for parallelized generation later
 
 	var wg sync.WaitGroup
+	errChan := make(chan error, request.Msg.TotalLayers)
 
 	// Spawn one goroutine per layer, each handling the complete pipeline
 	for depth := uint32(0); depth < request.Msg.TotalLayers; depth++ {
 		wg.Add(1)
 		go func(d uint32) {
 			defer wg.Done()
-			world.Layers[d] = generateLayer(d, request.Msg.TotalRows, request.Msg.TotalColumns, request.Msg.MaxRowsPerSegment, request.Msg.MaxColumnsPerSegment, request.Msg.TotalLayers)
+			layer, err := generateLayer(d, request.Msg.TotalRows, request.Msg.TotalColumns, request.Msg.MaxRowsPerSegment, request.Msg.MaxColumnsPerSegment, request.Msg.TotalLayers)
+			if err != nil {
+				errChan <- fmt.Errorf("[depth=%d] %w", d, err)
+				return
+			}
+			world.Layers[d] = layer
 		}(depth)
 	}
 
 	// Wait for all layers to complete
 	wg.Wait()
+	close(errChan)
+
+	// Check for any errors
+	var err error
+	for e := range errChan {
+		err = errors.Join(err, e)
+	}
+	if err != nil {
+		return fmt.Errorf("generating layers: %w", err)
+	}
 
 	// Update stages after all work is done
 	stageGrid.Duration = durationpb.New(time.Since(start))

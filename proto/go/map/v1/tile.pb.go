@@ -91,9 +91,10 @@ func (x *Tile) GetRenderingSpec() *Tile_RenderingSpec {
 
 type Segment struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Bounds        *Segment_Bounds        `protobuf:"bytes,1,opt,name=bounds,proto3" json:"bounds,omitempty"`
-	Tiles         []*Tile                `protobuf:"bytes,2,rep,name=tiles,proto3" json:"tiles,omitempty"`
-	RenderingSpec *Segment_RenderingSpec `protobuf:"bytes,3,opt,name=rendering_spec,json=renderingSpec,proto3" json:"rendering_spec,omitempty"`
+	Key           string                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Bounds        *Segment_Bounds        `protobuf:"bytes,2,opt,name=bounds,proto3" json:"bounds,omitempty"`
+	Tiles         []*Tile                `protobuf:"bytes,3,rep,name=tiles,proto3" json:"tiles,omitempty"`
+	RenderingSpec *Segment_RenderingSpec `protobuf:"bytes,4,opt,name=rendering_spec,json=renderingSpec,proto3" json:"rendering_spec,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -126,6 +127,13 @@ func (x *Segment) ProtoReflect() protoreflect.Message {
 // Deprecated: Use Segment.ProtoReflect.Descriptor instead.
 func (*Segment) Descriptor() ([]byte, []int) {
 	return file_map_v1_tile_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Segment) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
 }
 
 func (x *Segment) GetBounds() *Segment_Bounds {
@@ -526,11 +534,13 @@ func (x *Segment_Bounds) GetMaxColumn() int32 {
 }
 
 type Segment_RenderingSpec struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Svg            string                 `protobuf:"bytes,1,opt,name=svg,proto3" json:"svg,omitempty"`
-	SvgLightweight string                 `protobuf:"bytes,2,opt,name=svg_lightweight,json=svgLightweight,proto3" json:"svg_lightweight,omitempty"` // Simplified SVG for fullscreen view without edges, corners, and patterns
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Svg             string                 `protobuf:"bytes,1,opt,name=svg,proto3" json:"svg,omitempty"`
+	SvgLightweight  string                 `protobuf:"bytes,2,opt,name=svg_lightweight,json=svgLightweight,proto3" json:"svg_lightweight,omitempty"`    // Simplified SVG for fullscreen view without edges, corners, and patterns
+	Webp            []byte                 `protobuf:"bytes,3,opt,name=webp,proto3" json:"webp,omitempty"`                                              // Rasterized WebP image data for performance
+	WebpLightweight []byte                 `protobuf:"bytes,4,opt,name=webp_lightweight,json=webpLightweight,proto3" json:"webp_lightweight,omitempty"` // Simplified WebP for fullscreen view
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *Segment_RenderingSpec) Reset() {
@@ -575,6 +585,20 @@ func (x *Segment_RenderingSpec) GetSvgLightweight() string {
 		return x.SvgLightweight
 	}
 	return ""
+}
+
+func (x *Segment_RenderingSpec) GetWebp() []byte {
+	if x != nil {
+		return x.Webp
+	}
+	return nil
+}
+
+func (x *Segment_RenderingSpec) GetWebpLightweight() []byte {
+	if x != nil {
+		return x.WebpLightweight
+	}
+	return nil
 }
 
 type Segment_Row struct {
@@ -660,11 +684,12 @@ const file_map_v1_tile_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\v2\x11.map.v1.Tile.EdgeR\x05value:\x028\x01\x1aO\n" +
 	"\fCornersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\x05R\x03key\x12)\n" +
-	"\x05value\x18\x02 \x01(\v2\x13.map.v1.Tile.CornerR\x05value:\x028\x01\"\xb4\x03\n" +
-	"\aSegment\x12.\n" +
-	"\x06bounds\x18\x01 \x01(\v2\x16.map.v1.Segment.BoundsR\x06bounds\x12\"\n" +
-	"\x05tiles\x18\x02 \x03(\v2\f.map.v1.TileR\x05tiles\x12D\n" +
-	"\x0erendering_spec\x18\x03 \x01(\v2\x1d.map.v1.Segment.RenderingSpecR\rrenderingSpec\x1a\x8e\x01\n" +
+	"\x05value\x18\x02 \x01(\v2\x13.map.v1.Tile.CornerR\x05value:\x028\x01\"\x86\x04\n" +
+	"\aSegment\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12.\n" +
+	"\x06bounds\x18\x02 \x01(\v2\x16.map.v1.Segment.BoundsR\x06bounds\x12\"\n" +
+	"\x05tiles\x18\x03 \x03(\v2\f.map.v1.TileR\x05tiles\x12D\n" +
+	"\x0erendering_spec\x18\x04 \x01(\v2\x1d.map.v1.Segment.RenderingSpecR\rrenderingSpec\x1a\x8e\x01\n" +
 	"\x06Bounds\x12\x14\n" +
 	"\x05depth\x18\x01 \x01(\rR\x05depth\x12\x17\n" +
 	"\amin_row\x18\x02 \x01(\x05R\x06minRow\x12\x17\n" +
@@ -672,10 +697,12 @@ const file_map_v1_tile_proto_rawDesc = "" +
 	"\n" +
 	"min_column\x18\x04 \x01(\x05R\tminColumn\x12\x1d\n" +
 	"\n" +
-	"max_column\x18\x05 \x01(\x05R\tmaxColumn\x1aJ\n" +
+	"max_column\x18\x05 \x01(\x05R\tmaxColumn\x1a\x89\x01\n" +
 	"\rRenderingSpec\x12\x10\n" +
 	"\x03svg\x18\x01 \x01(\tR\x03svg\x12'\n" +
-	"\x0fsvg_lightweight\x18\x02 \x01(\tR\x0esvgLightweight\x1a2\n" +
+	"\x0fsvg_lightweight\x18\x02 \x01(\tR\x0esvgLightweight\x12\x12\n" +
+	"\x04webp\x18\x03 \x01(\fR\x04webp\x12)\n" +
+	"\x10webp_lightweight\x18\x04 \x01(\fR\x0fwebpLightweight\x1a2\n" +
 	"\x03Row\x12+\n" +
 	"\bsegments\x18\x01 \x03(\v2\x0f.map.v1.SegmentR\bsegments\"\xad\x01\n" +
 	"\x05Layer\x12\x12\n" +

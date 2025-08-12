@@ -4,7 +4,7 @@ import Cookies from "js-cookie"
 import { Loader2 } from "lucide-react"
 import React from "react"
 
-import { ErrorView } from "./error"
+import { ErrorView } from "./error-view"
 import { LoginScreen } from "./login-screen"
 import { LogOutButton } from "./logout"
 
@@ -27,9 +27,8 @@ export const AuthWall: React.FC<React.PropsWithChildren> = ({ children }) => {
     }
 
     return (
-        <div className="flex items-center justify-center h-screen flex-col gap-4">
-            <ErrorView error={account.error ?? new Error("unknown error")} />
-            <LogOutButton />
-        </div>
+        <ErrorView error={account.error ?? new Error("unknown error")}>
+            <LogOutButton size="sm" />
+        </ErrorView>
     )
 }

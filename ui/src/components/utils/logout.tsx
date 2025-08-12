@@ -14,13 +14,15 @@ const logOut = (reload = true) => {
     }
 }
 
-export const LogOutButton: React.FC = () => {
+type P = Partial<React.ComponentProps<typeof Button>>
+
+export const LogOutButton: React.FC<P> = (props) => {
     if (Cookies.get(cookieName) === undefined) {
         return null
     }
 
     return (
-        <Button variant="outline" onClick={() => logOut()}>
+        <Button variant="outline" onClick={() => logOut()} {...props}>
             <LogOut />
             Log out
         </Button>

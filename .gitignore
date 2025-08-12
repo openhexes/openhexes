@@ -16,5 +16,6 @@ api/src/server/ui
 api/api
 api/api.upx
 
-# Temporary files
+# Claude
+claude-todo.md
 screenshots/

@@ -20,7 +20,7 @@ export const StatusBar: React.FC = () => {
                 <div className={cn(pillClassName, "p-0")}>
                     <LayerSelector />
                 </div>
-                <button 
+                <button
                     className={cn(pillClassName, "cursor-pointer hover:opacity-100")}
                     onClick={() => setSmoothPan?.(!smoothPan)}
                 >
