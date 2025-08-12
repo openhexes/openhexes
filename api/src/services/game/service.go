@@ -28,7 +28,6 @@ type Service struct {
 	auth *auth.Controller
 }
 
-
 func New(cfg *config.Config, auth *auth.Controller) *Service {
 	return &Service{
 		cfg:  cfg,
@@ -170,7 +169,7 @@ func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, max
 	}
 
 	// Step 7: Create segments and segment grid for this layer
-	segmentRowsCount := (totalRows + maxRowsPerSegment - 1) / maxRowsPerSegment // ceiling division
+	segmentRowsCount := (totalRows + maxRowsPerSegment - 1) / maxRowsPerSegment             // ceiling division
 	segmentColumnsCount := (totalColumns + maxColumnsPerSegment - 1) / maxColumnsPerSegment // ceiling division
 	segmentsLength := segmentRowsCount * segmentColumnsCount
 	segments := make([]*mapv1.Segment, 0, segmentsLength)
@@ -185,6 +184,7 @@ func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, max
 			segments = append(segments, &mapv1.Segment{
 				Tiles: make([]*mapv1.Tile, 0, tilesCapacity),
 				Bounds: &mapv1.Segment_Bounds{
+					Depth:     depth,
 					MinRow:    int32(rowStart),
 					MaxRow:    int32(rowEnd),
 					MinColumn: int32(columnStart),
@@ -212,7 +212,7 @@ func generateLayer(depth uint32, totalRows, totalColumns, maxRowsPerSegment, max
 			tile := layerIdx[k]
 
 			segment.Tiles = append(segment.Tiles, tile)
-			
+
 		}
 	}
 
@@ -360,7 +360,6 @@ func (svc *Service) GetSampleWorld(ctx context.Context, request *connect.Request
 	if request.Msg.MaxColumnsPerSegment == uint32(0) {
 		request.Msg.MaxColumnsPerSegment = defaultMaxColumnsPerSegment
 	}
-	
 
 	stageGrid := &progressv1.Stage{
 		State: progressv1.Stage_STATE_RUNNING,

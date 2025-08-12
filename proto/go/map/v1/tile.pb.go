@@ -451,10 +451,11 @@ func (x *Tile_RenderingSpec) GetFeatureIds() []string {
 
 type Segment_Bounds struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	MinRow        int32                  `protobuf:"varint,1,opt,name=min_row,json=minRow,proto3" json:"min_row,omitempty"`
-	MaxRow        int32                  `protobuf:"varint,2,opt,name=max_row,json=maxRow,proto3" json:"max_row,omitempty"`
-	MinColumn     int32                  `protobuf:"varint,3,opt,name=min_column,json=minColumn,proto3" json:"min_column,omitempty"`
-	MaxColumn     int32                  `protobuf:"varint,4,opt,name=max_column,json=maxColumn,proto3" json:"max_column,omitempty"`
+	Depth         uint32                 `protobuf:"varint,1,opt,name=depth,proto3" json:"depth,omitempty"`
+	MinRow        int32                  `protobuf:"varint,2,opt,name=min_row,json=minRow,proto3" json:"min_row,omitempty"`
+	MaxRow        int32                  `protobuf:"varint,3,opt,name=max_row,json=maxRow,proto3" json:"max_row,omitempty"`
+	MinColumn     int32                  `protobuf:"varint,4,opt,name=min_column,json=minColumn,proto3" json:"min_column,omitempty"`
+	MaxColumn     int32                  `protobuf:"varint,5,opt,name=max_column,json=maxColumn,proto3" json:"max_column,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -487,6 +488,13 @@ func (x *Segment_Bounds) ProtoReflect() protoreflect.Message {
 // Deprecated: Use Segment_Bounds.ProtoReflect.Descriptor instead.
 func (*Segment_Bounds) Descriptor() ([]byte, []int) {
 	return file_map_v1_tile_proto_rawDescGZIP(), []int{1, 0}
+}
+
+func (x *Segment_Bounds) GetDepth() uint32 {
+	if x != nil {
+		return x.Depth
+	}
+	return 0
 }
 
 func (x *Segment_Bounds) GetMinRow() int32 {
@@ -652,18 +660,19 @@ const file_map_v1_tile_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\v2\x11.map.v1.Tile.EdgeR\x05value:\x028\x01\x1aO\n" +
 	"\fCornersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\x05R\x03key\x12)\n" +
-	"\x05value\x18\x02 \x01(\v2\x13.map.v1.Tile.CornerR\x05value:\x028\x01\"\x9d\x03\n" +
+	"\x05value\x18\x02 \x01(\v2\x13.map.v1.Tile.CornerR\x05value:\x028\x01\"\xb4\x03\n" +
 	"\aSegment\x12.\n" +
 	"\x06bounds\x18\x01 \x01(\v2\x16.map.v1.Segment.BoundsR\x06bounds\x12\"\n" +
 	"\x05tiles\x18\x02 \x03(\v2\f.map.v1.TileR\x05tiles\x12D\n" +
-	"\x0erendering_spec\x18\x03 \x01(\v2\x1d.map.v1.Segment.RenderingSpecR\rrenderingSpec\x1ax\n" +
-	"\x06Bounds\x12\x17\n" +
-	"\amin_row\x18\x01 \x01(\x05R\x06minRow\x12\x17\n" +
-	"\amax_row\x18\x02 \x01(\x05R\x06maxRow\x12\x1d\n" +
+	"\x0erendering_spec\x18\x03 \x01(\v2\x1d.map.v1.Segment.RenderingSpecR\rrenderingSpec\x1a\x8e\x01\n" +
+	"\x06Bounds\x12\x14\n" +
+	"\x05depth\x18\x01 \x01(\rR\x05depth\x12\x17\n" +
+	"\amin_row\x18\x02 \x01(\x05R\x06minRow\x12\x17\n" +
+	"\amax_row\x18\x03 \x01(\x05R\x06maxRow\x12\x1d\n" +
 	"\n" +
-	"min_column\x18\x03 \x01(\x05R\tminColumn\x12\x1d\n" +
+	"min_column\x18\x04 \x01(\x05R\tminColumn\x12\x1d\n" +
 	"\n" +
-	"max_column\x18\x04 \x01(\x05R\tmaxColumn\x1aJ\n" +
+	"max_column\x18\x05 \x01(\x05R\tmaxColumn\x1aJ\n" +
 	"\rRenderingSpec\x12\x10\n" +
 	"\x03svg\x18\x01 \x01(\tR\x03svg\x12'\n" +
 	"\x0fsvg_lightweight\x18\x02 \x01(\tR\x0esvgLightweight\x1a2\n" +

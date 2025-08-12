@@ -7,7 +7,7 @@ export const getBounds = (segment: Segment) => {
 
 export const getKey = (segment: Segment): string => {
     const { minRow, maxRow, minColumn, maxColumn } = getBounds(segment)
-    return `[${minRow},${maxRow}),[${minColumn},${maxColumn})`
+    return `${segment.bounds?.depth}.[${minRow},${maxRow}),[${minColumn},${maxColumn})`
 }
 
 export const getDimensions = (segment: Segment, tileWidth: number, tileHeight: number) => {

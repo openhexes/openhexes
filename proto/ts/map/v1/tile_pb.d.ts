@@ -169,22 +169,27 @@ export declare const SegmentSchema: GenMessage<Segment>;
  */
 export declare type Segment_Bounds = Message<"map.v1.Segment.Bounds"> & {
   /**
-   * @generated from field: int32 min_row = 1;
+   * @generated from field: uint32 depth = 1;
+   */
+  depth: number;
+
+  /**
+   * @generated from field: int32 min_row = 2;
    */
   minRow: number;
 
   /**
-   * @generated from field: int32 max_row = 2;
+   * @generated from field: int32 max_row = 3;
    */
   maxRow: number;
 
   /**
-   * @generated from field: int32 min_column = 3;
+   * @generated from field: int32 min_column = 4;
    */
   minColumn: number;
 
   /**
-   * @generated from field: int32 max_column = 4;
+   * @generated from field: int32 max_column = 5;
    */
   maxColumn: number;
 };

@@ -12,10 +12,10 @@ interface PatternLayerProps extends P {
     isZoomedOut?: boolean
 }
 
-export const PatternLayer: React.FC<PatternLayerProps> = ({ segment, tileHeight, tileWidth }) => {
+export const SegmentView: React.FC<PatternLayerProps> = ({ segment, tileHeight, tileWidth }) => {
     // TESTING: Remove SVGs completely, just show labels + borders to test panning performance
     const { x, y } = segmentOriginWorldPx(segment, tileWidth, tileHeight)
-    
+
     // Calculate segment dimensions
     const minR = segment.bounds?.minRow ?? 0
     const maxR = segment.bounds?.maxRow ?? 0
@@ -30,18 +30,17 @@ export const PatternLayer: React.FC<PatternLayerProps> = ({ segment, tileHeight,
 
     return (
         <div
-            className="absolute pointer-events-none border-2 border-red-500 bg-blue-100 bg-opacity-20 flex items-center justify-center"
-            style={{ 
-                left: x, 
-                top: y, 
-                width: segWidth, 
+            className="absolute pointer-events-none border-2 border-lime-500 bg-lime-100 flex items-center justify-center font-mono"
+            style={{
+                left: x,
+                top: y,
+                width: segWidth,
                 height: segHeight,
-                fontSize: '24px',
-                fontWeight: 'bold',
-                color: 'red',
+                fontSize: "24px",
+                color: "var(--color-lime-700)",
             }}
         >
-            Segment {minR}-{minC}
+            {segment.bounds?.depth}.{minR}.{minC}
         </div>
     )
 }

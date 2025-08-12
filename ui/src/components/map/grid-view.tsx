@@ -7,7 +7,7 @@ import { type Tile as PTile, type Segment, Segment_BoundsSchema } from "proto/ts
 import type { World } from "proto/ts/world/v1/world_pb"
 import React from "react"
 
-import { PatternLayer } from "./pattern-layer"
+import { SegmentView } from "./segment-view"
 import { StatusBar } from "./status-bar"
 // REMOVED: import { TileView } from "./tile-view" - not needed, no individual interactive tiles
 
@@ -43,18 +43,18 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
     const visibleSegmentsRef = React.useRef<Segment[]>([])
     const [, forceRender] = React.useState({})
     // REMOVED: const [visibleTiles, setVisibleTiles] = React.useState<PTile[]>([]) - not needed without TileView
-    
+
     // Custom function to update visible segments only when they actually change
     const updateVisibleSegments = (newSegments: Segment[]) => {
         const current = visibleSegmentsRef.current
-        
+
         // Fast path: if lengths are different, definitely changed
         if (current.length !== newSegments.length) {
             visibleSegmentsRef.current = newSegments
             forceRender({}) // Trigger re-render
             return
         }
-        
+
         // Check if segments actually changed (by reference comparison)
         let hasChanged = false
         for (let i = 0; i < current.length; i++) {
@@ -63,7 +63,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
                 break
             }
         }
-        
+
         if (hasChanged) {
             visibleSegmentsRef.current = newSegments
             forceRender({}) // Only re-render if segments actually changed
@@ -85,7 +85,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
     const _applyPan = (dx: number, dy: number) => {
         // Early exit if no movement
         if (dx === 0 && dy === 0) return
-        
+
         const rect = containerRef.current?.getBoundingClientRect() ?? {
             height: window.innerHeight,
             width: window.innerWidth,
@@ -193,22 +193,40 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
         // Get actual segment dimensions from the world data
         // Don't hardcode segment sizes - use what's actually in the data
         const firstSegment = grid.segmentRows[0]?.segments[0]
-        const actualMaxRows = firstSegment?.bounds ? (firstSegment.bounds.maxRow - firstSegment.bounds.minRow) : 16
-        const actualMaxCols = firstSegment?.bounds ? (firstSegment.bounds.maxColumn - firstSegment.bounds.minColumn) : 20
-        
+        const actualMaxRows = firstSegment?.bounds
+            ? firstSegment.bounds.maxRow - firstSegment.bounds.minRow
+            : 16
+        const actualMaxCols = firstSegment?.bounds
+            ? firstSegment.bounds.maxColumn - firstSegment.bounds.minColumn
+            : 20
+
         // Optimize: only check segment rows that could potentially be visible
         const segmentRowStart = Math.max(0, Math.floor(startRow / actualMaxRows))
-        const segmentRowEnd = Math.min(grid.segmentRows.length - 1, Math.ceil((startRow + maxVisibleRows) / actualMaxRows))
+        const segmentRowEnd = Math.min(
+            grid.segmentRows.length - 1,
+            Math.ceil((startRow + maxVisibleRows) / actualMaxRows),
+        )
 
-        for (let segmentRowIndex = segmentRowStart; segmentRowIndex <= segmentRowEnd; segmentRowIndex++) {
+        for (
+            let segmentRowIndex = segmentRowStart;
+            segmentRowIndex <= segmentRowEnd;
+            segmentRowIndex++
+        ) {
             const row = grid.segmentRows[segmentRowIndex]
             if (!row) continue
-            
+
             // Similarly, optimize segment columns within each row
             const segmentColStart = Math.max(0, Math.floor(startColumn / actualMaxCols))
-            const segmentColEnd = Math.min(row.segments.length - 1, Math.ceil((startColumn + maxVisibleColumns) / actualMaxCols))
-            
-            for (let segmentColIndex = segmentColStart; segmentColIndex <= segmentColEnd; segmentColIndex++) {
+            const segmentColEnd = Math.min(
+                row.segments.length - 1,
+                Math.ceil((startColumn + maxVisibleColumns) / actualMaxCols),
+            )
+
+            for (
+                let segmentColIndex = segmentColStart;
+                segmentColIndex <= segmentColEnd;
+                segmentColIndex++
+            ) {
                 const segment = row.segments[segmentColIndex]
                 if (!segment?.bounds) continue
                 if (tileUtil.boundsIntersect(segment.bounds, visibleBounds)) {
@@ -252,7 +270,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
             if (!lastPositionRef.current) {
                 setSelectedTile(undefined)
             }
-            
+
             const x = e.clientX
             const y = e.clientY
             if (lastPositionRef.current) {
@@ -286,7 +304,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
                 let foundTile = undefined
                 for (const segment of visibleSegmentsRef.current) {
                     if (!segment.tiles) continue
-                    const tile = segment.tiles.find(tile => {
+                    const tile = segment.tiles.find((tile) => {
                         if (!tile.coordinate) return false
                         return tile.coordinate.row === row && tile.coordinate.column === col
                     })
@@ -322,7 +340,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
     const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
         e.preventDefault() // Prevent page bounce
         e.stopPropagation() // Stop event bubbling
-        
+
         // Invert direction for natural trackpad scrolling
         handlePan(-e.deltaX, -e.deltaY)
     }
@@ -401,7 +419,7 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
                 >
                     {/* Actual segments for rendering */}
                     {visibleSegmentsRef.current.map((segment) => (
-                        <PatternLayer
+                        <SegmentView
                             key={segmentUtil.getKey(segment)}
                             segment={segment}
                             tileHeight={tileHeight}
@@ -410,14 +428,15 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
                     ))}
 
                     {/* Tile highlight overlay */}
-                    {selectedTile && (() => {
-                        const { row, column } = tileUtil.getCoordinates(selectedTile)
-                        const even = row % 2 === 0
-                        const left = column * tileWidth + (even ? 0 : tileWidth / 2)
-                        const top = row * rowHeight
-                        
-                        // Create hex border using SVG - the only way to get proper hex border
-                        const hexPoints = `
+                    {selectedTile &&
+                        (() => {
+                            const { row, column } = tileUtil.getCoordinates(selectedTile)
+                            const even = row % 2 === 0
+                            const left = column * tileWidth + (even ? 0 : tileWidth / 2)
+                            const top = row * rowHeight
+
+                            // Create hex border using SVG - the only way to get proper hex border
+                            const hexPoints = `
                             ${tileWidth / 2},2 
                             ${tileWidth - 2},${tileHeight / 4} 
                             ${tileWidth - 2},${(3 * tileHeight) / 4} 
@@ -425,29 +444,29 @@ export const GridView: React.FC<MapProps> = ({ height, width, world }) => {
                             2,${(3 * tileHeight) / 4} 
                             2,${tileHeight / 4}
                         `
-                        
-                        return (
-                            <div
-                                className="absolute pointer-events-none"
-                                style={{
-                                    left,
-                                    top,
-                                    width: tileWidth,
-                                    height: tileHeight,
-                                    zIndex: 999,
-                                }}
-                            >
-                                <svg width={tileWidth} height={tileHeight}>
-                                    <polygon
-                                        points={hexPoints}
-                                        fill="rgba(253, 224, 71, 0.3)"
-                                        stroke="#eab308"
-                                        strokeWidth="2"
-                                    />
-                                </svg>
-                            </div>
-                        )
-                    })()}
+
+                            return (
+                                <div
+                                    className="absolute pointer-events-none"
+                                    style={{
+                                        left,
+                                        top,
+                                        width: tileWidth,
+                                        height: tileHeight,
+                                        zIndex: 999,
+                                    }}
+                                >
+                                    <svg width={tileWidth} height={tileHeight}>
+                                        <polygon
+                                            points={hexPoints}
+                                            fill="rgba(253, 224, 71, 0.3)"
+                                            stroke="#eab308"
+                                            strokeWidth="2"
+                                        />
+                                    </svg>
+                                </div>
+                            )
+                        })()}
                 </div>
 
                 <StatusBar />
