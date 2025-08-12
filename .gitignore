@@ -15,3 +15,6 @@ api/src/server/ui
 # Binaries
 api/api
 api/api.upx
+
+# Temporary files
+screenshots/

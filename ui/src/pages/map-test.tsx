@@ -6,12 +6,32 @@ import React from "react"
 
 const Map = React.lazy(() => import("@/components/map/grid-view"))
 
-const rowCount = 64
-const columnCount = 64
+const rowCount = 256
+const columnCount = 256
 
 export const MapTest = () => {
     const { height, width } = useWindowSize()
-    const { world, isLoading, progress, error } = useFetchedWorld(rowCount, columnCount, 16, 20)
+    
+    // Calculate optimal segment sizes based on screen dimensions  
+    // Goal: ~9 segments visible (3x3 grid) for optimal performance
+    const tileSize = 64 // Approximate tile size in pixels
+    const optimalSegmentPixels = Math.min(width || 1920, height || 1080) / 2.5 // Larger segments for fewer total
+    const optimalSegmentTiles = Math.max(16, Math.min(64, Math.floor(optimalSegmentPixels / tileSize)))
+    
+    const { world, isLoading, progress, error } = useFetchedWorld(
+        rowCount, 
+        columnCount, 
+        optimalSegmentTiles, // maxRowsPerSegment 
+        optimalSegmentTiles  // maxColumnsPerSegment
+    )
+    
+    // Debug segment sizing
+    React.useEffect(() => {
+        if (width && height) {
+            console.info(`Screen: ${width}x${height}, Optimal segment size: ${optimalSegmentTiles}x${optimalSegmentTiles} tiles`)
+            console.info(`Target: ~9 segments visible, Previous: 16x20 (320 tiles/segment), New: ${optimalSegmentTiles}x${optimalSegmentTiles} (${optimalSegmentTiles * optimalSegmentTiles} tiles/segment)`)
+        }
+    }, [width, height, optimalSegmentTiles])
 
     if (!height || !width) {
         return null

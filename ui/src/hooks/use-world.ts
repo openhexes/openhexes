@@ -17,6 +17,8 @@ type S = {
     selectDepth: (depth: number) => void
     selectedTile?: Tile
     selectTile: (tile: Tile) => void
+    smoothPan?: boolean
+    setSmoothPan?: (smooth: boolean) => void
 }
 
 export const WorldContext = React.createContext<S>({
